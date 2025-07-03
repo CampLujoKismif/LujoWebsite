@@ -7,6 +7,10 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
+Route::get('/strive-week', function () {
+    return view('strive-week');
+})->name('strive-week');
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

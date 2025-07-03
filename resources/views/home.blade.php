@@ -48,6 +48,7 @@
                     <div class="flex items-center space-x-4">
                         <a href="#about" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">About</a>
                         <a href="#sessions" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Sessions</a>
+                        <a href="{{ route('strive-week') }}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Strive Week</a>
                         <a href="#contact" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
                         @auth
                             <a href="{{ url('/dashboard') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">Dashboard</a>
@@ -199,6 +200,9 @@
                         <h3 class="text-xl font-bold mb-2">Strive Week</h3>
                         <p class="mb-4">5th Grade & Up</p>
                         <p class="text-indigo-100">June 22-28</p>
+                        <a href="{{ route('strive-week') }}" class="inline-block mt-3 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded transition duration-300">
+                            Learn More
+                        </a>
                     </div>
                     
                     <div class="card-hover bg-gradient-to-br from-pink-500 to-pink-600 text-white p-6 rounded-lg">
