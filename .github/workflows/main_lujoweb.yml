@@ -49,7 +49,7 @@ jobs:
 
       - name: Install npm dependencies if package.json exists
         if: steps.check_package.outputs.files_exists == 'true'
-        run: npm ci --production
+        run: npm ci
 
       - name: Build frontend assets
         if: steps.check_package.outputs.files_exists == 'true'
@@ -64,6 +64,12 @@ jobs:
           sed -i "s|^DB_DATABASE=.*|DB_DATABASE=${{ secrets.DB_DATABASE }}|" .env
           sed -i "s|^DB_USERNAME=.*|DB_USERNAME=${{ secrets.DB_USERNAME }}|" .env
           sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${{ secrets.DB_PASSWORD }}|" .env
+
+      - name: Remove development dependencies
+        if: steps.check_package.outputs.files_exists == 'true'
+        run: |
+          rm -rf node_modules
+          rm package-lock.json
 
       - name: Create startup command file
         run: |
@@ -110,12 +116,18 @@ jobs:
             echo "Warning: AZURE_RESOURCE_GROUP secret not set. Skipping startup command configuration."
           fi
 
-      - name: Install Node.js extension
+      - name: Configure Azure Web App for PHP
         run: |
           if [ -n "${{ secrets.AZURE_RESOURCE_GROUP }}" ]; then
-            az webapp config appsettings set --name LujoWeb --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --settings WEBSITE_NODE_DEFAULT_VERSION=18.x
+            # Set the runtime to PHP 8.4
+            az webapp config set --name LujoWeb --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --linux-fx-version "PHP|8.4"
+            
+            # Add application settings for Laravel
+            az webapp config appsettings set --name LujoWeb --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --settings \
+              WEBSITES_ENABLE_APP_SERVICE_STORAGE=true \
+              SCM_DO_BUILD_DURING_DEPLOYMENT=false
           else
-            echo "Warning: AZURE_RESOURCE_GROUP secret not set. Skipping Node.js extension configuration."
+            echo "Warning: AZURE_RESOURCE_GROUP secret not set. Skipping runtime configuration."
           fi
 
       - name: 'Deploy to Azure Web App'
