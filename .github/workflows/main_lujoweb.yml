@@ -22,6 +22,14 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
+          extensions: mbstring, bcmath, xml, ctype, json, tokenizer, pdo, pdo_mysql
+          tools: composer
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
 
       - name: Check if composer.json exists
         id: check_files
@@ -31,7 +39,21 @@ jobs:
 
       - name: Run composer install if composer.json exists
         if: steps.check_files.outputs.files_exists == 'true'
-        run: composer validate --no-check-publish && composer install --prefer-dist --no-progress
+        run: composer validate --no-check-publish && composer install --no-dev --optimize-autoloader --prefer-dist --no-progress
+
+      - name: Check if package.json exists
+        id: check_package
+        uses: andstor/file-existence-action@v1
+        with:
+          files: 'package.json'
+
+      - name: Install npm dependencies if package.json exists
+        if: steps.check_package.outputs.files_exists == 'true'
+        run: npm ci --production
+
+      - name: Build frontend assets
+        if: steps.check_package.outputs.files_exists == 'true'
+        run: npm run build
 
       - name: Copy .env.example to .env
         run: |
