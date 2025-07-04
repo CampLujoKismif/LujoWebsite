@@ -25,10 +25,8 @@
             <div class="flex w-full max-w-md flex-col gap-6">
                 <!-- Camp Logo and Branding -->
                 <div class="flex flex-col items-center gap-4 text-center">
-                    <div class="camp-logo flex h-16 w-16 items-center justify-center rounded-full text-white shadow-lg">
-                        <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
+                    <div class="camp-logo flex h-20 w-64 items-center justify-center rounded-xl bg-white shadow-xl border border-gray-200">
+                        <x-app-logo-icon class="h-12 w-auto" />
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-white mb-1">Camp LUJO-KISMIF</h1>
