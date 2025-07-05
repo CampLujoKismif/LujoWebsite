@@ -497,15 +497,15 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                     <div class="card-hover bg-blue-50 p-8 rounded-lg">
-                        <div class="text-4xl font-bold text-blue-600 mb-2">500+</div>
+                        <div class="text-4xl font-bold text-blue-600 mb-2">21k</div>
                         <div class="text-xl text-gray-700">Campers</div>
                     </div>
                     <div class="card-hover bg-green-50 p-8 rounded-lg">
-                        <div class="text-4xl font-bold text-green-600 mb-2">50+</div>
+                        <div class="text-4xl font-bold text-green-600 mb-2">11k</div>
                         <div class="text-xl text-gray-700">Staff Members</div>
                     </div>
                     <div class="card-hover bg-purple-50 p-8 rounded-lg">
-                        <div class="text-4xl font-bold text-purple-600 mb-2">100+</div>
+                        <div class="text-4xl font-bold text-purple-600 mb-2">550+</div>
                         <div class="text-xl text-gray-700">Baptisms</div>
                     </div>
                 </div>
