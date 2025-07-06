@@ -175,11 +175,5 @@
                     @endforeach
                 </div>
             </div>
-        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
     </div>
 </x-layouts.app> 
