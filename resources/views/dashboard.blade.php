@@ -4,6 +4,26 @@
         <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl p-6 text-white">
             <h1 class="text-3xl font-bold mb-2">Welcome to Camp LUJO-KISMIF</h1>
             <p class="text-blue-100">Keep It Spiritual, Make It Fun!</p>
+            
+            @if(auth()->user()->primaryCamp())
+                <div class="mt-4 p-4 bg-blue-700/50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-1">Your Primary Camp Assignment</h3>
+                    <p class="text-blue-100">{{ auth()->user()->primaryCamp()->display_name }}</p>
+                    @if(auth()->user()->primaryCampAssignment())
+                        <p class="text-sm text-blue-200">{{ auth()->user()->primaryCampAssignment()->position }}</p>
+                    @endif
+                </div>
+            @endif
+
+            @role('super_admin')
+                <div class="mt-4 p-4 bg-purple-700/50 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-1">Admin Access</h3>
+                    <p class="text-blue-100 mb-2">You have super administrator privileges</p>
+                    <a href="{{ route('admin.dashboard') }}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Go to Admin Dashboard
+                    </a>
+                </div>
+            @endrole
         </div>
 
         <!-- Quick Stats -->
@@ -101,43 +121,51 @@
                 </div>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <div class="p-6 border-b border-neutral-200 dark:border-neutral-700">
-                    <h2 class="text-xl font-semibold text-neutral-900 dark:text-white">Quick Actions</h2>
-                </div>
-                <div class="p-6">
-                    <div class="grid grid-cols-2 gap-4">
-                        <a href="#" class="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
-                            <svg class="w-8 h-8 text-blue-600 dark:text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            <span class="text-sm font-medium text-neutral-900 dark:text-white">Add Camper</span>
-                        </a>
-                        
-                        <a href="#" class="flex flex-col items-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors">
-                            <svg class="w-8 h-8 text-green-600 dark:text-green-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                            </svg>
-                            <span class="text-sm font-medium text-neutral-900 dark:text-white">View Reports</span>
-                        </a>
-                        
-                        <a href="#" class="flex flex-col items-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors">
-                            <svg class="w-8 h-8 text-purple-600 dark:text-purple-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            <span class="text-sm font-medium text-neutral-900 dark:text-white">Schedule</span>
-                        </a>
-                        
-                        <a href="#" class="flex flex-col items-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors">
-                            <svg class="w-8 h-8 text-yellow-600 dark:text-yellow-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                            </svg>
-                            <span class="text-sm font-medium text-neutral-900 dark:text-white">Messages</span>
-                        </a>
-                    </div>
+                    <!-- Quick Actions -->
+        <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
+            <div class="p-6 border-b border-neutral-200 dark:border-neutral-700">
+                <h2 class="text-xl font-semibold text-neutral-900 dark:text-white">Quick Actions</h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-4">
+                    @permission('create_campers')
+                    <a href="#" class="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+                        <svg class="w-8 h-8 text-blue-600 dark:text-blue-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-neutral-900 dark:text-white">Add Camper</span>
+                    </a>
+                    @endpermission
+                    
+                    @permission('view_reports')
+                    <a href="#" class="flex flex-col items-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors">
+                        <svg class="w-8 h-8 text-green-600 dark:text-green-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-neutral-900 dark:text-white">View Reports</span>
+                    </a>
+                    @endpermission
+                    
+                    @permission('view_sessions')
+                    <a href="#" class="flex flex-col items-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors">
+                        <svg class="w-8 h-8 text-purple-600 dark:text-purple-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-neutral-900 dark:text-white">Schedule</span>
+                    </a>
+                    @endpermission
+                    
+                    @anyrole(['super_admin', 'camp_director', 'camp_staff'])
+                    <a href="#" class="flex flex-col items-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors">
+                        <svg class="w-8 h-8 text-yellow-600 dark:text-yellow-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-neutral-900 dark:text-white">Messages</span>
+                    </a>
+                    @endanyrole
                 </div>
             </div>
+        </div>
         </div>
 
         <!-- Recent Activity -->

@@ -1,0 +1,234 @@
+<x-layouts.app :title="__($camp->display_name . ' Dashboard')">
+    <div class="flex h-full w-full flex-1 flex-col gap-6 p-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">{{ $camp->display_name }}</h1>
+                <p class="text-neutral-600 dark:text-neutral-400">{{ $camp->description }}</p>
+            </div>
+            <div class="flex gap-2">
+                <a href="{{ route('camps.staff', $camp) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
+                    View Staff
+                </a>
+                <a href="{{ route('camps.activities', $camp) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium">
+                    Activities
+                </a>
+            </div>
+        </div>
+
+        <!-- Camp Information -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Camp Details -->
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <div class="p-6">
+                        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Camp Information</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                    Session Dates
+                                </label>
+                                <p class="text-neutral-900 dark:text-white">
+                                    {{ $camp->start_date ? $camp->start_date->format('M j, Y') : 'TBD' }} - 
+                                    {{ $camp->end_date ? $camp->end_date->format('M j, Y') : 'TBD' }}
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                    Age/Grade Range
+                                </label>
+                                <p class="text-neutral-900 dark:text-white">
+                                    @if($camp->age_from && $camp->age_to)
+                                        Ages {{ $camp->age_from }}-{{ $camp->age_to }}
+                                    @elseif($camp->grade_from && $camp->grade_to)
+                                        {{ $camp->grade_from }}{{ $camp->grade_from == 1 ? 'st' : ($camp->grade_from == 2 ? 'nd' : ($camp->grade_from == 3 ? 'rd' : 'th')) }} - 
+                                        {{ $camp->grade_to }}{{ $camp->grade_to == 1 ? 'st' : ($camp->grade_to == 2 ? 'nd' : ($camp->grade_to == 3 ? 'rd' : 'th')) }} Grade
+                                    @else
+                                        Not specified
+                                    @endif
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                    Location
+                                </label>
+                                <p class="text-neutral-900 dark:text-white">{{ $camp->location ?? 'Not specified' }}</p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                    Capacity
+                                </label>
+                                <p class="text-neutral-900 dark:text-white">{{ $camp->capacity ?? 'Not specified' }} campers</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Overview -->
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold text-neutral-900 dark:text-white">Staff Overview</h2>
+                            <a href="{{ route('camps.staff', $camp) }}" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">
+                                View All Staff →
+                            </a>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $staffStats['total'] }}</div>
+                                <div class="text-sm text-blue-600 dark:text-blue-400">Total Staff</div>
+                            </div>
+                            
+                            <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                                <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $primaryStaff->count() }}</div>
+                                <div class="text-sm text-green-600 dark:text-green-400">Primary Staff</div>
+                            </div>
+                            
+                            <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
+                                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ $staffStats['by_role']->count() }}</div>
+                                <div class="text-sm text-purple-600 dark:text-purple-400">Role Types</div>
+                            </div>
+                        </div>
+
+                        @if($staffStats['by_role']->count() > 0)
+                            <div>
+                                <h3 class="font-medium text-neutral-900 dark:text-white mb-3">Staff by Role</h3>
+                                <div class="space-y-2">
+                                    @foreach($staffStats['by_role'] as $role => $count)
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-neutral-700 dark:text-neutral-300">{{ $role }}</span>
+                                            <span class="text-sm font-medium text-neutral-900 dark:text-white">{{ $count }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <div class="p-6">
+                        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Recent Activities</h2>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-neutral-900 dark:text-white">Camp session planning completed</p>
+                                    <p class="text-xs text-neutral-500 dark:text-neutral-400">2 hours ago</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-neutral-900 dark:text-white">New staff member assigned</p>
+                                    <p class="text-xs text-neutral-500 dark:text-neutral-400">1 day ago</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                                <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-neutral-900 dark:text-white">Activity schedule updated</p>
+                                    <p class="text-xs text-neutral-500 dark:text-neutral-400">3 days ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Quick Actions -->
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <div class="p-6">
+                        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Quick Actions</h2>
+                        
+                        <div class="space-y-3">
+                            <a href="{{ route('camps.staff', $camp) }}" 
+                                class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-center block">
+                                Manage Staff
+                            </a>
+                            
+                            <a href="{{ route('camps.activities', $camp) }}" 
+                                class="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium text-center block">
+                                View Activities
+                            </a>
+                            
+                            <a href="{{ route('camps.settings', $camp) }}" 
+                                class="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium text-center block">
+                                Camp Settings
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Primary Staff -->
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <div class="p-6">
+                        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Primary Staff</h2>
+                        
+                        @if($primaryStaff->count() > 0)
+                            <div class="space-y-3">
+                                @foreach($primaryStaff as $user)
+                                    <div class="flex items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+                                        <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                                            {{ $user->initials() }}
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ $user->name }}</p>
+                                            <p class="text-xs text-neutral-500 dark:text-neutral-400">
+                                                {{ $user->roles->first() ? $user->roles->first()->display_name : 'No Role' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-neutral-500 dark:text-neutral-400 text-sm">No primary staff assigned</p>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Camp Status -->
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <div class="p-6">
+                        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Camp Status</h2>
+                        
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-neutral-700 dark:text-neutral-300">Status</span>
+                                <span class="px-2 py-1 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full">
+                                    Active
+                                </span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-neutral-700 dark:text-neutral-300">Staff Ready</span>
+                                <span class="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full">
+                                    {{ $staffStats['total'] > 0 ? 'Yes' : 'No' }}
+                                </span>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-neutral-700 dark:text-neutral-300">Schedule Set</span>
+                                <span class="px-2 py-1 text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full">
+                                    Pending
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</x-layouts.app> 

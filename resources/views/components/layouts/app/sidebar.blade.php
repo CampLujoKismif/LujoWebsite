@@ -24,13 +24,23 @@
             <flux:spacer />
 
             <flux:navlist variant="outline">
-                <flux:navlist.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                {{ __('Repository') }}
-                </flux:navlist.item>
+                @role('super_admin')
+                    <flux:navlist.item icon="shield-check" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')" wire:navigate>
+                        {{ __('Admin Dashboard') }}
+                    </flux:navlist.item>
+                @endrole
 
-                <flux:navlist.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                {{ __('Documentation') }}
-                </flux:navlist.item>
+                @foreach(auth()->user()->campAssignments as $assignment)
+                    <flux:navlist.item 
+                        icon="building-storefront" 
+                        :href="route('camps.dashboard', $assignment->camp)" 
+                        :current="request()->routeIs('camps.dashboard', $assignment->camp)"
+                        wire:navigate
+                    >
+                        {{ $assignment->camp->display_name }}
+                    </flux:navlist.item>
+                @endforeach
+
             </flux:navlist>
 
             <!-- Desktop User Menu -->
