@@ -49,6 +49,16 @@ class Camp extends Model
     }
 
     /**
+     * Get the users assigned to this camp (alias for staff).
+     */
+    public function assignedUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_camp_assignments')
+            ->withPivot(['role_id', 'position', 'notes', 'is_primary'])
+            ->withTimestamps();
+    }
+
+    /**
      * Get the camp assignments for this camp.
      */
     public function assignments(): HasMany
