@@ -155,37 +155,6 @@
             </div>
         </div>
 
-        <!-- Upcoming Camps and Role Distribution -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Upcoming Camps -->
-            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <div class="p-6 border-b border-neutral-200 dark:border-neutral-700">
-                    <h2 class="text-xl font-semibold text-neutral-900 dark:text-white">Upcoming Camps</h2>
-                </div>
-                <div class="p-6">
-                    <div class="space-y-4">
-                        @forelse($upcomingCamps as $camp)
-                        <div class="flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                            <div>
-                                <h3 class="font-medium text-neutral-900 dark:text-white">{{ $camp->display_name }}</h3>
-                                <p class="text-sm text-neutral-600 dark:text-neutral-400">{{ $camp->start_date->format('M j, Y') }} - {{ $camp->end_date->format('M j, Y') }}</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="px-2 py-1 text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full">
-                                    {{ $camp->age_range }}
-                                </span>
-                            </div>
-                        </div>
-                        @empty
-                        <p class="text-sm text-neutral-500 dark:text-neutral-400">No upcoming camps</p>
-                        @endforelse
-                    </div>
-                    <div class="mt-4">
-                        <a href="{{ route('admin.camps.index') }}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View all camps →</a>
-                </div>
-            </div>
-        </div>
-
         <!-- Camp Dashboards -->
         <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
             <div class="p-6">
@@ -211,53 +180,6 @@
                 </div>
             </div>
 
-            <!-- Role Distribution -->
-            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <div class="p-6 border-b border-neutral-200 dark:border-neutral-700">
-                    <h2 class="text-xl font-semibold text-neutral-900 dark:text-white">Role Distribution</h2>
-                </div>
-                <div class="p-6">
-                    <div class="space-y-3">
-                        @foreach($roleDistribution as $role)
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                <span class="text-sm text-neutral-900 dark:text-white">{{ $role->display_name }}</span>
-                            </div>
-                            <span class="text-sm font-medium text-neutral-600 dark:text-neutral-400">{{ $role->users_count }}</span>
-                        </div>
-                        @endforeach
-                    </div>
-                    <div class="mt-4">
-                        <a href="{{ route('admin.roles.index') }}" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">View all roles →</a>
-                    </div>
-                </div>
-            </div>
         </div>
-
-        <!-- Camp Capacity Overview -->
-        @if($campStats->count() > 0)
-        <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
-            <div class="p-6 border-b border-neutral-200 dark:border-neutral-700">
-                <h2 class="text-xl font-semibold text-neutral-900 dark:text-white">Camp Capacity Overview</h2>
-            </div>
-            <div class="p-6">
-                <div class="space-y-4">
-                    @foreach($campStats as $camp)
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-medium text-neutral-900 dark:text-white">{{ $camp->display_name }}</span>
-                            <span class="text-sm text-neutral-600 dark:text-neutral-400">{{ $camp->current_capacity }}/{{ $camp->max_capacity }}</span>
-                        </div>
-                        <div class="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
-                            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $camp->capacity_percentage }}%"></div>
-                        </div>
-                        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">{{ $camp->capacity_percentage }}% full</p>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-        @endif
     </div>
 </x-layouts.app> 
