@@ -320,5 +320,9 @@
                 window.location.href = currentUrl.toString();
             }
         }
+
+        @if($instances->isEmpty())
+            window.location.href = '{{ route('camps.instances.create', $camp) }}';
+        @endif
     </script>
 </x-layouts.app> 

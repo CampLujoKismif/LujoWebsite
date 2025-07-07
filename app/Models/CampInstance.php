@@ -95,13 +95,6 @@ class CampInstance extends Model
         return $this->hasMany(Camper::class);
     }
 
-    /**
-     * Get the registrations for this camp instance.
-     */
-    public function registrations(): HasMany
-    {
-        return $this->hasMany(Registration::class);
-    }
 
     /**
      * Scope to filter active camp instances.

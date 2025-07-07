@@ -157,12 +157,6 @@ class CampInstanceController extends Controller
             abort(404, 'Camp instance not found.');
         }
 
-        // Check if instance has any registrations or staff assignments
-        if ($instance->registrations()->count() > 0) {
-            return redirect()->route('camps.settings', $camp)
-                ->with('error', 'Cannot delete camp instance with registrations.');
-        }
-
         if ($instance->assignments()->count() > 0) {
             return redirect()->route('camps.settings', $camp)
                 ->with('error', 'Cannot delete camp instance with staff assignments.');
