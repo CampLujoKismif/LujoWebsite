@@ -16,26 +16,9 @@ class Camp extends Model
         'name',
         'display_name',
         'description',
-        'start_date',
-        'end_date',
-        'is_active',
-        'max_capacity',
-        'price',
-        'age_from',
-        'age_to',
-        'grade_from',
-        'grade_to',
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'is_active' => 'boolean',
-        'price' => 'decimal:2',
-        'age_from' => 'integer',
-        'age_to' => 'integer',
-        'grade_from' => 'integer',
-        'grade_to' => 'integer',
     ];
 
     /**
@@ -193,5 +176,21 @@ class Camp extends Model
     public function forceDelete(): bool
     {
         return parent::forceDelete();
+    }
+
+    /**
+     * Get all instances (years) for this camp.
+     */
+    public function instances(): HasMany
+    {
+        return $this->hasMany(CampInstance::class);
+    }
+
+    /**
+     * Get the current (active) instance for this camp.
+     */
+    public function currentInstance()
+    {
+        return $this->instances()->where('is_active', true)->orderByDesc('year')->first();
     }
 } 

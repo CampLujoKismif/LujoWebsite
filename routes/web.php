@@ -63,6 +63,14 @@ Route::middleware(['auth'])->prefix('camps')->name('camps.')->group(function () 
     Route::get('{camp}/activities', [App\Http\Controllers\CampController::class, 'activities'])->name('activities');
     Route::get('{camp}/settings', [App\Http\Controllers\CampController::class, 'settings'])->name('settings');
     Route::delete('{camp}/staff/{user}', [App\Http\Controllers\CampController::class, 'removeStaff'])->name('remove-staff');
+    
+    // Camp instance routes
+    Route::get('{camp}/instances/create', [App\Http\Controllers\CampInstanceController::class, 'create'])->name('instances.create');
+    Route::post('{camp}/instances', [App\Http\Controllers\CampInstanceController::class, 'store'])->name('instances.store');
+    Route::get('{camp}/instances/{instance}/edit', [App\Http\Controllers\CampInstanceController::class, 'edit'])->name('instances.edit');
+    Route::put('{camp}/instances/{instance}', [App\Http\Controllers\CampInstanceController::class, 'update'])->name('instances.update');
+    Route::delete('{camp}/instances/{instance}', [App\Http\Controllers\CampInstanceController::class, 'destroy'])->name('instances.destroy');
+    Route::get('{camp}/instances/{instance}', [App\Http\Controllers\CampInstanceController::class, 'show'])->name('instances.show');
 });
 
 Route::get('/api/frontpage-images', function () {

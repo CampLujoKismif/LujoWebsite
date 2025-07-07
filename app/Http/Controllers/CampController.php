@@ -183,7 +183,7 @@ class CampController extends Controller
     /**
      * Show the dashboard for a specific camp.
      */
-    public function dashboard(Camp $camp)
+    public function dashboard(Camp $camp, Request $request)
     {
         // Check if user has access to this camp
         if (!auth()->user()->canAccessCampData($camp->id)) {
@@ -198,6 +198,21 @@ class CampController extends Controller
             }
         ]);
 
+        // Get all instances for this camp
+        $instances = $camp->instances()->orderByDesc('year')->get();
+
+        // Get the selected instance (from query parameter or current instance)
+        $selectedInstanceId = $request->query('instance');
+        $currentInstance = null;
+        
+        if ($selectedInstanceId) {
+            $currentInstance = $instances->find($selectedInstanceId);
+        }
+        
+        if (!$currentInstance) {
+            $currentInstance = $camp->currentInstance();
+        }
+
         // Get staff statistics
         $staffStats = [
             'total' => $camp->assignedUsers->count(),
@@ -209,7 +224,7 @@ class CampController extends Controller
         // Get primary staff (users with this as primary camp)
         $primaryStaff = $camp->assignedUsers->where('pivot.is_primary', true);
 
-        return view('camps.dashboard', compact('camp', 'staffStats', 'primaryStaff'));
+        return view('camps.dashboard', compact('camp', 'currentInstance', 'instances', 'staffStats', 'primaryStaff'));
     }
 
     /**
@@ -255,7 +270,10 @@ class CampController extends Controller
             abort(403, 'You do not have permission to access this camp.');
         }
 
-        return view('camps.settings', compact('camp'));
+        // Get the current camp instance (most recent active instance)
+        $currentInstance = $camp->currentInstance();
+
+        return view('camps.settings', compact('camp', 'currentInstance'));
     }
 
     /**

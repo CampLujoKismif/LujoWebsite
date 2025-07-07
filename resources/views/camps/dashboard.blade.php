@@ -6,7 +6,28 @@
                 <h1 class="text-3xl font-bold text-neutral-900 dark:text-white">{{ $camp->display_name }}</h1>
                 <p class="text-neutral-600 dark:text-neutral-400">{{ $camp->description }}</p>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 items-center">
+                <!-- Instance Selector -->
+                <div class="relative">
+                    <label for="instance-selector" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                        Camp Instance
+                    </label>
+                    <select id="instance-selector" onchange="changeInstance(this.value)" 
+                        class="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        @foreach($instances as $instance)
+                            <option value="{{ $instance->id }}" {{ $currentInstance && $currentInstance->id == $instance->id ? 'selected' : '' }}>
+                                {{ $instance->year }} - {{ $instance->name }}
+                                @if($instance->is_active)
+                                    (Active)
+                                @endif
+                            </option>
+                        @endforeach
+                        @if($instances->isEmpty())
+                            <option disabled>No instances available</option>
+                        @endif
+                    </select>
+                </div>
+                
                 <a href="{{ route('camps.staff', $camp) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
                     View Staff
                 </a>
@@ -20,6 +41,39 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Main Content -->
             <div class="lg:col-span-2 space-y-6">
+                <!-- Instance Information Banner -->
+                @if($currentInstance)
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                                    {{ $currentInstance->year }} - {{ $currentInstance->name }}
+                                </h3>
+                                <p class="text-blue-700 dark:text-blue-300 text-sm">
+                                    @if($currentInstance->is_active)
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                            Active Instance
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+                                            Inactive Instance
+                                        </span>
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-blue-700 dark:text-blue-300 text-sm">
+                                    @if($currentInstance->start_date && $currentInstance->end_date)
+                                        {{ $currentInstance->start_date->format('M j') }} - {{ $currentInstance->end_date->format('M j, Y') }}
+                                    @else
+                                        Dates TBD
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Camp Details -->
                 <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
                     <div class="p-6">
@@ -31,8 +85,12 @@
                                     Session Dates
                                 </label>
                                 <p class="text-neutral-900 dark:text-white">
-                                    {{ $camp->start_date ? $camp->start_date->format('M j, Y') : 'TBD' }} - 
-                                    {{ $camp->end_date ? $camp->end_date->format('M j, Y') : 'TBD' }}
+                                    @if($currentInstance && $currentInstance->start_date && $currentInstance->end_date)
+                                        {{ $currentInstance->start_date->format('M j, Y') }} - 
+                                        {{ $currentInstance->end_date->format('M j, Y') }}
+                                    @else
+                                        TBD
+                                    @endif
                                 </p>
                             </div>
                             
@@ -41,11 +99,15 @@
                                     Age/Grade Range
                                 </label>
                                 <p class="text-neutral-900 dark:text-white">
-                                    @if($camp->age_from && $camp->age_to)
-                                        Ages {{ $camp->age_from }}-{{ $camp->age_to }}
-                                    @elseif($camp->grade_from && $camp->grade_to)
-                                        {{ $camp->grade_from }}{{ $camp->grade_from == 1 ? 'st' : ($camp->grade_from == 2 ? 'nd' : ($camp->grade_from == 3 ? 'rd' : 'th')) }} - 
-                                        {{ $camp->grade_to }}{{ $camp->grade_to == 1 ? 'st' : ($camp->grade_to == 2 ? 'nd' : ($camp->grade_to == 3 ? 'rd' : 'th')) }} Grade
+                                    @if($currentInstance)
+                                        @if($currentInstance->age_from && $currentInstance->age_to)
+                                            Ages {{ $currentInstance->age_from }}-{{ $currentInstance->age_to }}
+                                        @elseif($currentInstance->grade_from && $currentInstance->grade_to)
+                                            {{ $currentInstance->grade_from }}{{ $currentInstance->grade_from == 1 ? 'st' : ($currentInstance->grade_from == 2 ? 'nd' : ($currentInstance->grade_from == 3 ? 'rd' : 'th')) }} - 
+                                            {{ $currentInstance->grade_to }}{{ $currentInstance->grade_to == 1 ? 'st' : ($currentInstance->grade_to == 2 ? 'nd' : ($currentInstance->grade_to == 3 ? 'rd' : 'th')) }} Grade
+                                        @else
+                                            Not specified
+                                        @endif
                                     @else
                                         Not specified
                                     @endif
@@ -63,7 +125,41 @@
                                 <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                                     Capacity
                                 </label>
-                                <p class="text-neutral-900 dark:text-white">{{ $camp->capacity ?? 'Not specified' }} campers</p>
+                                <p class="text-neutral-900 dark:text-white">
+                                    @if($currentInstance && $currentInstance->max_capacity)
+                                        {{ $currentInstance->max_capacity }} campers
+                                    @else
+                                        Not specified
+                                    @endif
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                    Price
+                                </label>
+                                <p class="text-neutral-900 dark:text-white">
+                                    @if($currentInstance && $currentInstance->price)
+                                        ${{ number_format($currentInstance->price, 2) }}
+                                    @else
+                                        Not specified
+                                    @endif
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                    Registration Status
+                                </label>
+                                <p class="text-neutral-900 dark:text-white">
+                                    @if($currentInstance && $currentInstance->isRegistrationOpen())
+                                        <span class="text-green-600 dark:text-green-400 font-medium">Open</span>
+                                    @elseif($currentInstance)
+                                        <span class="text-red-600 dark:text-red-400 font-medium">Closed</span>
+                                    @else
+                                        Not available
+                                    @endif
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -231,4 +327,14 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function changeInstance(instanceId) {
+            if (instanceId) {
+                const currentUrl = new URL(window.location);
+                currentUrl.searchParams.set('instance', instanceId);
+                window.location.href = currentUrl.toString();
+            }
+        }
+    </script>
 </x-layouts.app> 

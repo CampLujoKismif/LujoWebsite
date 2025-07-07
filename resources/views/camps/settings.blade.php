@@ -15,161 +15,271 @@
         <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
             <div class="p-6">
                 <div class="flex space-x-8 border-b border-neutral-200 dark:border-neutral-700">
-                    <button class="px-4 py-2 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 font-medium">
+                    <button class="px-4 py-2 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 font-medium" onclick="showTab('general')">
                         General
                     </button>
-                    <button class="px-4 py-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">
+                    <button class="px-4 py-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white" onclick="showTab('instances')">
+                        Instances
+                    </button>
+                    <button class="px-4 py-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white" onclick="showTab('permissions')">
                         Permissions
                     </button>
-                    <button class="px-4 py-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">
+                    <button class="px-4 py-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white" onclick="showTab('notifications')">
                         Notifications
                     </button>
-                    <button class="px-4 py-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white">
+                    <button class="px-4 py-2 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white" onclick="showTab('advanced')">
                         Advanced
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- General Settings -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Camp Information -->
-            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
-                <div class="p-6">
-                    <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Camp Information</h2>
-                    
-                    <form action="{{ route('admin.camps.update', $camp) }}" method="POST">
-                        @csrf
-                        @method('PUT')
+        <!-- General Settings Tab -->
+        <div id="general-tab" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Camp Information -->
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <div class="p-6">
+                        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Camp Information</h2>
                         
-                        <div class="space-y-4">
-                            <div>
-                                <label for="display_name" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                    Display Name
-                                </label>
-                                <input type="text" id="display_name" name="display_name" value="{{ $camp->display_name }}" required
-                                    class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            </div>
+                        <form action="{{ route('admin.camps.update', $camp) }}" method="POST">
+                            @csrf
+                            @method('PUT')
                             
-                            <div>
-                                <label for="description" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                    Description
-                                </label>
-                                <textarea id="description" name="description" rows="3"
-                                    class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ $camp->description }}</textarea>
-                            </div>
-                            
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-4">
                                 <div>
-                                    <label for="start_date" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                        Start Date
+                                    <label for="display_name" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                        Display Name
                                     </label>
-                                    <input type="date" id="start_date" name="start_date" value="{{ $camp->start_date ? $camp->start_date->format('Y-m-d') : '' }}"
+                                    <input type="text" id="display_name" name="display_name" value="{{ $camp->display_name }}" required
                                         class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 </div>
                                 
                                 <div>
-                                    <label for="end_date" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                        End Date
+                                    <label for="description" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                        Description
                                     </label>
-                                    <input type="date" id="end_date" name="end_date" value="{{ $camp->end_date ? $camp->end_date->format('Y-m-d') : '' }}"
+                                    <textarea id="description" name="description" rows="3"
+                                        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ $camp->description }}</textarea>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="start_date" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                            Start Date
+                                        </label>
+                                        <input type="date" id="start_date" name="start_date" 
+                                            value="{{ $currentInstance && $currentInstance->start_date ? $currentInstance->start_date->format('Y-m-d') : '' }}"
+                                            class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="end_date" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                            End Date
+                                        </label>
+                                        <input type="date" id="end_date" name="end_date" 
+                                            value="{{ $currentInstance && $currentInstance->end_date ? $currentInstance->end_date->format('Y-m-d') : '' }}"
+                                            class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label for="location" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                        Location
+                                    </label>
+                                    <input type="text" id="location" name="location" value="{{ $camp->location }}"
+                                        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                
+                                <div>
+                                    <label for="capacity" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                                        Capacity
+                                    </label>
+                                    <input type="number" id="capacity" name="capacity" 
+                                        value="{{ $currentInstance ? $currentInstance->max_capacity : '' }}" min="1"
                                         class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 </div>
                             </div>
                             
-                            <div>
-                                <label for="location" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                    Location
-                                </label>
-                                <input type="text" id="location" name="location" value="{{ $camp->location }}"
-                                    class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <div class="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700">
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
+                                    Save Changes
+                                </button>
                             </div>
-                            
-                            <div>
-                                <label for="capacity" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                    Capacity
-                                </label>
-                                <input type="number" id="capacity" name="capacity" value="{{ $camp->capacity }}" min="1"
-                                    class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                        </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Current Instance Settings -->
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                    <div class="p-6">
+                        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Current Instance Settings</h2>
                         
-                        <div class="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700">
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
-                                Save Changes
-                            </button>
-                        </div>
-                    </form>
+                        @if($currentInstance)
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                            Year
+                                        </label>
+                                        <p class="text-neutral-900 dark:text-white">{{ $currentInstance->year }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                            Status
+                                        </label>
+                                        <span class="px-2 py-1 text-xs rounded-full {{ $currentInstance->is_active ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' }}">
+                                            {{ $currentInstance->is_active ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                            Start Date
+                                        </label>
+                                        <p class="text-neutral-900 dark:text-white">{{ $currentInstance->start_date ? $currentInstance->start_date->format('M j, Y') : 'Not set' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                            End Date
+                                        </label>
+                                        <p class="text-neutral-900 dark:text-white">{{ $currentInstance->end_date ? $currentInstance->end_date->format('M j, Y') : 'Not set' }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                            Capacity
+                                        </label>
+                                        <p class="text-neutral-900 dark:text-white">{{ $currentInstance->max_capacity ?? 'Not set' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                                            Price
+                                        </label>
+                                        <p class="text-neutral-900 dark:text-white">{{ $currentInstance->price ? '$' . number_format($currentInstance->price, 2) : 'Not set' }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                                    <a href="{{ route('camps.instances.edit', [$camp, $currentInstance]) }}" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">
+                                        Edit Current Instance →
+                                    </a>
+                                </div>
+                            </div>
+                        @else
+                            <div class="text-center py-8">
+                                <p class="text-neutral-500 dark:text-neutral-400 mb-4">No active instance found</p>
+                                <a href="{{ route('camps.instances.create', $camp) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
+                                    Create New Instance
+                                </a>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Age/Grade Settings -->
+        <!-- Instances Tab -->
+        <div id="instances-tab" class="tab-content hidden">
             <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
                 <div class="p-6">
-                    <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Age & Grade Settings</h2>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold text-neutral-900 dark:text-white">Camp Instances</h2>
+                        <a href="{{ route('camps.instances.create', $camp) }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
+                            Create New Instance
+                        </a>
+                    </div>
                     
-                    <form action="{{ route('admin.camps.update', $camp) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        
-                        <div class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label for="age_from" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                        Age From
-                                    </label>
-                                    <input type="number" id="age_from" name="age_from" value="{{ $camp->age_from }}" min="0" max="25"
-                                        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                </div>
-                                
-                                <div>
-                                    <label for="age_to" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                        Age To
-                                    </label>
-                                    <input type="number" id="age_to" name="age_to" value="{{ $camp->age_to }}" min="0" max="25"
-                                        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label for="grade_from" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                        Grade From
-                                    </label>
-                                    <select id="grade_from" name="grade_from"
-                                        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="">Select Grade</option>
-                                        @for($i = 1; $i <= 12; $i++)
-                                            <option value="{{ $i }}" {{ $camp->grade_from == $i ? 'selected' : '' }}>
-                                                {{ $i }}{{ $i == 1 ? 'st' : ($i == 2 ? 'nd' : ($i == 3 ? 'rd' : 'th')) }} Grade
-                                            </option>
-                                        @endfor
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label for="grade_to" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                        Grade To
-                                    </label>
-                                    <select id="grade_to" name="grade_to"
-                                        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="">Select Grade</option>
-                                        @for($i = 1; $i <= 12; $i++)
-                                            <option value="{{ $i }}" {{ $camp->grade_to == $i ? 'selected' : '' }}>
-                                                {{ $i }}{{ $i == 1 ? 'st' : ($i == 2 ? 'nd' : ($i == 3 ? 'rd' : 'th')) }} Grade
-                                            </option>
-                                        @endfor
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700">
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
-                                Save Changes
-                            </button>
-                        </div>
-                    </form>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-neutral-200 dark:border-neutral-700">
+                                    <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Year</th>
+                                    <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Name</th>
+                                    <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Dates</th>
+                                    <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Capacity</th>
+                                    <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Price</th>
+                                    <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Status</th>
+                                    <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($camp->instances()->orderByDesc('year')->get() as $instance)
+                                    <tr class="border-b border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800">
+                                        <td class="py-3 px-4 text-neutral-900 dark:text-white">{{ $instance->year }}</td>
+                                        <td class="py-3 px-4 text-neutral-900 dark:text-white">{{ $instance->name }}</td>
+                                        <td class="py-3 px-4 text-neutral-900 dark:text-white">
+                                            @if($instance->start_date && $instance->end_date)
+                                                {{ $instance->start_date->format('M j') }} - {{ $instance->end_date->format('M j, Y') }}
+                                            @else
+                                                Not set
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-4 text-neutral-900 dark:text-white">{{ $instance->max_capacity ?? 'Not set' }}</td>
+                                        <td class="py-3 px-4 text-neutral-900 dark:text-white">
+                                            {{ $instance->price ? '$' . number_format($instance->price, 2) : 'Not set' }}
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <span class="px-2 py-1 text-xs rounded-full {{ $instance->is_active ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' }}">
+                                                {{ $instance->is_active ? 'Active' : 'Inactive' }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <div class="flex space-x-2">
+                                                <a href="{{ route('camps.instances.edit', [$camp, $instance]) }}" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">Edit</a>
+                                                <a href="{{ route('camps.instances.show', [$camp, $instance]) }}" class="text-green-600 dark:text-green-400 hover:underline text-sm">View</a>
+                                                <form action="{{ route('camps.instances.destroy', [$camp, $instance]) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this camp instance?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:underline text-sm bg-transparent border-none p-0">Delete</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="py-8 text-center text-neutral-500 dark:text-neutral-400">
+                                            No camp instances found
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Permissions Tab -->
+        <div id="permissions-tab" class="tab-content hidden">
+            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Permissions</h2>
+                    <p class="text-neutral-500 dark:text-neutral-400">Permission settings coming soon...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Tab -->
+        <div id="notifications-tab" class="tab-content hidden">
+            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Notifications</h2>
+                    <p class="text-neutral-500 dark:text-neutral-400">Notification settings coming soon...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Tab -->
+        <div id="advanced-tab" class="tab-content hidden">
+            <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Advanced Settings</h2>
+                    <p class="text-neutral-500 dark:text-neutral-400">Advanced settings coming soon...</p>
                 </div>
             </div>
         </div>
@@ -245,4 +355,39 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active state from all tab buttons
+            const tabButtons = document.querySelectorAll('[onclick^="showTab"]');
+            tabButtons.forEach(button => {
+                button.classList.remove('text-blue-600', 'dark:text-blue-400', 'border-b-2', 'border-blue-600', 'dark:border-blue-400', 'font-medium');
+                button.classList.add('text-neutral-600', 'dark:text-neutral-400', 'hover:text-neutral-900', 'dark:hover:text-white');
+            });
+            
+            // Show selected tab content
+            const selectedTab = document.getElementById(tabName + '-tab');
+            if (selectedTab) {
+                selectedTab.classList.remove('hidden');
+            }
+            
+            // Add active state to selected tab button
+            const selectedButton = document.querySelector(`[onclick="showTab('${tabName}')"]`);
+            if (selectedButton) {
+                selectedButton.classList.remove('text-neutral-600', 'dark:text-neutral-400', 'hover:text-neutral-900', 'dark:hover:text-white');
+                selectedButton.classList.add('text-blue-600', 'dark:text-blue-400', 'border-b-2', 'border-blue-600', 'dark:border-blue-400', 'font-medium');
+            }
+        }
+        
+        // Initialize with general tab active
+        document.addEventListener('DOMContentLoaded', function() {
+            showTab('general');
+        });
+    </script>
 </x-layouts.app> 
