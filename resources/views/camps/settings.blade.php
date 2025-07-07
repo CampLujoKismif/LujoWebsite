@@ -62,26 +62,7 @@
                                     <textarea id="description" name="description" rows="3"
                                         class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ $camp->description }}</textarea>
                                 </div>
-                                
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label for="start_date" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                            Start Date
-                                        </label>
-                                        <input type="date" id="start_date" name="start_date" 
-                                            value="{{ $currentInstance && $currentInstance->start_date ? $currentInstance->start_date->format('Y-m-d') : '' }}"
-                                            class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    </div>
-                                    
-                                    <div>
-                                        <label for="end_date" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                            End Date
-                                        </label>
-                                        <input type="date" id="end_date" name="end_date" 
-                                            value="{{ $currentInstance && $currentInstance->end_date ? $currentInstance->end_date->format('Y-m-d') : '' }}"
-                                            class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    </div>
-                                </div>
+                            
                                 
                                 <div>
                                     <label for="location" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">

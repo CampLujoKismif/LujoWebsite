@@ -16,7 +16,7 @@ class CampManagementController extends Controller
      */
     public function index()
     {
-        $camps = Camp::orderBy('start_date', 'desc')->paginate(10);
+        $camps = Camp::orderBy('created_at', 'desc')->paginate(10);
         
         return view('admin.camps.index', compact('camps'));
     }
@@ -38,8 +38,6 @@ class CampManagementController extends Controller
             'name' => 'required|string|max:255|unique:camps',
             'display_name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
             'is_active' => 'boolean',
             'max_capacity' => 'nullable|integer|min:1',
             'price' => 'nullable|numeric|min:0',
@@ -84,8 +82,6 @@ class CampManagementController extends Controller
             'name' => 'required|string|max:255|unique:camps,name,' . $camp->id,
             'display_name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
             'is_active' => 'boolean',
             'max_capacity' => 'nullable|integer|min:1',
             'price' => 'nullable|numeric|min:0',

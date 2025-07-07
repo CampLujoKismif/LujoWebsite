@@ -113,28 +113,6 @@
                             <h3 class="text-lg font-medium text-neutral-900 dark:text-white">Dates & Settings</h3>
                             
                             <div>
-                                <label for="start_date" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                    Start Date *
-                                </label>
-                                <input type="date" name="start_date" id="start_date" value="{{ old('start_date') }}" required
-                                    class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                @error('start_date')
-                                    <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label for="end_date" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                    End Date *
-                                </label>
-                                <input type="date" name="end_date" id="end_date" value="{{ old('end_date') }}" required
-                                    class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                @error('end_date')
-                                    <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div>
                                 <label for="max_capacity" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                                     Maximum Capacity
                                 </label>

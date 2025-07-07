@@ -78,14 +78,8 @@ class Camp extends Model
      */
     public function scopeInDateRange($query, $startDate, $endDate)
     {
-        return $query->where(function ($q) use ($startDate, $endDate) {
-            $q->whereBetween('start_date', [$startDate, $endDate])
-              ->orWhereBetween('end_date', [$startDate, $endDate])
-              ->orWhere(function ($subQ) use ($startDate, $endDate) {
-                  $subQ->where('start_date', '<=', $startDate)
-                       ->where('end_date', '>=', $endDate);
-              });
-        });
+        // Removed: Date logic now handled by CampInstance
+        return $query;
     }
 
     /**
@@ -93,9 +87,8 @@ class Camp extends Model
      */
     public function isCurrentlyRunning(): bool
     {
-        $now = now()->toDateString();
-        return $this->start_date && $this->end_date &&
-               $this->start_date <= $now && $this->end_date >= $now;
+        // Removed: Date logic now handled by CampInstance
+        return false;
     }
 
     /**
@@ -103,7 +96,8 @@ class Camp extends Model
      */
     public function isUpcoming(): bool
     {
-        return $this->start_date && $this->start_date > now()->toDateString();
+        // Removed: Date logic now handled by CampInstance
+        return false;
     }
 
     /**
@@ -111,7 +105,8 @@ class Camp extends Model
      */
     public function isPast(): bool
     {
-        return $this->end_date && $this->end_date < now()->toDateString();
+        // Removed: Date logic now handled by CampInstance
+        return false;
     }
 
     /**

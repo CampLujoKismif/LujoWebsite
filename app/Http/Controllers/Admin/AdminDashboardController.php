@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Camp;
+use App\Models\CampInstance;
 use App\Models\Role;
 use App\Models\Permission;
 use Illuminate\Http\Request;
@@ -34,8 +35,9 @@ class AdminDashboardController extends Controller
             ->take(5)
             ->get();
 
-        // Get upcoming camps
-        $upcomingCamps = Camp::where('start_date', '>=', now()->toDateString())
+        // Get upcoming camp instances
+        $upcomingCamps = CampInstance::with('camp')
+            ->where('start_date', '>=', now()->toDateString())
             ->where('is_active', true)
             ->orderBy('start_date')
             ->take(5)

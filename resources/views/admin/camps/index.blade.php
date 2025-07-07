@@ -37,8 +37,7 @@
                                 </td>
                                 <td class="py-4 px-4">
                                     <div class="text-sm">
-                                        <p class="text-neutral-900 dark:text-white">{{ $camp->start_date->format('M j, Y') }}</p>
-                                        <p class="text-neutral-500 dark:text-neutral-400">to {{ $camp->end_date->format('M j, Y') }}</p>
+                                        <span class="text-neutral-500 dark:text-neutral-400">N/A</span>
                                     </div>
                                 </td>
                                 <td class="py-4 px-4">
