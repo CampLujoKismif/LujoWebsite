@@ -91,6 +91,8 @@ class CampController extends Controller
             'total_registrations' => 0,
             'total_staff' => 0,
             'capacity_used' => 0,
+            'capacity_total' => 0,
+            'capacity_percentage' => 0,
         ];
 
         // Check permissions for each stat
@@ -108,10 +110,9 @@ class CampController extends Controller
 
         // Capacity info is generally available to camp staff
         if ($user->isAssignedToCamp($camp->id)) {
-            $stats['capacity_used'] = $camp->current_capacity;
-            $stats['capacity_total'] = $camp->max_capacity;
-            $stats['capacity_percentage'] = $camp->max_capacity ? 
-                round(($camp->current_capacity / $camp->max_capacity) * 100, 1) : 0;
+            $stats['capacity_used'] = 0;
+            $stats['capacity_total'] = 0;
+            $stats['capacity_percentage'] = 0;
         }
 
         return $stats;

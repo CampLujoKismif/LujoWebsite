@@ -64,22 +64,7 @@
                                 </div>
                             
                                 
-                                <div>
-                                    <label for="location" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                        Location
-                                    </label>
-                                    <input type="text" id="location" name="location" value="{{ $camp->location }}"
-                                        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                </div>
-                                
-                                <div>
-                                    <label for="capacity" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                        Capacity
-                                    </label>
-                                    <input type="number" id="capacity" name="capacity" 
-                                        value="{{ $currentInstance ? $currentInstance->max_capacity : '' }}" min="1"
-                                        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                </div>
+
                             </div>
                             
                             <div class="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700">

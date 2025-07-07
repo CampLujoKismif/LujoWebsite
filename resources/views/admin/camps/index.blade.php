@@ -58,16 +58,9 @@
                                     </span>
                                 </td>
                                 <td class="py-4 px-4">
-                                    @if($camp->max_capacity)
-                                        <div class="text-sm">
-                                            <p class="text-neutral-900 dark:text-white">{{ $camp->current_capacity }}/{{ $camp->max_capacity }}</p>
-                                            <div class="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-1 mt-1">
-                                                <div class="bg-blue-600 h-1 rounded-full" style="width: {{ $camp->max_capacity > 0 ? ($camp->current_capacity / $camp->max_capacity) * 100 : 0 }}%"></div>
-                                            </div>
-                                        </div>
-                                    @else
-                                        <span class="text-sm text-neutral-500 dark:text-neutral-400">No limit</span>
-                                    @endif
+                                    <div class="text-sm">
+                                        <span class="text-neutral-500 dark:text-neutral-400">N/A</span>
+                                    </div>
                                 </td>
                                 <td class="py-4 px-4">
                                     @if($camp->is_active)

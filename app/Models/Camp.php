@@ -114,8 +114,7 @@ class Camp extends Model
      */
     public function getCurrentCapacityAttribute(): int
     {
-        // For now, return 0 since Camper model doesn't exist yet
-        // This can be updated when the Camper model is implemented
+        // Removed: Capacity logic now handled by CampInstance
         return 0;
     }
 
@@ -124,10 +123,8 @@ class Camp extends Model
      */
     public function isAtCapacity(): bool
     {
-        if (!$this->max_capacity) {
-            return false;
-        }
-        return $this->current_capacity >= $this->max_capacity;
+        // Removed: Capacity logic now handled by CampInstance
+        return false;
     }
 
     /**
@@ -135,10 +132,8 @@ class Camp extends Model
      */
     public function getAvailableSpotsAttribute(): ?int
     {
-        if (!$this->max_capacity) {
-            return null;
-        }
-        return max(0, $this->max_capacity - $this->current_capacity);
+        // Removed: Capacity logic now handled by CampInstance
+        return null;
     }
 
     /**

@@ -114,25 +114,9 @@
                                 </p>
                             </div>
                             
-                            <div>
-                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                    Location
-                                </label>
-                                <p class="text-neutral-900 dark:text-white">{{ $camp->location ?? 'Not specified' }}</p>
-                            </div>
+
                             
-                            <div>
-                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                    Capacity
-                                </label>
-                                <p class="text-neutral-900 dark:text-white">
-                                    @if($currentInstance && $currentInstance->max_capacity)
-                                        {{ $currentInstance->max_capacity }} campers
-                                    @else
-                                        Not specified
-                                    @endif
-                                </p>
-                            </div>
+
                             
                             <div>
                                 <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
