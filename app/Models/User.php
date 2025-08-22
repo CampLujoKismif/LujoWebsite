@@ -10,11 +10,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -163,6 +164,32 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the families this user belongs to.
+     */
+    public function families(): BelongsToMany
+    {
+        return $this->belongsToMany(Family::class, 'family_users')
+            ->withPivot('role_in_family')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the families this user owns.
+     */
+    public function ownedFamilies(): HasMany
+    {
+        return $this->hasMany(Family::class, 'owner_user_id');
+    }
+
+    /**
+     * Get the campers this user has access to through their families.
+     */
+    public function accessibleCampers()
+    {
+        return Camper::whereIn('family_id', $this->families()->pluck('families.id'));
+    }
+
+    /**
      * Get the camp assignments for this user.
      */
     public function campAssignments(): HasMany
@@ -285,8 +312,8 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function canAccessCampData($campId, ?string $permissionName = null): bool
     {
-        // Super admins can access all camp data
-        if ($this->isAdmin() && $this->hasRole('super_admin')) {
+        // System admins can access all camp data
+        if ($this->hasRole('system-admin')) {
             return true;
         }
 

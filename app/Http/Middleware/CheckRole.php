@@ -17,8 +17,12 @@ class CheckRole
     {
         $roles = array_merge([$role], $additionalRoles);
 
-        if (!$request->user() || !$request->user()->hasAnyRole($roles)) {
-            abort(403, 'Unauthorized action.');
+        if (!$request->user()) {
+            return redirect()->route('login');
+        }
+
+        if (!$request->user()->hasAnyRole($roles)) {
+            abort(403, 'Access denied. You do not have the required role.');
         }
 
         return $next($request);

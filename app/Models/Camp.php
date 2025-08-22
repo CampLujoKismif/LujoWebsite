@@ -12,37 +12,61 @@ class Camp extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'name',
         'display_name',
         'description',
-    ];
-
-    protected $casts = [
+        'is_active',
+        'price',
     ];
 
     /**
-     * Get the staff assigned to this camp.
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
      */
-    public function staff(): BelongsToMany
+    protected $casts = [
+        'is_active' => 'boolean',
+        'price' => 'decimal:2',
+    ];
+
+    /**
+     * Get the instances for this camp.
+     */
+    public function instances(): HasMany
     {
-        return $this->belongsToMany(User::class, 'user_camp_assignments')
-            ->withPivot(['role_id', 'position', 'notes', 'is_primary'])
-            ->withTimestamps();
+        return $this->hasMany(CampInstance::class);
     }
 
     /**
-     * Get the users assigned to this camp (alias for staff).
+     * Get the current instance for this camp.
+     */
+    public function currentInstance(): ?CampInstance
+    {
+        return $this->instances()
+            ->where('is_active', true)
+            ->where('start_date', '>=', now()->toDateString())
+            ->orderBy('start_date')
+            ->first();
+    }
+
+    /**
+     * Get the assigned users for this camp.
      */
     public function assignedUsers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_camp_assignments')
-            ->withPivot(['role_id', 'position', 'notes', 'is_primary'])
+            ->withPivot('position', 'is_primary')
             ->withTimestamps();
     }
 
     /**
-     * Get the camp assignments for this camp.
+     * Get the staff assignments for this camp.
      */
     public function assignments(): HasMany
     {
@@ -50,90 +74,28 @@ class Camp extends Model
     }
 
     /**
-     * Get the campers registered for this camp.
+     * Get the staff members for this camp.
      */
-    public function campers(): HasMany
+    public function staff(): BelongsToMany
     {
-        return $this->hasMany(Camper::class);
+        return $this->assignedUsers();
     }
 
     /**
-     * Get the registrations for this camp.
+     * Get the notes for this camp.
      */
-    public function registrations(): HasMany
+    public function notes(): HasMany
     {
-        return $this->hasMany(Registration::class);
+        return $this->hasMany(Note::class, 'notable_id')
+            ->where('notable_type', Camp::class);
     }
 
     /**
-     * Scope to filter active camps.
+     * Scope a query to only include active camps.
      */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    /**
-     * Scope to filter camps by date range.
-     */
-    public function scopeInDateRange($query, $startDate, $endDate)
-    {
-        // Removed: Date logic now handled by CampInstance
-        return $query;
-    }
-
-    /**
-     * Check if the camp is currently running.
-     */
-    public function isCurrentlyRunning(): bool
-    {
-        // Removed: Date logic now handled by CampInstance
-        return false;
-    }
-
-    /**
-     * Check if the camp is upcoming.
-     */
-    public function isUpcoming(): bool
-    {
-        // Removed: Date logic now handled by CampInstance
-        return false;
-    }
-
-    /**
-     * Check if the camp is past.
-     */
-    public function isPast(): bool
-    {
-        // Removed: Date logic now handled by CampInstance
-        return false;
-    }
-
-    /**
-     * Get the current capacity (number of registered campers).
-     */
-    public function getCurrentCapacityAttribute(): int
-    {
-        // Removed: Capacity logic now handled by CampInstance
-        return 0;
-    }
-
-    /**
-     * Check if the camp is at capacity.
-     */
-    public function isAtCapacity(): bool
-    {
-        // Removed: Capacity logic now handled by CampInstance
-        return false;
-    }
-
-    /**
-     * Get available spots.
-     */
-    public function getAvailableSpotsAttribute(): ?int
-    {
-        // Removed: Capacity logic now handled by CampInstance
-        return null;
     }
 
     /**
@@ -166,21 +128,5 @@ class Camp extends Model
     public function forceDelete(): bool
     {
         return parent::forceDelete();
-    }
-
-    /**
-     * Get all instances (years) for this camp.
-     */
-    public function instances(): HasMany
-    {
-        return $this->hasMany(CampInstance::class);
-    }
-
-    /**
-     * Get the current (active) instance for this camp.
-     */
-    public function currentInstance()
-    {
-        return $this->instances()->where('is_active', true)->orderByDesc('year')->first();
     }
 } 

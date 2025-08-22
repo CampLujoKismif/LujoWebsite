@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('camps', function (Blueprint $table) {
-            $table->dropColumn(['location', 'capacity']);
+            $table->dropColumn(['max_capacity']);
         });
     }
 
@@ -22,8 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('camps', function (Blueprint $table) {
-            $table->string('location')->nullable();
-            $table->integer('capacity')->nullable();
+            $table->integer('max_capacity')->nullable();
         });
     }
 };

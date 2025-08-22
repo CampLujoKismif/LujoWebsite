@@ -95,6 +95,39 @@ class CampInstance extends Model
         return $this->hasMany(Camper::class);
     }
 
+    /**
+     * Get the enrollments for this camp instance.
+     */
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(Enrollment::class);
+    }
+
+    /**
+     * Get the form templates for this camp instance.
+     */
+    public function formTemplates(): HasMany
+    {
+        return $this->hasMany(FormTemplate::class);
+    }
+
+    /**
+     * Get the documents for this camp instance.
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class);
+    }
+
+    /**
+     * Get the notes for this camp instance.
+     */
+    public function notes(): HasMany
+    {
+        return $this->hasMany(Note::class, 'notable_id')
+            ->where('notable_type', CampInstance::class);
+    }
+
 
     /**
      * Scope to filter active camp instances.

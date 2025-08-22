@@ -20,12 +20,12 @@ class VerifyEmailController extends Controller
 
         // Check if user implements MustVerifyEmail interface
         if (!($user instanceof MustVerifyEmail)) {
-            return redirect()->intended(route('dashboard', absolute: false));
+            return redirect()->intended(route('dashboard.home', absolute: false));
         }
 
         // Check if email is already verified
         if ($user->hasVerifiedEmail()) {
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+            return redirect()->intended(route('dashboard.home', absolute: false).'?verified=1');
         }
 
         // Mark email as verified
@@ -33,6 +33,6 @@ class VerifyEmailController extends Controller
             event(new Verified($user));
         }
 
-        return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+        return redirect()->intended(route('dashboard.home', absolute: false).'?verified=1');
     }
 }

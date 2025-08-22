@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
     </head>
@@ -7,41 +7,94 @@
         <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
-            <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
+            <a href="{{ route('dashboard.home') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
                 <x-app-logo />
             </a>
 
             <flux:navlist variant="outline">
+                <!-- Main Dashboard -->
+                <flux:navlist.item icon="home" :href="route('dashboard.home')" :current="request()->routeIs('dashboard.home')" wire:navigate>
+                    {{ __('Dashboard') }}
+                </flux:navlist.item>
+
+                <!-- System Admin Section -->
+                @role('system-admin')
+                    <flux:navlist.group :heading="__('System Administration')" class="grid">
+                        <flux:navlist.item icon="shield-check" :href="route('dashboard.admin.index')" :current="request()->routeIs('dashboard.admin.index')" wire:navigate>
+                            {{ __('Admin Dashboard') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="users" :href="route('dashboard.admin.users')" :current="request()->routeIs('dashboard.admin.users')" wire:navigate>
+                            {{ __('User Management') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="building-storefront" :href="route('dashboard.admin.camps')" :current="request()->routeIs('dashboard.admin.camps')" wire:navigate>
+                            {{ __('Camp Management') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="clipboard-document-list" :href="route('dashboard.admin.form-templates')" :current="request()->routeIs('dashboard.admin.form-templates')" wire:navigate>
+                            {{ __('Form Templates') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="clipboard-document" :href="route('dashboard.admin.form-responses')" :current="request()->routeIs('dashboard.admin.form-responses')" wire:navigate>
+                            {{ __('Form Responses') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="users" :href="route('dashboard.admin.enrollments')" :current="request()->routeIs('dashboard.admin.enrollments')" wire:navigate>
+                            {{ __('Manage Enrollments') }}
+                        </flux:navlist.item>
+                    </flux:navlist.group>
+                @endrole
+
+                <!-- Camp Manager Section -->
+                @role('camp-manager')
+                    <flux:navlist.group :heading="__('Camp Management')" class="grid">
+                        <flux:navlist.item icon="building-storefront" :href="route('dashboard.manager.index')" :current="request()->routeIs('dashboard.manager.index')" wire:navigate>
+                            {{ __('Manager Dashboard') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="users" :href="route('dashboard.manager.enrollments')" :current="request()->routeIs('dashboard.manager.enrollments')" wire:navigate>
+                            {{ __('Manage Enrollments') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="clipboard-document-list" :href="route('dashboard.admin.form-templates')" :current="request()->routeIs('dashboard.admin.form-templates')" wire:navigate>
+                            {{ __('Form Templates') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="clipboard-document" :href="route('dashboard.admin.form-responses')" :current="request()->routeIs('dashboard.admin.form-responses')" wire:navigate>
+                            {{ __('Form Responses') }}
+                        </flux:navlist.item>
+                    </flux:navlist.group>
+                @endrole
+
+                <!-- Parent Portal Section -->
+                @role('parent')
+                    <flux:navlist.group :heading="__('Parent Portal')" class="grid">
+                        <flux:navlist.item icon="home" :href="route('dashboard.parent.index')" :current="request()->routeIs('dashboard.parent.index')" wire:navigate>
+                            {{ __('Parent Dashboard') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="user-group" :href="route('dashboard.parent.families')" :current="request()->routeIs('dashboard.parent.families')" wire:navigate>
+                            {{ __('Family Management') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="users" :href="route('dashboard.parent.campers')" :current="request()->routeIs('dashboard.parent.campers')" wire:navigate>
+                            {{ __('Camper Management') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="clipboard-document-list" :href="route('dashboard.parent.enrollments')" :current="request()->routeIs('dashboard.parent.enrollments')" wire:navigate>
+                            {{ __('Enrollments') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="clipboard-document" :href="route('dashboard.parent.forms')" :current="request()->routeIs('dashboard.parent.forms')" wire:navigate>
+                            {{ __('Fill Forms') }}
+                        </flux:navlist.item>
+                        <flux:navlist.item icon="heart" :href="route('dashboard.parent.medical-records')" :current="request()->routeIs('dashboard.parent.medical-records')" wire:navigate>
+                            {{ __('Medical Records') }}
+                        </flux:navlist.item>
+                    </flux:navlist.group>
+                @endrole
+
+                <!-- General Camp Management (for all roles) -->
                 <flux:navlist.group :heading="__('Camp Management')" class="grid">
-                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                    <flux:navlist.item icon="users" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Campers') }}</flux:navlist.item>
-                    <flux:navlist.item icon="user-group" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Staff') }}</flux:navlist.item>
-                    <flux:navlist.item icon="calendar" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Sessions') }}</flux:navlist.item>
-                    <flux:navlist.item icon="clipboard-document-list" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Reports') }}</flux:navlist.item>
+                    <flux:navlist.item icon="calendar" :href="route('dashboard.home')" :current="request()->routeIs('dashboard.*')" wire:navigate>
+                        {{ __('Camp Sessions') }}
+                    </flux:navlist.item>
+                    <flux:navlist.item icon="chart-bar" :href="route('dashboard.home')" :current="request()->routeIs('dashboard.*')" wire:navigate>
+                        {{ __('Reports') }}
+                    </flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
 
             <flux:spacer />
-
-            <flux:navlist variant="outline">
-                @role('super_admin')
-                    <flux:navlist.item icon="shield-check" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')" wire:navigate>
-                        {{ __('Admin Dashboard') }}
-                    </flux:navlist.item>
-                @endrole
-
-                @foreach(auth()->user()->campAssignments as $assignment)
-                    <flux:navlist.item 
-                        icon="building-storefront" 
-                        :href="route('camps.dashboard', $assignment->camp)" 
-                        :current="request()->routeIs('camps.dashboard', $assignment->camp)"
-                        wire:navigate
-                    >
-                        {{ $assignment->camp->display_name }}
-                    </flux:navlist.item>
-                @endforeach
-
-            </flux:navlist>
 
             <!-- Desktop User Menu -->
             <flux:dropdown class="hidden lg:block" position="bottom" align="start">

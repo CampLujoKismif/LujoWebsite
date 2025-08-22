@@ -4,7 +4,14 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
 Route::get('/', function () {
-    return view('home');
+    $currentYear = now()->year;
+    $campInstances = \App\Models\CampInstance::with('camp')
+        ->where('year', $currentYear)
+        ->where('is_active', true)
+        ->orderBy('start_date')
+        ->get();
+    
+    return view('home', compact('campInstances'));
 })->name('home');
 
 Route::get('/strive-week', function () {
@@ -15,9 +22,38 @@ Route::get('/elevate-week', function () {
     return view('elevate-week');
 })->name('elevate-week');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+Route::get('/camp-sessions/{instance}', [App\Http\Controllers\PublicCampController::class, 'showSession'])->name('camp-sessions.show');
+
+// Dashboard routes with role-based routing
+Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')->group(function () {
+    Route::get('/', App\Livewire\Dashboard\Index::class)->name('home');
+    
+    // Admin Dashboard
+    Route::middleware(['role:system-admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', App\Livewire\Admin\Dashboard::class)->name('index');
+        Route::get('/users', App\Livewire\Admin\UserManagement::class)->name('users');
+        Route::get('/camps', App\Livewire\Admin\CampManagement::class)->name('camps');
+        Route::get('/form-templates', App\Livewire\Admin\FormTemplateManagement::class)->name('form-templates');
+        Route::get('/form-responses', App\Livewire\Admin\FormResponseManagement::class)->name('form-responses');
+        Route::get('/enrollments', App\Livewire\Admin\EnrollmentManagement::class)->name('enrollments');
+    });
+    
+    // Manager Dashboard
+    Route::middleware(['role:camp-manager,system-admin'])->prefix('manager')->name('manager.')->group(function () {
+        Route::get('/', App\Livewire\Manager\Dashboard::class)->name('index');
+        Route::get('/enrollments', App\Livewire\Manager\EnrollmentManagement::class)->name('enrollments');
+    });
+    
+    // Parent Portal
+                Route::middleware(['role:parent,system-admin'])->prefix('parent')->name('parent.')->group(function () {
+                Route::get('/', App\Livewire\ParentPortal\Dashboard::class)->name('index');
+                Route::get('/families', App\Livewire\ParentPortal\FamilyManagement::class)->name('families');
+                Route::get('/campers', App\Livewire\ParentPortal\CamperManagement::class)->name('campers');
+                Route::get('/enrollments', App\Livewire\ParentPortal\EnrollmentManagement::class)->name('enrollments');
+                Route::get('/medical-records', App\Livewire\ParentPortal\MedicalRecords::class)->name('medical-records');
+                Route::get('/forms', App\Livewire\ParentPortal\FormFilling::class)->name('forms');
+            });
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
@@ -27,8 +63,8 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
 });
 
-// Admin routes (super admin only)
-Route::middleware(['auth', 'role:super_admin'])->prefix('admin')->name('admin.')->group(function () {
+// Admin routes (system admin only)
+Route::middleware(['auth', 'role:system-admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
     
     // Camp management

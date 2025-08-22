@@ -15,11 +15,11 @@
                 </div>
             @endif
 
-            @role('super_admin')
+            @role('system-admin')
                 <div class="mt-4 p-4 bg-purple-700/50 rounded-lg">
                     <h3 class="text-lg font-semibold mb-1">Admin Access</h3>
-                    <p class="text-blue-100 mb-2">You have super administrator privileges</p>
-                    <a href="{{ route('admin.dashboard') }}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    <p class="text-blue-100 mb-2">You have system administrator privileges</p>
+                    <a href="{{ route('dashboard.admin.index') }}" class="inline-block bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                         Go to Admin Dashboard
                     </a>
                 </div>
@@ -155,7 +155,7 @@
                     </a>
                     @endpermission
                     
-                    @anyrole(['super_admin', 'camp_director', 'camp_staff'])
+                    @anyrole(['system-admin', 'camp-manager'])
                     <a href="#" class="flex flex-col items-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors">
                         <svg class="w-8 h-8 text-yellow-600 dark:text-yellow-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>

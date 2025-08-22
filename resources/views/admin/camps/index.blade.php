@@ -20,8 +20,6 @@
                             <tr class="border-b border-neutral-200 dark:border-neutral-700">
                                 <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Camp Name</th>
                                 <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Dates</th>
-                                <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Age/Grade Range</th>
-                                <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Capacity</th>
                                 <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Status</th>
                                 <th class="text-left py-3 px-4 font-medium text-neutral-900 dark:text-white">Actions</th>
                             </tr>
@@ -39,23 +37,6 @@
                                     <div class="text-sm">
                                         <span class="text-neutral-500 dark:text-neutral-400">N/A</span>
                                     </div>
-                                </td>
-                                <td class="py-4 px-4">
-                                    <span class="text-sm text-neutral-900 dark:text-white">
-                                        @if($camp->age_from || $camp->age_to)
-                                            Age: 
-                                            @if($camp->age_from){{ $camp->age_from }}@else?@endif
-                                            –
-                                            @if($camp->age_to){{ $camp->age_to }}@else?@endif
-                                        @elseif($camp->grade_from || $camp->grade_to)
-                                            Grade: 
-                                            @if($camp->grade_from){{ $camp->grade_from }}@else?@endif
-                                            –
-                                            @if($camp->grade_to){{ $camp->grade_to }}@else?@endif
-                                        @else
-                                            N/A
-                                        @endif
-                                    </span>
                                 </td>
                                 <td class="py-4 px-4">
                                     <div class="text-sm">

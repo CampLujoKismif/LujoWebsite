@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Role;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class SuperAdminSeeder extends Seeder
 {
@@ -15,7 +15,7 @@ class SuperAdminSeeder extends Seeder
     public function run(): void
     {
         // Check if the super admin user already exists
-        $existingUser = User::where('email', 'pettijohnj@gmail.com')->first();
+        $existingUser = User::where('email', 'admin@lujo.com')->first();
         
         if ($existingUser) {
             $this->command->info('Super admin user already exists. Skipping creation.');
@@ -24,24 +24,24 @@ class SuperAdminSeeder extends Seeder
 
         // Create the super admin user
         $superAdmin = User::create([
-            'name' => 'Jarred Pettijohn',
-            'email' => 'pettijohnj@gmail.com',
-            'password' => Hash::make('rootroot'),
+            'name' => 'System Administrator',
+            'email' => 'admin@lujo.com',
+            'password' => Hash::make('password'),
             'email_verified_at' => now(), // Mark email as verified
         ]);
 
-        // Get the super admin role
-        $superAdminRole = Role::where('name', 'super_admin')->first();
+        // Get the system admin role
+        $systemAdminRole = Role::where('name', 'system-admin')->first();
         
-        if ($superAdminRole) {
-            $superAdmin->assignRole($superAdminRole);
+        if ($systemAdminRole) {
+            $superAdmin->assignRole($systemAdminRole);
             $this->command->info('Super admin user created successfully:');
-            $this->command->info('Name: Jarred Pettijohn');
-            $this->command->info('Email: pettijohnj@gmail.com');
-            $this->command->info('Password: rootroot');
-            $this->command->info('Role: Super Admin');
+            $this->command->info('Name: System Administrator');
+            $this->command->info('Email: admin@lujo.com');
+            $this->command->info('Password: password');
+            $this->command->info('Role: System Admin');
         } else {
-            $this->command->error('Super admin role not found. Please run RolePermissionSeeder first.');
+            $this->command->error('System admin role not found. Please run RolePermissionSeeder first.');
         }
     }
 }

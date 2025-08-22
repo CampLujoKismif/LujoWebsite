@@ -47,55 +47,6 @@
                                 @enderror
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label for="age_from" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                        Age From
-                                    </label>
-                                    <input type="number" name="age_from" id="age_from" value="{{ old('age_from', $camp->age_from) }}" min="0" max="21"
-                                        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="e.g., 6">
-                                    @error('age_from')
-                                        <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <label for="age_to" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                        Age To
-                                    </label>
-                                    <input type="number" name="age_to" id="age_to" value="{{ old('age_to', $camp->age_to) }}" min="0" max="21"
-                                        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="e.g., 12">
-                                    @error('age_to')
-                                        <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label for="grade_from" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                        Grade From
-                                    </label>
-                                    <input type="number" name="grade_from" id="grade_from" value="{{ old('grade_from', $camp->grade_from) }}" min="0" max="21"
-                                        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="e.g., 1">
-                                    @error('grade_from')
-                                        <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <label for="grade_to" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                        Grade To
-                                    </label>
-                                    <input type="number" name="grade_to" id="grade_to" value="{{ old('grade_to', $camp->grade_to) }}" min="0" max="21"
-                                        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="e.g., 12">
-                                    @error('grade_to')
-                                        <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                            </div>
-
                             <div>
                                 <label for="description" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                                     Description
@@ -112,19 +63,6 @@
                         <!-- Dates and Settings -->
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium text-neutral-900 dark:text-white">Dates & Settings</h3>
-                            
-                            <div>
-                                <label for="max_capacity" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                                    Maximum Capacity
-                                </label>
-                                <input type="number" name="max_capacity" id="max_capacity" value="{{ old('max_capacity', $camp->max_capacity) }}" min="1"
-                                    class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-zinc-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="e.g., 150">
-                                @error('max_capacity')
-                                    <p class="text-sm text-red-600 dark:text-red-400 mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-
                             <div>
                                 <label for="price" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                                     Price ($)

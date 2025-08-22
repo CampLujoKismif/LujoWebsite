@@ -29,55 +29,42 @@ class AdminDashboardController extends Controller
                 'total_permissions' => Permission::count(),
             ];
 
-        // Get recent users
-        $recentUsers = User::with(['roles', 'assignedCamps'])
-            ->latest()
-            ->take(5)
-            ->get();
+            // Get recent users
+            $recentUsers = User::with(['roles', 'assignedCamps'])
+                ->latest()
+                ->take(5)
+                ->get();
 
-        // Get upcoming camp instances
-        $upcomingCamps = CampInstance::with('camp')
-            ->where('start_date', '>=', now()->toDateString())
-            ->where('is_active', true)
-            ->orderBy('start_date')
-            ->take(5)
-            ->get();
+            // Get upcoming camp instances
+            $upcomingCamps = CampInstance::with('camp')
+                ->where('start_date', '>=', now()->toDateString())
+                ->where('is_active', true)
+                ->orderBy('start_date')
+                ->take(5)
+                ->get();
 
-        // Get role distribution
-        $roleDistribution = Role::withCount('users')
-            ->orderBy('users_count', 'desc')
-            ->take(8)
-            ->get();
+            // Get role distribution
+            $roleDistribution = Role::withCount('users')
+                ->orderBy('users_count', 'desc')
+                ->take(8)
+                ->get();
 
-        // Get camp capacity stats
-        $campStats = Camp::select('display_name', 'max_capacity')
-            ->whereNotNull('max_capacity')
-            ->get()
-            ->map(function ($camp) {
-                $camp->current_capacity = $camp->getCurrentCapacityAttribute();
-                $camp->capacity_percentage = $camp->max_capacity > 0 
-                    ? round(($camp->current_capacity / $camp->max_capacity) * 100, 1)
-                    : 0;
-                return $camp;
-            });
+            // Get all camps for dashboard links
+            $camps = Camp::with('assignedUsers')->orderBy('display_name')->get();
 
-        // Get all camps for dashboard links
-        $camps = Camp::with('assignedUsers')->orderBy('display_name')->get();
-
-        return view('admin.dashboard', compact(
-            'stats',
-            'recentUsers',
-            'upcomingCamps',
-            'roleDistribution',
-            'campStats',
-            'camps'
-        ));
+            return view('admin.dashboard', compact(
+                'stats',
+                'recentUsers',
+                'upcomingCamps',
+                'roleDistribution',
+                'camps'
+            ));
         } catch (\Exception $e) {
             // Log the error for debugging
             \Log::error('Admin dashboard error: ' . $e->getMessage());
             
             // Return a simple error view or redirect
-            return redirect()->route('dashboard')
+            return redirect()->route('dashboard.home')
                 ->with('error', 'Unable to load admin dashboard. Please try again.');
         }
     }

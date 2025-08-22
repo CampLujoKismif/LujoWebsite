@@ -39,12 +39,7 @@ class CampManagementController extends Controller
             'display_name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
-            'max_capacity' => 'nullable|integer|min:1',
             'price' => 'nullable|numeric|min:0',
-            'age_from' => 'nullable|integer|min:0|max:21',
-            'age_to' => 'nullable|integer|min:0|max:21|gte:age_from',
-            'grade_from' => 'nullable|integer|min:0|max:21',
-            'grade_to' => 'nullable|integer|min:0|max:21|gte:grade_from',
         ]);
 
         $validated['is_active'] = $request->has('is_active');
@@ -83,12 +78,7 @@ class CampManagementController extends Controller
             'display_name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
-            'max_capacity' => 'nullable|integer|min:1',
             'price' => 'nullable|numeric|min:0',
-            'age_from' => 'nullable|integer|min:0|max:21',
-            'age_to' => 'nullable|integer|min:0|max:21|gte:age_from',
-            'grade_from' => 'nullable|integer|min:0|max:21',
-            'grade_to' => 'nullable|integer|min:0|max:21|gte:grade_from',
         ]);
 
         $validated['is_active'] = $request->has('is_active');

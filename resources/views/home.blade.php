@@ -573,65 +573,88 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="card-hover bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg">
-                        <h3 class="text-xl font-bold mb-2">Spark Week</h3>
-                        <p class="mb-4">1st-4th Grade</p>
-                        <p class="text-blue-100">May 28-30</p>
-                    </div>
-                    
-                    <div class="card-hover bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg">
-                        <h3 class="text-xl font-bold mb-2">Jump Week</h3>
-                        <p class="mb-4">9th Grade & Up</p>
-                        <p class="text-green-100">June 1-7</p>
-                    </div>
-                    
-                    <div class="card-hover bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg">
-                        <h3 class="text-xl font-bold mb-2">Reunion Week</h3>
-                        <p class="mb-4">4th-12th Grade</p>
-                        <p class="text-purple-100">June 8-14</p>
-                    </div>
-                    
-                    <div class="card-hover bg-gradient-to-br from-yellow-500 to-yellow-600 text-white p-6 rounded-lg">
-                        <h3 class="text-xl font-bold mb-2">Day Camp</h3>
-                        <p class="mb-4">1st-4th Grade</p>
-                        <p class="text-yellow-100">June 9-11</p>
-                    </div>
-                    
-                    <div class="card-hover bg-gradient-to-br from-red-500 to-red-600 text-white p-6 rounded-lg">
-                        <h3 class="text-xl font-bold mb-2">Super Week</h3>
-                        <p class="mb-4">4th-6th Grade</p>
-                        <p class="text-red-100">June 15-21</p>
-                    </div>
-                    
-                    <div class="card-hover bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-6 rounded-lg">
-                        <h3 class="text-xl font-bold mb-2">Strive Week</h3>
-                        <p class="mb-4">5th Grade & Up</p>
-                        <p class="text-indigo-100">June 22-28</p>
-                        <a href="{{ route('strive-week') }}" class="inline-block mt-3 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded transition duration-300">
-                            Learn More
-                        </a>
-                    </div>
-                    
-                    <div class="card-hover bg-gradient-to-br from-pink-500 to-pink-600 text-white p-6 rounded-lg">
-                        <h3 class="text-xl font-bold mb-2">Connect Week</h3>
-                        <p class="mb-4">6th Grade & Up</p>
-                        <p class="text-pink-100">June 29-July 5</p>
-                    </div>
-                    
-                    <div class="card-hover bg-gradient-to-br from-teal-500 to-teal-600 text-white p-6 rounded-lg">
-                        <h3 class="text-xl font-bold mb-2">Elevate Week</h3>
-                        <p class="mb-4">7th-10th Girls</p>
-                        <p class="text-teal-100">July 6-12</p>
-                        <a href="{{ route('elevate-week') }}" class="inline-block mt-3 bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded transition duration-300">
-                            Learn More
-                        </a>
-                    </div>
-                    
-                    <div class="card-hover bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-lg">
-                        <h3 class="text-xl font-bold mb-2">Fall Focus</h3>
-                        <p class="mb-4">5th-12th Grade</p>
-                        <p class="text-orange-100">Nov 1-3</p>
-                    </div>
+                    @forelse($campInstances as $instance)
+                        @php
+                            $gradeSuffix = function($num) {
+                                if($num == 1) return 'st';
+                                if($num == 2) return 'nd';
+                                if($num == 3) return 'rd';
+                                return 'th';
+                            };
+                            
+                            // Generate a random gradient class
+                            $gradientClasses = [
+                                'from-blue-500 to-blue-600',
+                                'from-green-500 to-green-600',
+                                'from-purple-500 to-purple-600',
+                                'from-yellow-500 to-yellow-600',
+                                'from-red-500 to-red-600',
+                                'from-indigo-500 to-indigo-600',
+                                'from-pink-500 to-pink-600',
+                                'from-teal-500 to-teal-600',
+                                'from-orange-500 to-orange-600'
+                            ];
+                            $gradientClass = $gradientClasses[$loop->index % count($gradientClasses)];
+                        @endphp
+                        
+                        <div class="card-hover bg-gradient-to-br {{ $gradientClass }} text-white p-6 rounded-lg">
+                            <h3 class="text-xl font-bold mb-2">{{ $instance->camp->display_name }}</h3>
+                            <p class="mb-4">
+                                @if($instance->grade_from && $instance->grade_to)
+                                    {{ $instance->grade_from }}{{ $gradeSuffix($instance->grade_from) }} Grade
+                                    @if($instance->grade_from != $instance->grade_to)
+                                        - {{ $instance->grade_to }}{{ $gradeSuffix($instance->grade_to) }} Grade
+                                    @endif
+                                @elseif($instance->age_from && $instance->age_to)
+                                    Ages {{ $instance->age_from }} - {{ $instance->age_to }}
+                                @endif
+                            </p>
+                            <p class="text-{{ explode('-', $gradientClass)[0] }}-100">
+                                {{ $instance->start_date ? $instance->start_date->format('M j') : '' }}
+                                @if($instance->end_date)
+                                    - {{ $instance->end_date->format('M j') }}
+                                @endif
+                            </p>
+                            
+                            @if($instance->description)
+                                <p class="mt-2 text-sm opacity-90">{{ Str::limit($instance->description, 100) }}</p>
+                            @endif
+                            
+                            @if($instance->isRegistrationOpen())
+                                <div class="mt-4">
+                                    <span class="inline-block bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+                                        Registration Open
+                                    </span>
+                                </div>
+                            @endif
+                            
+                            @if($instance->price)
+                                <div class="mt-2">
+                                    <span class="text-sm opacity-90">${{ number_format($instance->price, 2) }}</span>
+                                </div>
+                            @endif
+                            
+                            @if($instance->max_capacity)
+                                <div class="mt-2">
+                                    <span class="text-sm opacity-90">
+                                        {{ $instance->available_spots }} spots available
+                                    </span>
+                                </div>
+                            @endif
+                            
+                            @if($instance->theme_description)
+                                <div class="mt-4">
+                                    <a href="{{ route('camp-sessions.show', $instance) }}" class="inline-block bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded transition duration-300">
+                                        Learn More
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    @empty
+                        <div class="col-span-full text-center py-8">
+                            <p class="text-gray-600">No camp sessions are currently scheduled. Please check back later!</p>
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </section>
