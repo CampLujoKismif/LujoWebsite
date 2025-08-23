@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ $title ?? 'Camp LUJO-KISMIF' }}</title>
+        <title>Camp Sessions - Camp LUJO-KISMIF</title>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -34,7 +34,7 @@
                     <!-- Desktop Navigation -->
                     <div class="hidden lg:flex items-center space-x-4">
                         <a href="{{ route('home') }}#about" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">About</a>
-                        <a href="{{ route('home') }}#sessions" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Sessions</a>
+                        <a href="{{ route('camp-sessions.index') }}" class="text-blue-600 font-semibold px-3 py-2 rounded-md text-sm font-medium">Camp Sessions</a>
                         <a href="{{ route('home') }}#faq" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">FAQ</a>
                         <a href="{{ route('home') }}#contact" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
                         @auth
@@ -61,16 +61,16 @@
             <!-- Mobile Navigation Menu -->
             <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform -translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 transform translate-y-0" x-transition:leave-end="opacity-0 transform -translate-y-2" class="lg:hidden bg-white border-t border-gray-200">
                 <div class="px-2 pt-2 pb-3 space-y-1">
-                    <a href="{{ route('home') }}#about" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">About</a>
-                    <a href="{{ route('home') }}#sessions" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">Sessions</a>
-                    <a href="{{ route('home') }}#faq" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">FAQ</a>
-                    <a href="{{ route('home') }}#contact" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">Contact</a>
+                    <a href="{{ route('home') }}#about" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">About</a>
+                    <a href="{{ route('camp-sessions.index') }}" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-blue-600 bg-blue-50 rounded-md">Camp Sessions</a>
+                    <a href="{{ route('home') }}#faq" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">FAQ</a>
+                    <a href="{{ route('home') }}#contact" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">Contact</a>
                     
                     <div class="pt-4 pb-3 border-t border-gray-200">
                         @auth
-                            <a href="{{ url('/dashboard') }}" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-base font-medium">Dashboard</a>
+                            <a href="{{ url('/dashboard') }}" @click="mobileMenuOpen = false" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-base font-medium">Dashboard</a>
                         @else
-                            <a href="{{ route('login') }}" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-base font-medium">Login</a>
+                            <a href="{{ route('login') }}" @click="mobileMenuOpen = false" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-base font-medium">Login</a>
                         @endauth
                     </div>
                 </div>
@@ -78,7 +78,7 @@
         </nav>
 
         <!-- Main Content -->
-        <main class="pt-90">
+        <main class="pt-16">
             {{ $slot }}
         </main>
 
@@ -97,7 +97,7 @@
                         <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
                         <ul class="space-y-2">
                             <li><a href="{{ route('home') }}#about" class="text-gray-300 hover:text-white">About</a></li>
-                            <li><a href="{{ route('home') }}#sessions" class="text-gray-300 hover:text-white">Camp Sessions</a></li>
+                            <li><a href="{{ route('camp-sessions.index') }}" class="text-gray-300 hover:text-white">Camp Sessions</a></li>
                             <li><a href="{{ route('home') }}#faq" class="text-gray-300 hover:text-white">FAQ</a></li>
                             <li><a href="{{ route('home') }}#contact" class="text-gray-300 hover:text-white">Contact</a></li>
                         </ul>
@@ -119,7 +119,7 @@
                 </div>
                 <div class="border-t border-gray-800 mt-8 pt-8 text-center">
                     <p class="text-gray-300">
-                        © {{ date('Y') }} Camp LUJO-KISMIF. All rights reserved.
+                        © 2024 Camp LUJO-KISMIF. All rights reserved.
                     </p>
                 </div>
             </div>

@@ -275,7 +275,7 @@
                             </button>
                             <div x-show="sessionsDropdownOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="absolute left-0 mt-2 min-w-max bg-white rounded-md shadow-lg z-50">
                                 <div class="py-2">
-                                    <a href="#sessions" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">All Sessions</a>
+                                    <a href="{{ route('camp-sessions.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">All Sessions</a>
                                     <div class="border-t border-gray-100 my-1"></div>
                                     <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Spark Week (1st-4th Grade)</a>
                                     <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Jump Week (9th Grade & Up)</a>
@@ -327,7 +327,7 @@
                             </svg>
                         </button>
                         <div x-show="mobileSessionsOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform -translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 transform translate-y-0" x-transition:leave-end="opacity-0 transform -translate-y-2" class="pl-4 space-y-1">
-                            <a href="#sessions" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">All Sessions</a>
+                            <a href="{{ route('camp-sessions.index') }}" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">All Sessions</a>
                             <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Spark Week (1st-4th Grade)</a>
                             <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Jump Week (9th Grade & Up)</a>
                             <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Reunion Week (4th-12th Grade)</a>
@@ -461,7 +461,7 @@
                 <!-- Animated Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 justify-center" 
                      x-data="{ show: false }" x-init="setTimeout(() => show = true, 900)">
-                    <a href="#sessions" 
+                    <a href="{{ route('camp-sessions.index') }}" 
                        class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold text-lg hero-button-hover shadow-lg backdrop-blur-sm"
                        :class="{ 'opacity-100 transform translate-y-0': show, 'opacity-0 transform translate-y-8': !show }">
                         View Camp Sessions
@@ -597,58 +597,86 @@
                             $gradientClass = $gradientClasses[$loop->index % count($gradientClasses)];
                         @endphp
                         
-                        <div class="card-hover bg-gradient-to-br {{ $gradientClass }} text-white p-6 rounded-lg">
-                            <h3 class="text-xl font-bold mb-2">{{ $instance->camp->display_name }}</h3>
-                            <p class="mb-4">
+                        <div class="card-hover bg-gradient-to-br {{ $gradientClass }} text-white p-6 rounded-lg relative overflow-hidden">
+                            <!-- Camp Name - Large and Prominent -->
+                            <h3 class="text-2xl font-bold mb-3">{{ $instance->camp->display_name }}</h3>
+                            
+                            <!-- Grade/Age Range -->
+                            <div class="mb-4">
                                 @if($instance->grade_from && $instance->grade_to)
-                                    {{ $instance->grade_from }}{{ $gradeSuffix($instance->grade_from) }} Grade
-                                    @if($instance->grade_from != $instance->grade_to)
-                                        - {{ $instance->grade_to }}{{ $gradeSuffix($instance->grade_to) }} Grade
-                                    @endif
+                                    <span class="inline-block bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
+                                        {{ $instance->grade_from }}{{ $gradeSuffix($instance->grade_from) }} Grade
+                                        @if($instance->grade_from != $instance->grade_to)
+                                            - {{ $instance->grade_to }}{{ $gradeSuffix($instance->grade_to) }} Grade
+                                        @endif
+                                    </span>
                                 @elseif($instance->age_from && $instance->age_to)
-                                    Ages {{ $instance->age_from }} - {{ $instance->age_to }}
-                                @endif
-                            </p>
-                            <p class="text-{{ explode('-', $gradientClass)[0] }}-100">
-                                {{ $instance->start_date ? $instance->start_date->format('M j') : '' }}
-                                @if($instance->end_date)
-                                    - {{ $instance->end_date->format('M j') }}
-                                @endif
-                            </p>
-                            
-                            @if($instance->description)
-                                <p class="mt-2 text-sm opacity-90">{{ Str::limit($instance->description, 100) }}</p>
-                            @endif
-                            
-                            @if($instance->isRegistrationOpen())
-                                <div class="mt-4">
-                                    <span class="inline-block bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
-                                        Registration Open
+                                    <span class="inline-block bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
+                                        Ages {{ $instance->age_from }} - {{ $instance->age_to }}
                                     </span>
-                                </div>
-                            @endif
+                                @endif
+                            </div>
                             
+                            <!-- Dates - More Prominent -->
+                            <div class="mb-4">
+                                <div class="text-lg font-semibold">
+                                    @if($instance->start_date && $instance->end_date)
+                                        {{ $instance->start_date->format('M j') }} - {{ $instance->end_date->format('M j, Y') }}
+                                    @elseif($instance->start_date)
+                                        {{ $instance->start_date->format('M j, Y') }}
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            <!-- Price - Large and Prominent -->
                             @if($instance->price)
-                                <div class="mt-2">
-                                    <span class="text-sm opacity-90">${{ number_format($instance->price, 2) }}</span>
+                                <div class="mb-4">
+                                    <div class="text-3xl font-bold text-white">
+                                        ${{ number_format($instance->price, 0) }}
+                                    </div>
+                                    <div class="text-sm opacity-90">per camper</div>
                                 </div>
                             @endif
                             
-                            @if($instance->max_capacity)
-                                <div class="mt-2">
-                                    <span class="text-sm opacity-90">
-                                        {{ $instance->available_spots }} spots available
+                            <!-- Description -->
+                            @if($instance->description)
+                                <p class="mb-4 text-sm opacity-90">{{ Str::limit($instance->description, 120) }}</p>
+                            @endif
+                            
+                            <!-- Registration Status -->
+                            @if($instance->isRegistrationOpen())
+                                <div class="mb-4">
+                                    <span class="inline-block bg-green-500 bg-opacity-90 px-4 py-2 rounded-full text-sm font-bold text-white">
+                                        ✓ Registration Open
+                                    </span>
+                                </div>
+                            @else
+                                <div class="mb-4">
+                                    <span class="inline-block bg-red-500 bg-opacity-90 px-4 py-2 rounded-full text-sm font-bold text-white">
+                                        Registration Closed
                                     </span>
                                 </div>
                             @endif
                             
-                            @if($instance->theme_description)
-                                <div class="mt-4">
-                                    <a href="{{ route('camp-sessions.show', $instance) }}" class="inline-block bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded transition duration-300">
-                                        Learn More
-                                    </a>
+                            <!-- Capacity Info -->
+                            @if($instance->max_capacity)
+                                <div class="mb-4 text-sm opacity-90">
+                                    <span class="font-medium">{{ $instance->available_spots }}</span> spots available
                                 </div>
                             @endif
+                            
+                            <!-- Action Button -->
+                            <div class="mt-4">
+                                @if($instance->theme_description)
+                                    <a href="{{ route('camp-sessions.show', $instance) }}" class="inline-block bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-lg font-semibold transition duration-300 transform hover:scale-105">
+                                        Learn More & Register
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}" class="inline-block bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-lg font-semibold transition duration-300 transform hover:scale-105">
+                                        Register Now
+                                    </a>
+                                @endif
+                            </div>
                         </div>
                     @empty
                         <div class="col-span-full text-center py-8">

@@ -5,9 +5,7 @@ use Livewire\Volt\Volt;
 
 Route::get('/', function () {
     try {
-        $currentYear = now()->year;
         $campInstances = \App\Models\CampInstance::with('camp')
-            ->where('year', $currentYear)
             ->where('is_active', true)
             ->orderBy('start_date')
             ->get();
@@ -27,6 +25,10 @@ Route::get('/strive-week', function () {
 Route::get('/elevate-week', function () {
     return view('elevate-week');
 })->name('elevate-week');
+
+Route::get('/camp-sessions', function () {
+    return view('public.camp-sessions');
+})->name('camp-sessions.index');
 
 Route::get('/camp-sessions/{instance}', [App\Http\Controllers\PublicCampController::class, 'showSession'])->name('camp-sessions.show');
 
