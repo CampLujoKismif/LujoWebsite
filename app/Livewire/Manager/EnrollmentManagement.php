@@ -14,7 +14,6 @@ class EnrollmentManagement extends Component
 {
     use WithPagination;
 
-    public $enrollments;
     public $campInstances;
     public $selectedEnrollment;
     public $selectedCampInstance;
