@@ -47,6 +47,9 @@
                         <flux:navlist.item icon="building-storefront" :href="route('dashboard.manager.index')" :current="request()->routeIs('dashboard.manager.index')" wire:navigate>
                             {{ __('Manager Dashboard') }}
                         </flux:navlist.item>
+                        <flux:navlist.item icon="calendar" :href="route('dashboard.manager.sessions')" :current="request()->routeIs('dashboard.manager.sessions')" wire:navigate>
+                            {{ __('Session Management') }}
+                        </flux:navlist.item>
                         <flux:navlist.item icon="users" :href="route('dashboard.manager.enrollments')" :current="request()->routeIs('dashboard.manager.enrollments')" wire:navigate>
                             {{ __('Manage Enrollments') }}
                         </flux:navlist.item>

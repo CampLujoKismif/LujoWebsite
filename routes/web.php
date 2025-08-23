@@ -48,6 +48,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
     Route::middleware(['role:camp-manager,system-admin'])->prefix('manager')->name('manager.')->group(function () {
         Route::get('/', App\Livewire\Manager\Dashboard::class)->name('index');
         Route::get('/enrollments', App\Livewire\Manager\EnrollmentManagement::class)->name('enrollments');
+        Route::get('/sessions', App\Livewire\Manager\CampSessionManagement::class)->name('sessions');
     });
     
     // Parent Portal
