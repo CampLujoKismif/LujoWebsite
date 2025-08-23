@@ -4,14 +4,20 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
 Route::get('/', function () {
-    $currentYear = now()->year;
-    $campInstances = \App\Models\CampInstance::with('camp')
-        ->where('year', $currentYear)
-        ->where('is_active', true)
-        ->orderBy('start_date')
-        ->get();
-    
-    return view('home', compact('campInstances'));
+    try {
+        $currentYear = now()->year;
+        $campInstances = \App\Models\CampInstance::with('camp')
+            ->where('year', $currentYear)
+            ->where('is_active', true)
+            ->orderBy('start_date')
+            ->get();
+        
+        return view('home', compact('campInstances'));
+    } catch (\Exception $e) {
+        // If there's an error, pass an empty collection
+        $campInstances = collect();
+        return view('home', compact('campInstances'));
+    }
 })->name('home');
 
 Route::get('/strive-week', function () {
