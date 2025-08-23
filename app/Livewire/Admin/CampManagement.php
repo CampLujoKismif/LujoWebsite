@@ -23,7 +23,10 @@ class CampManagement extends Component
     public $showEditModal = false;
     public $showDeleteModal = false;
     public $showSessionModal = false;
+    public $showEditSessionModal = false;
+    public $showDeleteSessionModal = false;
     public $selectedCamp = null;
+    public $selectedSession = null;
 
     // Camp form data
     public $name = '';
@@ -185,6 +188,73 @@ class CampManagement extends Component
         session()->flash('message', 'Camp session created successfully.');
     }
 
+    public function toggleSessionStatus($sessionId)
+    {
+        $session = CampInstance::findOrFail($sessionId);
+        $session->update(['is_active' => !$session->is_active]);
+        
+        $status = $session->is_active ? 'activated' : 'deactivated';
+        session()->flash('message', "Session {$status} successfully.");
+    }
+
+    public function openEditSessionModal($sessionId)
+    {
+        $this->selectedSession = CampInstance::findOrFail($sessionId);
+        
+        $this->sessionName = $this->selectedSession->name;
+        $this->sessionStartDate = $this->selectedSession->start_date->format('Y-m-d');
+        $this->sessionEndDate = $this->selectedSession->end_date->format('Y-m-d');
+        $this->sessionCapacity = $this->selectedSession->capacity;
+        $this->sessionPrice = $this->selectedSession->price;
+        $this->sessionDescription = $this->selectedSession->description;
+        $this->sessionIsActive = $this->selectedSession->is_active;
+        
+        $this->showEditSessionModal = true;
+    }
+
+    public function openDeleteSessionModal($sessionId)
+    {
+        $this->selectedSession = CampInstance::findOrFail($sessionId);
+        $this->showDeleteSessionModal = true;
+    }
+
+    public function updateSession()
+    {
+        $this->validate([
+            'sessionName' => 'required|string|max:255',
+            'sessionStartDate' => 'required|date',
+            'sessionEndDate' => 'required|date|after:sessionStartDate',
+            'sessionCapacity' => 'required|integer|min:1',
+            'sessionPrice' => 'nullable|numeric|min:0',
+            'sessionDescription' => 'nullable|string',
+        ]);
+
+        $this->selectedSession->update([
+            'name' => $this->sessionName,
+            'start_date' => $this->sessionStartDate,
+            'end_date' => $this->sessionEndDate,
+            'capacity' => $this->sessionCapacity,
+            'price' => $this->sessionPrice ?: null,
+            'description' => $this->sessionDescription,
+            'is_active' => $this->sessionIsActive,
+        ]);
+
+        $this->showEditSessionModal = false;
+        $this->resetSessionForm();
+        $this->selectedSession = null;
+        session()->flash('message', 'Session updated successfully.');
+    }
+
+    public function deleteSession()
+    {
+        $sessionName = $this->selectedSession->name;
+        $this->selectedSession->delete();
+        
+        $this->showDeleteSessionModal = false;
+        $this->selectedSession = null;
+        session()->flash('message', "Session '{$sessionName}' deleted successfully.");
+    }
+
     public function resetCampForm()
     {
         $this->name = '';
@@ -204,6 +274,7 @@ class CampManagement extends Component
         $this->sessionPrice = '';
         $this->sessionIsActive = true;
         $this->sessionDescription = '';
+        $this->selectedSession = null;
     }
 
     public function getCampsProperty()
