@@ -34,7 +34,7 @@ class SuperAdminSeeder extends Seeder
         $systemAdminRole = Role::where('name', 'system-admin')->first();
         
         if ($systemAdminRole) {
-            $superAdmin->assignRole($systemAdminRole);
+            $superAdmin->assignRole('system-admin');
             $this->command->info('Super admin user created successfully:');
             $this->command->info('Name: System Administrator');
             $this->command->info('Email: admin@lujo.com');
