@@ -120,8 +120,23 @@ class UserManagement extends Component
             'selectedRoles.*' => 'exists:roles,id',
             'selectedCamps' => 'nullable|array',
             'selectedCamps.*' => 'exists:camps,id',
-            'campRoles.*' => 'required_with:selectedCamps|exists:roles,id',
         ]);
+
+        // Custom validation for camp role assignments
+        if (!empty($this->selectedCamps)) {
+            foreach ($this->selectedCamps as $campId) {
+                if (!isset($this->campRoles[$campId]) || empty($this->campRoles[$campId])) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'campRoles' => 'A role must be selected for each camp assignment.'
+                    ]);
+                }
+                if (!Role::find($this->campRoles[$campId])) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'campRoles' => 'The selected role is invalid.'
+                    ]);
+                }
+            }
+        }
 
         DB::transaction(function () {
             $user = User::create([
@@ -153,8 +168,23 @@ class UserManagement extends Component
             'selectedRoles.*' => 'exists:roles,id',
             'selectedCamps' => 'nullable|array',
             'selectedCamps.*' => 'exists:camps,id',
-            'campRoles.*' => 'required_with:selectedCamps|exists:roles,id',
         ]);
+
+        // Custom validation for camp role assignments
+        if (!empty($this->selectedCamps)) {
+            foreach ($this->selectedCamps as $campId) {
+                if (!isset($this->campRoles[$campId]) || empty($this->campRoles[$campId])) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'campRoles' => 'A role must be selected for each camp assignment.'
+                    ]);
+                }
+                if (!Role::find($this->campRoles[$campId])) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'campRoles' => 'The selected role is invalid.'
+                    ]);
+                }
+            }
+        }
 
         DB::transaction(function () {
             $updateData = [
@@ -203,12 +233,16 @@ class UserManagement extends Component
     private function assignUserToCamps($user)
     {
         foreach ($this->selectedCamps as $campId) {
-            if (isset($this->campRoles[$campId])) {
-                $user->campAssignments()->create([
-                    'camp_id' => $campId,
-                    'role_id' => $this->campRoles[$campId],
-                    'is_primary' => in_array($campId, $this->primaryCamps),
-                ]);
+            if (isset($this->campRoles[$campId]) && !empty($this->campRoles[$campId])) {
+                try {
+                    $user->campAssignments()->create([
+                        'camp_id' => $campId,
+                        'role_id' => $this->campRoles[$campId],
+                        'is_primary' => in_array($campId, $this->primaryCamps),
+                    ]);
+                } catch (\Exception $e) {
+                    throw new \Exception('Failed to assign user to camp. Please try again.');
+                }
             }
         }
     }

@@ -230,6 +230,7 @@
                                     @endif
                                 </div>
                             @endforeach
+                            @error('campRoles') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="flex justify-end gap-3">
@@ -321,6 +322,7 @@
                                     @endif
                                 </div>
                             @endforeach
+                            @error('campRoles') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="flex justify-end gap-3">
