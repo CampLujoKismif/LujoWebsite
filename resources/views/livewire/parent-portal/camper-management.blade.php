@@ -55,8 +55,8 @@
                                 <div>
                                     <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Birth Date:</span>
                                     <p class="text-sm text-gray-900 dark:text-white">
-                                        @if($camper->birth_date)
-                                            {{ $camper->birth_date->format('M j, Y') }}
+                                        @if($camper->date_of_birth)
+                                            {{ $camper->date_of_birth->format('M j, Y') }}
                                         @else
                                             <span class="text-gray-400">Not specified</span>
                                         @endif
