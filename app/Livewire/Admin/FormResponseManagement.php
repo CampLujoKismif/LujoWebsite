@@ -13,7 +13,6 @@ class FormResponseManagement extends Component
 {
     use WithPagination;
 
-    public $responses;
     public $templates;
     public $campInstances;
     public $selectedTemplate;
