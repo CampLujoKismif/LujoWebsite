@@ -25,7 +25,10 @@ class CamperManagement extends Component
     public $firstName;
     public $lastName;
     public $dateOfBirth;
-    public $gender;
+    public $dateOfBaptism;
+    public $biologicalGender;
+    public $phoneNumber;
+    public $email;
     public $grade;
     public $school;
     public $allergies = [];
@@ -54,7 +57,10 @@ class CamperManagement extends Component
         'firstName' => 'required|string|max:255',
         'lastName' => 'required|string|max:255',
         'dateOfBirth' => 'required|date|before:today',
-        'gender' => 'required|in:male,female,other',
+        'dateOfBaptism' => 'nullable|date|before:today',
+        'biologicalGender' => 'nullable|in:Male,Female',
+        'phoneNumber' => 'nullable|string|max:20',
+        'email' => 'nullable|email|max:255',
         'grade' => 'required|integer|min:1|max:12',
         'school' => 'nullable|string|max:255',
         'allergies' => 'array',
@@ -100,7 +106,10 @@ class CamperManagement extends Component
         $this->firstName = $camper->first_name;
         $this->lastName = $camper->last_name;
         $this->dateOfBirth = $camper->date_of_birth ? $camper->date_of_birth->format('Y-m-d') : '';
-        $this->gender = $camper->gender;
+        $this->dateOfBaptism = $camper->date_of_baptism ? $camper->date_of_baptism->format('Y-m-d') : '';
+        $this->biologicalGender = $camper->biological_gender;
+        $this->phoneNumber = $camper->phone_number;
+        $this->email = $camper->email;
         $this->grade = $camper->grade;
         $this->school = $camper->school;
         $this->allergies = $camper->allergies ? json_decode($camper->allergies, true) : [];
@@ -145,7 +154,10 @@ class CamperManagement extends Component
             'firstName' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
             'dateOfBirth' => 'required|date|before:today',
-            'gender' => 'required|in:male,female,other',
+            'dateOfBaptism' => 'nullable|date|before:today',
+            'biologicalGender' => 'nullable|in:Male,Female',
+            'phoneNumber' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
             'grade' => 'required|integer|min:1|max:12',
             'school' => 'nullable|string|max:255',
             'allergies' => 'array',
@@ -163,7 +175,10 @@ class CamperManagement extends Component
                 'first_name' => $this->firstName,
                 'last_name' => $this->lastName,
                 'date_of_birth' => $this->dateOfBirth,
-                'gender' => $this->gender,
+                'date_of_baptism' => $this->dateOfBaptism,
+                'biological_gender' => $this->biologicalGender,
+                'phone_number' => $this->phoneNumber,
+                'email' => $this->email,
                 'grade' => $this->grade,
                 'school' => $this->school,
                 'allergies' => json_encode($this->allergies),
@@ -189,7 +204,10 @@ class CamperManagement extends Component
             'firstName' => 'required|string|max:255',
             'lastName' => 'required|string|max:255',
             'dateOfBirth' => 'required|date|before:today',
-            'gender' => 'required|in:male,female,other',
+            'dateOfBaptism' => 'nullable|date|before:today',
+            'biologicalGender' => 'nullable|in:Male,Female',
+            'phoneNumber' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
             'grade' => 'required|integer|min:1|max:12',
             'school' => 'nullable|string|max:255',
             'allergies' => 'array',
@@ -206,7 +224,10 @@ class CamperManagement extends Component
             'first_name' => $this->firstName,
             'last_name' => $this->lastName,
             'date_of_birth' => $this->dateOfBirth,
-            'gender' => $this->gender,
+            'date_of_baptism' => $this->dateOfBaptism,
+            'biological_gender' => $this->biologicalGender,
+            'phone_number' => $this->phoneNumber,
+            'email' => $this->email,
             'grade' => $this->grade,
             'school' => $this->school,
             'allergies' => json_encode($this->allergies),
@@ -353,7 +374,10 @@ class CamperManagement extends Component
         $this->firstName = '';
         $this->lastName = '';
         $this->dateOfBirth = '';
-        $this->gender = '';
+        $this->dateOfBaptism = '';
+        $this->biologicalGender = '';
+        $this->phoneNumber = '';
+        $this->email = '';
         $this->grade = '';
         $this->school = '';
         $this->allergies = [];

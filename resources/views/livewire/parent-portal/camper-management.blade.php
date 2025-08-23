@@ -35,11 +35,6 @@
                                 <div>
                                     <h3 class="text-lg font-medium text-gray-900 dark:text-white">{{ $camper->full_name }}</h3>
                                     <p class="text-sm text-gray-500 dark:text-gray-400">Grade {{ $camper->grade }} • Age {{ $camper->age }}</p>
-                                    @if($camper->hasMedicalAlerts())
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
-                                            Medical Alerts
-                                        </span>
-                                    @endif
                                 </div>
                                 <div class="flex space-x-2">
                                     <button wire:click="openEditCamperModal({{ $camper->id }})" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
@@ -89,16 +84,16 @@
                                         <p class="text-sm text-gray-900 dark:text-white">{{ $camper->email }}</p>
                                     </div>
                                 @endif
-                                @if($camper->allergies)
+                                @if($camper->allergies && is_array(json_decode($camper->allergies, true)) && count(json_decode($camper->allergies, true)) > 0)
                                     <div class="md:col-span-2">
                                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Allergies:</span>
-                                        <p class="text-sm text-gray-900 dark:text-white">{{ $camper->allergies }}</p>
+                                        <p class="text-sm text-gray-900 dark:text-white">{{ implode(', ', json_decode($camper->allergies, true)) }}</p>
                                     </div>
                                 @endif
-                                @if($camper->medical_conditions)
+                                @if($camper->medical_conditions && is_array(json_decode($camper->medical_conditions, true)) && count(json_decode($camper->medical_conditions, true)) > 0)
                                     <div class="md:col-span-2">
                                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Medical Conditions:</span>
-                                        <p class="text-sm text-gray-900 dark:text-white">{{ $camper->medical_conditions }}</p>
+                                        <p class="text-sm text-gray-900 dark:text-white">{{ implode(', ', json_decode($camper->medical_conditions, true)) }}</p>
                                     </div>
                                 @endif
                             </div>
