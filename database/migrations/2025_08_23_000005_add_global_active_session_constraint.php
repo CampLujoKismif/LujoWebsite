@@ -12,25 +12,28 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // First, deactivate all but one active session if multiple exist
-        $activeSessions = DB::table('camp_instances')
+        // Ensure only one active session per camp
+        $campsWithMultipleActiveSessions = DB::table('camp_instances')
             ->where('is_active', true)
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->groupBy('camp_id')
+            ->havingRaw('COUNT(*) > 1')
+            ->pluck('camp_id');
 
-        if ($activeSessions->count() > 1) {
-            // Keep the most recently created active session, deactivate the rest
-            $sessionsToDeactivate = $activeSessions->skip(1);
-            foreach ($sessionsToDeactivate as $session) {
+        foreach ($campsWithMultipleActiveSessions as $campId) {
+            // Get all active sessions for this camp, keep the most recent one
+            $sessionsToDeactivate = DB::table('camp_instances')
+                ->where('camp_id', $campId)
+                ->where('is_active', true)
+                ->orderBy('created_at', 'desc')
+                ->skip(1)
+                ->pluck('id');
+
+            if ($sessionsToDeactivate->isNotEmpty()) {
                 DB::table('camp_instances')
-                    ->where('id', $session->id)
+                    ->whereIn('id', $sessionsToDeactivate)
                     ->update(['is_active' => false]);
             }
         }
-
-        // For MySQL, we'll enforce the single active session constraint at the application level
-        // since MySQL doesn't support partial unique indexes with WHERE clauses
-        // The constraint is enforced in the CampInstance model's boot method
     }
 
     /**

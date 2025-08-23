@@ -85,24 +85,18 @@ class Dashboard extends Component
             $camperIds = $camperIds->concat($family->campers->pluck('id'));
         }
 
-        // Get the active session where user has confirmed enrollments
-        $activeSession = CampInstance::getActiveSession();
-        
-        if (!$activeSession) {
-            return collect();
-        }
+        // Get all active sessions where user has confirmed enrollments
+        $activeSessions = CampInstance::where('is_active', true)
+            ->whereHas('enrollments', function ($query) use ($camperIds) {
+                $query->whereIn('camper_id', $camperIds)
+                      ->where('status', 'confirmed');
+            })
+            ->with('camp')
+            ->orderBy('start_date')
+            ->limit(3)
+            ->get();
 
-        // Check if user has confirmed enrollments in the active session
-        $hasEnrollment = $activeSession->enrollments()
-            ->whereIn('camper_id', $camperIds)
-            ->where('status', 'confirmed')
-            ->exists();
-
-        if ($hasEnrollment) {
-            return collect([$activeSession]);
-        }
-
-        return collect();
+        return $activeSessions;
     }
 
     public function render()

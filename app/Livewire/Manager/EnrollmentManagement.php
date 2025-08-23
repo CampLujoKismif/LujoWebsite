@@ -54,14 +54,12 @@ class EnrollmentManagement extends Component
         // Get camp instances for camps assigned to the manager
         $assignedCampIds = $user->assignedCamps()->pluck('camps.id');
         
-        // Get the active session if it belongs to one of the assigned camps
-        $activeSession = CampInstance::getActiveSession();
-        
-        if ($activeSession && in_array($activeSession->camp_id, $assignedCampIds->toArray())) {
-            $this->campInstances = collect([$activeSession]);
-        } else {
-            $this->campInstances = collect();
-        }
+        // Get all active sessions for assigned camps
+        $this->campInstances = CampInstance::whereIn('camp_id', $assignedCampIds)
+            ->where('is_active', true)
+            ->with('camp')
+            ->orderBy('start_date')
+            ->get();
 
         // Set default selected camp instance to the first one
         if ($this->campInstances->isNotEmpty() && !$this->selectedCampInstance) {

@@ -27,14 +27,15 @@ class EnrollmentManagement extends Component
             ->orderBy('created_at', 'desc')
             ->get();
         
-        // Get the active session that is open for registration
-        $activeSession = CampInstance::getActiveSession();
+        // Get all active sessions that are open for registration
+        $activeSessions = CampInstance::where('is_active', true)
+            ->where('registration_open_date', '<=', now())
+            ->where('registration_close_date', '>=', now())
+            ->with('camp')
+            ->orderBy('start_date')
+            ->get();
         
-        if ($activeSession && $activeSession->isRegistrationOpen()) {
-            $this->upcomingSessions = collect([$activeSession]);
-        } else {
-            $this->upcomingSessions = collect();
-        }
+        $this->upcomingSessions = $activeSessions;
     }
 
     public function render()

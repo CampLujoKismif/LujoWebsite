@@ -339,22 +339,25 @@ class CampInstance extends Model
     }
 
     /**
-     * Get the currently active camp session.
+     * Get the currently active camp session for a specific camp.
      */
-    public static function getActiveSession(): ?self
+    public static function getActiveSessionForCamp(int $campId): ?self
     {
-        return static::where('is_active', true)->first();
+        return static::where('camp_id', $campId)
+            ->where('is_active', true)
+            ->first();
     }
 
     /**
-     * Activate this camp session and deactivate all others.
+     * Activate this camp session and deactivate all other sessions for the same camp.
      */
     public function activate(): bool
     {
         // Start a transaction to ensure atomicity
         return DB::transaction(function () {
-            // Deactivate all other sessions
-            static::where('id', '!=', $this->id)
+            // Deactivate all other sessions for the same camp
+            static::where('camp_id', $this->camp_id)
+                ->where('id', '!=', $this->id)
                 ->where('is_active', true)
                 ->update(['is_active' => false]);
 
@@ -372,19 +375,27 @@ class CampInstance extends Model
     }
 
     /**
-     * Check if this is the currently active session.
+     * Check if this is the currently active session for its camp.
      */
     public function isActiveSession(): bool
     {
-        return $this->is_active && $this->id === static::getActiveSession()?->id;
+        return $this->is_active && $this->id === static::getActiveSessionForCamp($this->camp_id)?->id;
     }
 
     /**
-     * Scope to get only the active session.
+     * Scope to get only active sessions.
      */
     public function scopeActiveSession($query)
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope to get only active sessions for a specific camp.
+     */
+    public function scopeActiveSessionForCamp($query, int $campId)
+    {
+        return $query->where('camp_id', $campId)->where('is_active', true);
     }
 
     /**
@@ -395,19 +406,21 @@ class CampInstance extends Model
         parent::boot();
 
         // When creating a new camp instance, if it's being set as active,
-        // deactivate all other sessions
+        // deactivate all other sessions for the same camp
         static::creating(function ($campInstance) {
             if ($campInstance->is_active) {
-                static::where('is_active', true)
+                static::where('camp_id', $campInstance->camp_id)
+                    ->where('is_active', true)
                     ->update(['is_active' => false]);
             }
         });
 
         // When updating a camp instance, if it's being set as active,
-        // deactivate all other sessions
+        // deactivate all other sessions for the same camp
         static::updating(function ($campInstance) {
             if ($campInstance->isDirty('is_active') && $campInstance->is_active) {
-                static::where('id', '!=', $campInstance->id)
+                static::where('camp_id', $campInstance->camp_id)
+                    ->where('id', '!=', $campInstance->id)
                     ->where('is_active', true)
                     ->update(['is_active' => false]);
             }

@@ -150,9 +150,9 @@ class CampSessionManagement extends Component
             $session->deactivate();
             session()->flash('message', "Session deactivated successfully.");
         } else {
-            // Activating the session (this will automatically deactivate others)
+            // Activating the session (this will automatically deactivate other sessions for the same camp)
             $session->activate();
-            session()->flash('message', "Session activated successfully. All other sessions have been deactivated.");
+            session()->flash('message', "Session activated successfully. All other sessions for this camp have been deactivated.");
         }
     }
 
