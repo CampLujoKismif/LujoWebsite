@@ -146,8 +146,9 @@ class UserManagement extends Component
                 'email_verified_at' => $this->emailVerified ? now() : null,
             ]);
 
-            // Assign roles
-            $user->syncRoles($this->selectedRoles);
+            // Assign roles - convert IDs to names
+            $roleNames = Role::whereIn('id', $this->selectedRoles)->pluck('name')->toArray();
+            $user->syncRoles($roleNames);
 
             // Assign to camps
             $this->assignUserToCamps($user);
@@ -204,8 +205,9 @@ class UserManagement extends Component
 
             $this->selectedUser->update($updateData);
 
-            // Update roles
-            $this->selectedUser->syncRoles($this->selectedRoles);
+            // Update roles - convert IDs to names
+            $roleNames = Role::whereIn('id', $this->selectedRoles)->pluck('name')->toArray();
+            $this->selectedUser->syncRoles($roleNames);
 
             // Update camp assignments
             $this->selectedUser->campAssignments()->delete();
