@@ -52,16 +52,14 @@ class EnrollmentManagement extends Component
     {
         $user = auth()->user();
         
-        // Get camp instances assigned to the manager
-        $this->campInstances = CampInstance::whereHas('camp', function ($query) use ($user) {
-            $query->whereHas('managers', function ($managerQuery) use ($user) {
-                $managerQuery->where('user_id', $user->id);
-            });
-        })
-        ->with('camp')
-        ->where('is_active', true)
-        ->orderBy('start_date')
-        ->get();
+        // Get camp instances for camps assigned to the manager
+        $assignedCampIds = $user->assignedCamps()->pluck('camps.id');
+        
+        $this->campInstances = CampInstance::whereIn('camp_id', $assignedCampIds)
+            ->with('camp')
+            ->where('is_active', true)
+            ->orderBy('start_date')
+            ->get();
 
         // Set default selected camp instance to the first one
         if ($this->campInstances->isNotEmpty() && !$this->selectedCampInstance) {
