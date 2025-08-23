@@ -2,8 +2,8 @@
     <div class="px-4 py-6 sm:px-0">
         <!-- Header -->
         <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Family Management</h1>
-            <p class="mt-2 text-sm text-gray-600">Manage your family information and members</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Family Management</h1>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage your family information and members</p>
         </div>
 
         <!-- Add Family Button -->
@@ -19,11 +19,11 @@
         <!-- Families List -->
         @if($families->isEmpty())
             <div class="text-center py-12">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">No families found</h3>
-                <p class="mt-1 text-sm text-gray-500">Get started by creating your first family.</p>
+                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No families found</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating your first family.</p>
             </div>
         @else
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -35,7 +35,7 @@
                                 <div>
                                     <h3 class="text-lg font-medium text-gray-900 dark:text-white">{{ $family->name }}</h3>
                                     @if($family->owner_user_id === auth()->id())
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                                             Family Owner
                                         </span>
                                     @endif
@@ -92,7 +92,7 @@
                                             <div>
                                                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $member->name }}</p>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ $member->email }}</p>
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                                                     {{ ucfirst($member->pivot->role_in_family) }}
                                                 </span>
                                             </div>
@@ -123,18 +123,18 @@
                                                     <p class="text-xs text-gray-500 dark:text-gray-400">Grade {{ $camper->grade }}</p>
                                                 </div>
                                                 @if($camper->hasMedicalAlerts())
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                        Medical Alert
-                                                    </span>
+                                                                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+                                                    Medical Alert
+                                                </span>
                                                 @endif
                                             </div>
                                         @endforeach
                                         @if($family->campers->count() > 3)
-                                            <p class="text-xs text-gray-500 text-center">+{{ $family->campers->count() - 3 }} more campers</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 text-center">+{{ $family->campers->count() - 3 }} more campers</p>
                                         @endif
                                     </div>
                                 @else
-                                    <p class="text-sm text-gray-500">No campers added yet.</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">No campers added yet.</p>
                                 @endif
                             </div>
                         </div>
@@ -230,20 +230,20 @@
                     <form wire:submit.prevent="updateFamily">
                         <div class="space-y-4">
                             <div>
-                                <label for="editFamilyName" class="block text-sm font-medium text-gray-700">Family Name</label>
-                                <input type="text" wire:model="familyName" id="editFamilyName" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="editFamilyName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Family Name</label>
+                                <input type="text" wire:model="familyName" id="editFamilyName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('familyName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="editPhone" class="block text-sm font-medium text-gray-700">Phone</label>
-                                <input type="tel" wire:model="phone" id="editPhone" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="editPhone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
+                                <input type="tel" wire:model="phone" id="editPhone" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('phone') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="editAddress" class="block text-sm font-medium text-gray-700">Address</label>
-                                <input type="text" wire:model="address" id="editAddress" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="editAddress" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Address</label>
+                                <input type="text" wire:model="address" id="editAddress" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('address') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 

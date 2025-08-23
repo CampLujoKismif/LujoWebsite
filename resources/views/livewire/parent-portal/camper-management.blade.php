@@ -2,8 +2,8 @@
     <div class="px-4 py-6 sm:px-0">
         <!-- Header -->
         <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Camper Management</h1>
-            <p class="mt-2 text-sm text-gray-600">Manage your campers' information and medical records</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Camper Management</h1>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage your campers' information and medical records</p>
         </div>
 
         <!-- Add Camper Button -->
@@ -19,11 +19,11 @@
         <!-- Campers List -->
         @if($campers->isEmpty())
             <div class="text-center py-12">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">No campers found</h3>
-                <p class="mt-1 text-sm text-gray-500">Get started by adding your first camper.</p>
+                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No campers found</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by adding your first camper.</p>
             </div>
         @else
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -36,7 +36,7 @@
                                     <h3 class="text-lg font-medium text-gray-900 dark:text-white">{{ $camper->full_name }}</h3>
                                     <p class="text-sm text-gray-500 dark:text-gray-400">Grade {{ $camper->grade }} • Age {{ $camper->age }}</p>
                                     @if($camper->hasMedicalAlerts())
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
                                             Medical Alerts
                                         </span>
                                     @endif
@@ -248,11 +248,11 @@
         <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div class="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-zinc-900">
                 <div class="mt-3">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Camper</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Edit Camper</h3>
                     <form wire:submit.prevent="updateCamper">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="editFamilyId" class="block text-sm font-medium text-gray-700">Family</label>
+                                <label for="editFamilyId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Family</label>
                                 <select wire:model="familyId" id="editFamilyId" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                     <option value="">Select Family</option>
                                     @foreach($families as $family)
@@ -263,25 +263,25 @@
                             </div>
 
                             <div>
-                                <label for="editFirstName" class="block text-sm font-medium text-gray-700">First Name</label>
+                                <label for="editFirstName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name</label>
                                 <input type="text" wire:model="firstName" id="editFirstName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('firstName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="editLastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+                                <label for="editLastName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Last Name</label>
                                 <input type="text" wire:model="lastName" id="editLastName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('lastName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="editDateOfBirth" class="block text-sm font-medium text-gray-700">Date of Birth</label>
+                                <label for="editDateOfBirth" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date of Birth</label>
                                 <input type="date" wire:model="dateOfBirth" id="editDateOfBirth" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('dateOfBirth') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="editGender" class="block text-sm font-medium text-gray-700">Gender</label>
+                                <label for="editGender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Gender</label>
                                 <select wire:model="gender" id="editGender" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                                     <option value="">Select Gender</option>
                                     <option value="male">Male</option>
@@ -292,7 +292,7 @@
                             </div>
 
                             <div>
-                                <label for="editGrade" class="block text-sm font-medium text-gray-700">Grade</label>
+                                <label for="editGrade" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Grade</label>
                                 <select wire:model="grade" id="editGrade" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                                     <option value="">Select Grade</option>
                                     @for($i = 1; $i <= 12; $i++)
@@ -303,7 +303,7 @@
                             </div>
 
                             <div>
-                                <label for="editSchool" class="block text-sm font-medium text-gray-700">School</label>
+                                <label for="editSchool" class="block text-sm font-medium text-gray-700 dark:text-gray-300">School</label>
                                 <input type="text" wire:model="school" id="editSchool" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                                 @error('school') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
@@ -376,47 +376,47 @@
         <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div class="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white dark:bg-zinc-900">
                 <div class="mt-3">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Medical Records - {{ $selectedCamper->full_name ?? '' }}</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Medical Records - {{ $selectedCamper->full_name ?? '' }}</h3>
                     <form wire:submit.prevent="saveMedicalRecord">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="physicianName" class="block text-sm font-medium text-gray-700">Physician Name</label>
-                                <input type="text" wire:model="physicianName" id="physicianName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="physicianName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Physician Name</label>
+                                <input type="text" wire:model="physicianName" id="physicianName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('physicianName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="physicianPhone" class="block text-sm font-medium text-gray-700">Physician Phone</label>
-                                <input type="tel" wire:model="physicianPhone" id="physicianPhone" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="physicianPhone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Physician Phone</label>
+                                <input type="tel" wire:model="physicianPhone" id="physicianPhone" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('physicianPhone') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="policyNumber" class="block text-sm font-medium text-gray-700">Insurance Policy Number</label>
-                                <input type="text" wire:model="policyNumber" id="policyNumber" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="policyNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Insurance Policy Number</label>
+                                <input type="text" wire:model="policyNumber" id="policyNumber" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('policyNumber') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="insuranceProvider" class="block text-sm font-medium text-gray-700">Insurance Provider</label>
-                                <input type="text" wire:model="insuranceProvider" id="insuranceProvider" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="insuranceProvider" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Insurance Provider</label>
+                                <input type="text" wire:model="insuranceProvider" id="insuranceProvider" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('insuranceProvider') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="medicalEmergencyContactName" class="block text-sm font-medium text-gray-700">Emergency Contact Name</label>
-                                <input type="text" wire:model="medicalEmergencyContactName" id="medicalEmergencyContactName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="medicalEmergencyContactName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Emergency Contact Name</label>
+                                <input type="text" wire:model="medicalEmergencyContactName" id="medicalEmergencyContactName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('medicalEmergencyContactName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="medicalEmergencyContactPhone" class="block text-sm font-medium text-gray-700">Emergency Contact Phone</label>
-                                <input type="tel" wire:model="medicalEmergencyContactPhone" id="medicalEmergencyContactPhone" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="medicalEmergencyContactPhone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Emergency Contact Phone</label>
+                                <input type="tel" wire:model="medicalEmergencyContactPhone" id="medicalEmergencyContactPhone" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('medicalEmergencyContactPhone') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="medicalEmergencyContactRelationship" class="block text-sm font-medium text-gray-700">Relationship</label>
+                                <label for="medicalEmergencyContactRelationship" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Relationship</label>
                                 <input type="text" wire:model="medicalEmergencyContactRelationship" id="medicalEmergencyContactRelationship" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                                 @error('medicalEmergencyContactRelationship') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
