@@ -59,7 +59,13 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Birth Date:</span>
-                                    <p class="text-sm text-gray-900 dark:text-white">{{ $camper->birth_date->format('M j, Y') }}</p>
+                                    <p class="text-sm text-gray-900 dark:text-white">
+                                        @if($camper->birth_date)
+                                            {{ $camper->birth_date->format('M j, Y') }}
+                                        @else
+                                            <span class="text-gray-400">Not specified</span>
+                                        @endif
+                                    </p>
                                 </div>
                                 <div>
                                     <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Gender:</span>
@@ -114,12 +120,12 @@
         <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div class="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-zinc-900">
                 <div class="mt-3">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Camper</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Add New Camper</h3>
                     <form wire:submit.prevent="createCamper">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="familyId" class="block text-sm font-medium text-gray-700">Family</label>
-                                <select wire:model="familyId" id="familyId" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="familyId" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Family</label>
+                                <select wire:model="familyId" id="familyId" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                     <option value="">Select Family</option>
                                     @foreach($families as $family)
                                         <option value="{{ $family->id }}">{{ $family->name }}</option>
@@ -129,26 +135,26 @@
                             </div>
 
                             <div>
-                                <label for="firstName" class="block text-sm font-medium text-gray-700">First Name</label>
-                                <input type="text" wire:model="firstName" id="firstName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="firstName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name</label>
+                                <input type="text" wire:model="firstName" id="firstName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('firstName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
-                                <input type="text" wire:model="lastName" id="lastName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="lastName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Last Name</label>
+                                <input type="text" wire:model="lastName" id="lastName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('lastName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="dateOfBirth" class="block text-sm font-medium text-gray-700">Date of Birth</label>
-                                <input type="date" wire:model="dateOfBirth" id="dateOfBirth" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="dateOfBirth" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date of Birth</label>
+                                <input type="date" wire:model="dateOfBirth" id="dateOfBirth" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('dateOfBirth') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
-                                <select wire:model="gender" id="gender" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="gender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Gender</label>
+                                <select wire:model="gender" id="gender" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                     <option value="">Select Gender</option>
                                     <option value="male">Male</option>
                                     <option value="female">Female</option>
@@ -158,8 +164,8 @@
                             </div>
 
                             <div>
-                                <label for="grade" class="block text-sm font-medium text-gray-700">Grade</label>
-                                <select wire:model="grade" id="grade" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="grade" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Grade</label>
+                                <select wire:model="grade" id="grade" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                     <option value="">Select Grade</option>
                                     @for($i = 1; $i <= 12; $i++)
                                         <option value="{{ $i }}">{{ $i }}</option>
@@ -169,8 +175,8 @@
                             </div>
 
                             <div>
-                                <label for="school" class="block text-sm font-medium text-gray-700">School</label>
-                                <input type="text" wire:model="school" id="school" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <label for="school" class="block text-sm font-medium text-gray-700 dark:text-gray-300">School</label>
+                                <input type="text" wire:model="school" id="school" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('school') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -224,7 +230,7 @@
                         </div>
 
                         <div class="mt-6 flex justify-end space-x-3">
-                            <button type="button" wire:click="$set('showAddCamperModal', false)" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            <button type="button" wire:click="$set('showAddCamperModal', false)" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700">
                                 Cancel
                             </button>
                             <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
@@ -247,7 +253,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="editFamilyId" class="block text-sm font-medium text-gray-700">Family</label>
-                                <select wire:model="familyId" id="editFamilyId" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <select wire:model="familyId" id="editFamilyId" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                     <option value="">Select Family</option>
                                     @foreach($families as $family)
                                         <option value="{{ $family->id }}">{{ $family->name }}</option>
@@ -258,19 +264,19 @@
 
                             <div>
                                 <label for="editFirstName" class="block text-sm font-medium text-gray-700">First Name</label>
-                                <input type="text" wire:model="firstName" id="editFirstName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <input type="text" wire:model="firstName" id="editFirstName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('firstName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
                                 <label for="editLastName" class="block text-sm font-medium text-gray-700">Last Name</label>
-                                <input type="text" wire:model="lastName" id="editLastName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <input type="text" wire:model="lastName" id="editLastName" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('lastName') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
                                 <label for="editDateOfBirth" class="block text-sm font-medium text-gray-700">Date of Birth</label>
-                                <input type="date" wire:model="dateOfBirth" id="editDateOfBirth" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <input type="date" wire:model="dateOfBirth" id="editDateOfBirth" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('dateOfBirth') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
