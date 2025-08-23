@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             CampSeeder::class,
             CampInstanceSeeder::class,
             SuperAdminSeeder::class,
+            TestUsersSeeder::class,
         ]);
 
         // User::factory(10)->create();
