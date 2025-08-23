@@ -183,10 +183,10 @@
 
                         <!-- Allergies -->
                         <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Allergies</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Allergies</label>
                             @foreach($allergies as $index => $allergy)
                                 <div class="flex items-center space-x-2 mb-2">
-                                    <input type="text" wire:model="allergies.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter allergy">
+                                    <input type="text" wire:model="allergies.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="Enter allergy">
                                     <button type="button" wire:click="removeAllergy({{ $index }})" class="text-red-600 hover:text-red-900">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -199,10 +199,10 @@
 
                         <!-- Medical Conditions -->
                         <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Medical Conditions</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Medical Conditions</label>
                             @foreach($medicalConditions as $index => $condition)
                                 <div class="flex items-center space-x-2 mb-2">
-                                    <input type="text" wire:model="medicalConditions.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter medical condition">
+                                    <input type="text" wire:model="medicalConditions.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="Enter medical condition">
                                     <button type="button" wire:click="removeMedicalCondition({{ $index }})" class="text-red-600 hover:text-red-900">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -215,10 +215,10 @@
 
                         <!-- Medications -->
                         <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Medications</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Medications</label>
                             @foreach($medications as $index => $medication)
                                 <div class="flex items-center space-x-2 mb-2">
-                                    <input type="text" wire:model="medications.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter medication">
+                                    <input type="text" wire:model="medications.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="Enter medication">
                                     <button type="button" wire:click="removeMedication({{ $index }})" class="text-red-600 hover:text-red-900">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -282,7 +282,7 @@
 
                             <div>
                                 <label for="editGender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Gender</label>
-                                <select wire:model="gender" id="editGender" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <select wire:model="gender" id="editGender" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                     <option value="">Select Gender</option>
                                     <option value="male">Male</option>
                                     <option value="female">Female</option>
@@ -293,7 +293,7 @@
 
                             <div>
                                 <label for="editGrade" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Grade</label>
-                                <select wire:model="grade" id="editGrade" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <select wire:model="grade" id="editGrade" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                     <option value="">Select Grade</option>
                                     @for($i = 1; $i <= 12; $i++)
                                         <option value="{{ $i }}">{{ $i }}</option>
@@ -304,17 +304,17 @@
 
                             <div>
                                 <label for="editSchool" class="block text-sm font-medium text-gray-700 dark:text-gray-300">School</label>
-                                <input type="text" wire:model="school" id="editSchool" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <input type="text" wire:model="school" id="editSchool" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('school') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         </div>
 
                         <!-- Allergies -->
                         <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Allergies</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Allergies</label>
                             @foreach($allergies as $index => $allergy)
                                 <div class="flex items-center space-x-2 mb-2">
-                                    <input type="text" wire:model="allergies.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter allergy">
+                                    <input type="text" wire:model="allergies.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="Enter allergy">
                                     <button type="button" wire:click="removeAllergy({{ $index }})" class="text-red-600 hover:text-red-900">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -327,10 +327,10 @@
 
                         <!-- Medical Conditions -->
                         <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Medical Conditions</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Medical Conditions</label>
                             @foreach($medicalConditions as $index => $condition)
                                 <div class="flex items-center space-x-2 mb-2">
-                                    <input type="text" wire:model="medicalConditions.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter medical condition">
+                                    <input type="text" wire:model="medicalConditions.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="Enter medical condition">
                                     <button type="button" wire:click="removeMedicalCondition({{ $index }})" class="text-red-600 hover:text-red-900">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -343,10 +343,10 @@
 
                         <!-- Medications -->
                         <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Medications</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Medications</label>
                             @foreach($medications as $index => $medication)
                                 <div class="flex items-center space-x-2 mb-2">
-                                    <input type="text" wire:model="medications.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter medication">
+                                    <input type="text" wire:model="medications.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="Enter medication">
                                     <button type="button" wire:click="removeMedication({{ $index }})" class="text-red-600 hover:text-red-900">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -358,7 +358,7 @@
                         </div>
 
                         <div class="mt-6 flex justify-end space-x-3">
-                            <button type="button" wire:click="$set('showEditCamperModal', false)" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            <button type="button" wire:click="$set('showEditCamperModal', false)" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700">
                                 Cancel
                             </button>
                             <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
@@ -417,17 +417,17 @@
 
                             <div>
                                 <label for="medicalEmergencyContactRelationship" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Relationship</label>
-                                <input type="text" wire:model="medicalEmergencyContactRelationship" id="medicalEmergencyContactRelationship" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <input type="text" wire:model="medicalEmergencyContactRelationship" id="medicalEmergencyContactRelationship" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                 @error('medicalEmergencyContactRelationship') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         </div>
 
                         <!-- Medical Allergies -->
                         <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Medical Allergies</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Medical Allergies</label>
                             @foreach($medicalAllergies as $index => $allergy)
                                 <div class="flex items-center space-x-2 mb-2">
-                                    <input type="text" wire:model="medicalAllergies.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter allergy">
+                                    <input type="text" wire:model="medicalAllergies.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="Enter allergy">
                                     <button type="button" wire:click="removeMedicalAllergy({{ $index }})" class="text-red-600 hover:text-red-900">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -440,10 +440,10 @@
 
                         <!-- Medical Medications -->
                         <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Medical Medications</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Medical Medications</label>
                             @foreach($medicalMedications as $index => $medication)
                                 <div class="flex items-center space-x-2 mb-2">
-                                    <input type="text" wire:model="medicalMedications.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter medication">
+                                    <input type="text" wire:model="medicalMedications.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="Enter medication">
                                     <button type="button" wire:click="removeMedicalMedication({{ $index }})" class="text-red-600 hover:text-red-900">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -456,10 +456,10 @@
 
                         <!-- Medical Conditions -->
                         <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Medical Conditions</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Medical Conditions</label>
                             @foreach($medicalConditions as $index => $condition)
                                 <div class="flex items-center space-x-2 mb-2">
-                                    <input type="text" wire:model="medicalConditions.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter medical condition">
+                                    <input type="text" wire:model="medicalConditions.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="Enter medical condition">
                                     <button type="button" wire:click="removeMedicalCondition({{ $index }})" class="text-red-600 hover:text-red-900">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -472,10 +472,10 @@
 
                         <!-- Dietary Restrictions -->
                         <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Dietary Restrictions</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dietary Restrictions</label>
                             @foreach($dietaryRestrictions as $index => $restriction)
                                 <div class="flex items-center space-x-2 mb-2">
-                                    <input type="text" wire:model="dietaryRestrictions.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter dietary restriction">
+                                    <input type="text" wire:model="dietaryRestrictions.{{ $index }}" class="flex-1 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="Enter dietary restriction">
                                     <button type="button" wire:click="removeDietaryRestriction({{ $index }})" class="text-red-600 hover:text-red-900">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -487,13 +487,13 @@
                         </div>
 
                         <div class="mt-4">
-                            <label for="medicalNotes" class="block text-sm font-medium text-gray-700">Medical Notes</label>
-                            <textarea wire:model="medicalNotes" id="medicalNotes" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Additional medical notes..."></textarea>
+                            <label for="medicalNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Medical Notes</label>
+                            <textarea wire:model="medicalNotes" id="medicalNotes" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="Additional medical notes..."></textarea>
                             @error('medicalNotes') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="mt-6 flex justify-end space-x-3">
-                            <button type="button" wire:click="$set('showMedicalModal', false)" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            <button type="button" wire:click="$set('showMedicalModal', false)" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700">
                                 Cancel
                             </button>
                             <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
