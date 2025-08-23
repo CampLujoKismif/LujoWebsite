@@ -18,7 +18,10 @@ class Camper extends Model
         'first_name',
         'last_name',
         'date_of_birth',
-        'gender',
+        'biological_gender',
+        'date_of_baptism',
+        'phone_number',
+        'email',
         'grade',
         'school',
         'allergies',
@@ -32,10 +35,30 @@ class Camper extends Model
 
     protected $casts = [
         'date_of_birth' => 'date',
+        'date_of_baptism' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
+
+    /**
+     * Get the biological gender options.
+     */
+    public static function getBiologicalGenderOptions(): array
+    {
+        return [
+            'Male' => 'Male',
+            'Female' => 'Female',
+        ];
+    }
+
+    /**
+     * Get the biological gender options for validation.
+     */
+    public static function getBiologicalGenderValues(): array
+    {
+        return array_keys(self::getBiologicalGenderOptions());
+    }
 
     /**
      * Get the family for this camper.

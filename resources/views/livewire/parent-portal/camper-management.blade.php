@@ -68,9 +68,27 @@
                                     </p>
                                 </div>
                                 <div>
-                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Gender:</span>
-                                    <p class="text-sm text-gray-900 dark:text-white">{{ ucfirst($camper->gender) }}</p>
+                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Biological Gender:</span>
+                                    <p class="text-sm text-gray-900 dark:text-white">{{ $camper->biological_gender ?? 'Not specified' }}</p>
                                 </div>
+                                @if($camper->date_of_baptism)
+                                    <div>
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Date of Baptism:</span>
+                                        <p class="text-sm text-gray-900 dark:text-white">{{ $camper->date_of_baptism->format('M j, Y') }}</p>
+                                    </div>
+                                @endif
+                                @if($camper->phone_number)
+                                    <div>
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Phone:</span>
+                                        <p class="text-sm text-gray-900 dark:text-white">{{ $camper->phone_number }}</p>
+                                    </div>
+                                @endif
+                                @if($camper->email)
+                                    <div>
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Email:</span>
+                                        <p class="text-sm text-gray-900 dark:text-white">{{ $camper->email }}</p>
+                                    </div>
+                                @endif
                                 @if($camper->allergies)
                                     <div class="md:col-span-2">
                                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Allergies:</span>
@@ -153,14 +171,31 @@
                             </div>
 
                             <div>
-                                <label for="gender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Gender</label>
-                                <select wire:model="gender" id="gender" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                                    <option value="">Select Gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="other">Other</option>
+                                <label for="dateOfBaptism" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date of Baptism</label>
+                                <input type="date" wire:model="dateOfBaptism" id="dateOfBaptism" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
+                                @error('dateOfBaptism') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label for="biologicalGender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Biological Gender</label>
+                                <select wire:model="biologicalGender" id="biologicalGender" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
+                                    <option value="">Select Biological Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
                                 </select>
-                                @error('gender') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                @error('biologicalGender') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label for="phoneNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                                <input type="tel" wire:model="phoneNumber" id="phoneNumber" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="(555) 123-4567">
+                                @error('phoneNumber') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                                <input type="email" wire:model="email" id="email" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="camper@example.com">
+                                @error('email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
@@ -281,14 +316,31 @@
                             </div>
 
                             <div>
-                                <label for="editGender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Gender</label>
-                                <select wire:model="gender" id="editGender" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                                    <option value="">Select Gender</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="other">Other</option>
+                                <label for="editDateOfBaptism" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date of Baptism</label>
+                                <input type="date" wire:model="dateOfBaptism" id="editDateOfBaptism" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
+                                @error('dateOfBaptism') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label for="editBiologicalGender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Biological Gender</label>
+                                <select wire:model="biologicalGender" id="editBiologicalGender" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
+                                    <option value="">Select Biological Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
                                 </select>
-                                @error('gender') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                @error('biologicalGender') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label for="editPhoneNumber" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</label>
+                                <input type="tel" wire:model="phoneNumber" id="editPhoneNumber" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="(555) 123-4567">
+                                @error('phoneNumber') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div>
+                                <label for="editEmail" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                                <input type="email" wire:model="email" id="editEmail" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="camper@example.com">
+                                @error('email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
