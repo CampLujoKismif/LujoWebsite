@@ -127,7 +127,7 @@
                                                 @endif
                                                 <div class="flex gap-1">
                                                     <button wire:click="toggleSessionStatus({{ $instance->id }})" class="text-xs px-2 py-1 rounded {{ $instance->is_active ? 'text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300' : 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300' }}">
-                                                        {{ $instance->is_active ? 'Deactivate' : 'Activate' }}
+                                                        {{ $instance->is_active ? 'Deactivate' : 'Make Active' }}
                                                     </button>
                                                     <button wire:click="openEditSessionModal({{ $instance->id }})" class="text-xs px-2 py-1 rounded text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                                                         Edit

@@ -50,17 +50,17 @@
                 </div>
             </div>
 
-            <!-- Upcoming Sessions -->
+            <!-- Active Session -->
             <div class="bg-white dark:bg-zinc-900 shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Open for Registration</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Current Active Session</h3>
                     @if($upcomingSessions->isEmpty())
                         <div class="text-center py-6">
                             <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No sessions open for registration</h3>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Check back later for new camp sessions.</p>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No active session</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">There is currently no active camp session open for registration.</p>
                         </div>
                     @else
                         <div class="space-y-4">

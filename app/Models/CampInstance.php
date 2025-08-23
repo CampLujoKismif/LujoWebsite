@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class CampInstance extends Model
 {
@@ -335,5 +336,81 @@ class CampInstance extends Model
     public function forceDelete(): bool
     {
         return parent::forceDelete();
+    }
+
+    /**
+     * Get the currently active camp session.
+     */
+    public static function getActiveSession(): ?self
+    {
+        return static::where('is_active', true)->first();
+    }
+
+    /**
+     * Activate this camp session and deactivate all others.
+     */
+    public function activate(): bool
+    {
+        // Start a transaction to ensure atomicity
+        return DB::transaction(function () {
+            // Deactivate all other sessions
+            static::where('id', '!=', $this->id)
+                ->where('is_active', true)
+                ->update(['is_active' => false]);
+
+            // Activate this session
+            return $this->update(['is_active' => true]);
+        });
+    }
+
+    /**
+     * Deactivate this camp session.
+     */
+    public function deactivate(): bool
+    {
+        return $this->update(['is_active' => false]);
+    }
+
+    /**
+     * Check if this is the currently active session.
+     */
+    public function isActiveSession(): bool
+    {
+        return $this->is_active && $this->id === static::getActiveSession()?->id;
+    }
+
+    /**
+     * Scope to get only the active session.
+     */
+    public function scopeActiveSession($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Boot the model and add event listeners.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // When creating a new camp instance, if it's being set as active,
+        // deactivate all other sessions
+        static::creating(function ($campInstance) {
+            if ($campInstance->is_active) {
+                static::where('is_active', true)
+                    ->update(['is_active' => false]);
+            }
+        });
+
+        // When updating a camp instance, if it's being set as active,
+        // deactivate all other sessions
+        static::updating(function ($campInstance) {
+            if ($campInstance->isDirty('is_active') && $campInstance->is_active) {
+                static::where('id', '!=', $campInstance->id)
+                    ->where('is_active', true)
+                    ->update(['is_active' => false]);
+            }
+        });
     }
 } 

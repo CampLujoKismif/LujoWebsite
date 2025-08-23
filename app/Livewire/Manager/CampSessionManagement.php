@@ -145,10 +145,15 @@ class CampSessionManagement extends Component
             return;
         }
         
-        $session->update(['is_active' => !$session->is_active]);
-        
-        $status = $session->is_active ? 'activated' : 'deactivated';
-        session()->flash('message', "Session {$status} successfully.");
+        if ($session->is_active) {
+            // Deactivating the session
+            $session->deactivate();
+            session()->flash('message', "Session deactivated successfully.");
+        } else {
+            // Activating the session (this will automatically deactivate others)
+            $session->activate();
+            session()->flash('message', "Session activated successfully. All other sessions have been deactivated.");
+        }
     }
 
     public function updateSession()

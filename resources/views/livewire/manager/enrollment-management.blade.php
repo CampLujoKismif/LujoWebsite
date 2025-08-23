@@ -15,29 +15,44 @@
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">You don't have any camp sessions assigned to manage.</p>
             </div>
         @else
-            <!-- Session Selector -->
+            <!-- Active Session -->
             <div class="bg-white dark:bg-zinc-900 shadow rounded-lg mb-6">
                 <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Select Camp Session</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($campInstances as $instance)
-                            <button 
-                                wire:click="$set('selectedCampInstance', {{ $instance->id }})"
-                                class="text-left p-4 rounded-lg border-2 transition-colors {{ $selectedCampInstance == $instance->id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800' }}"
-                            >
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ $instance->camp->display_name }}</h4>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $instance->year }}</p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $instance->start_date->format('M j') }} - {{ $instance->end_date->format('M j, Y') }}</p>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Current Active Session</h3>
+                    @if($campInstances->isEmpty())
+                        <div class="text-center py-6">
+                            <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No active session</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">There is currently no active camp session for your assigned camps.</p>
+                        </div>
+                    @else
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach($campInstances as $instance)
+                                <button 
+                                    wire:click="$set('selectedCampInstance', {{ $instance->id }})"
+                                    class="text-left p-4 rounded-lg border-2 transition-colors {{ $selectedCampInstance == $instance->id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800' }}"
+                                >
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ $instance->camp->display_name }}</h4>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $instance->year }}</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $instance->start_date->format('M j') }} - {{ $instance->end_date->format('M j, Y') }}</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                                Active
+                                            </span>
+                                            <div class="mt-1">
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $instance->enrollments()->count() }} enrollments</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-right">
-                                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ $instance->enrollments()->count() }} enrollments</span>
-                                    </div>
-                                </div>
-                            </button>
-                        @endforeach
-                    </div>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
 
