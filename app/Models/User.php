@@ -63,104 +63,15 @@ class User extends Authenticatable implements MustVerifyEmail
             ->implode('');
     }
 
-    /**
-     * Get the roles for this user.
-     */
-    public function roles(): BelongsToMany
-    {
-        return $this->belongsToMany(Role::class, 'user_roles');
-    }
-
-    /**
-     * Get the permissions for this user through their roles.
-     */
-    public function permissions(): BelongsToMany
-    {
-        return $this->belongsToMany(Permission::class, 'user_roles', 'user_id', 'permission_id')
-            ->wherePivotIn('role_id', $this->roles()->pluck('roles.id'));
-    }
-
-    /**
-     * Check if the user has a specific role.
-     */
-    public function hasRole(string $roleName): bool
-    {
-        return $this->roles()->where('name', $roleName)->exists();
-    }
-
-    /**
-     * Check if the user has any of the specified roles.
-     */
-    public function hasAnyRole(array $roleNames): bool
-    {
-        return $this->roles()->whereIn('name', $roleNames)->exists();
-    }
-
-    /**
-     * Check if the user has all of the specified roles.
-     */
-    public function hasAllRoles(array $roleNames): bool
-    {
-        $userRoleNames = $this->roles()->pluck('name')->toArray();
-        return count(array_intersect($roleNames, $userRoleNames)) === count($roleNames);
-    }
-
-    /**
-     * Check if the user has a specific permission.
-     */
-    public function hasPermission(string $permissionName): bool
-    {
-        return $this->roles()
-            ->whereHas('permissions', function ($query) use ($permissionName) {
-                $query->where('name', $permissionName);
-            })
-            ->exists();
-    }
-
-    /**
-     * Check if the user has any of the specified permissions.
-     */
-    public function hasAnyPermission(array $permissionNames): bool
-    {
-        return $this->roles()
-            ->whereHas('permissions', function ($query) use ($permissionNames) {
-                $query->whereIn('name', $permissionNames);
-            })
-            ->exists();
-    }
-
+    // Note: Role and permission methods are provided by the Spatie HasRoles trait
+    // Custom role methods have been removed to avoid conflicts with Spatie package
+    
     /**
      * Check if the user is an admin (has any admin role).
      */
     public function isAdmin(): bool
     {
-        return $this->roles()->where('is_admin', true)->exists();
-    }
-
-    /**
-     * Assign a role to this user.
-     */
-    public function assignRole(Role $role): void
-    {
-        if (!$this->hasRole($role->name)) {
-            $this->roles()->attach($role);
-        }
-    }
-
-    /**
-     * Remove a role from this user.
-     */
-    public function removeRole(Role $role): void
-    {
-        $this->roles()->detach($role);
-    }
-
-    /**
-     * Sync roles for this user (replace all existing roles).
-     */
-    public function syncRoles(array $roleIds): void
-    {
-        $this->roles()->sync($roleIds);
+        return $this->hasRole('system-admin');
     }
 
     /**
