@@ -3,16 +3,16 @@
         <!-- Header -->
         <div class="mb-6">
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Enrollment Management</h1>
-            <p class="mt-2 text-sm text-gray-600">Manage enrollments for your assigned camp sessions</p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage enrollments for your assigned camp sessions</p>
         </div>
 
         @if($campInstances->isEmpty())
             <div class="text-center py-12">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
                 <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No camp sessions assigned</h3>
-                <p class="mt-1 text-sm text-gray-500">You don't have any camp sessions assigned to manage.</p>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">You don't have any camp sessions assigned to manage.</p>
             </div>
         @else
             <!-- Session Selector -->

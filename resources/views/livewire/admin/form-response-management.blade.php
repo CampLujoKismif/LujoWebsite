@@ -2,14 +2,14 @@
     <div class="px-4 py-6 sm:px-0">
         <!-- Header -->
         <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Form Response Management</h1>
-            <p class="mt-2 text-sm text-gray-600">View and manage form submissions from campers and families</p>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Form Response Management</h1>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">View and manage form submissions from campers and families</p>
         </div>
 
         <!-- Filters -->
         <div class="bg-white dark:bg-zinc-900 shadow rounded-lg mb-6">
             <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Filters</h3>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">Filters</h3>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label for="templateFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Form Template</label>
@@ -52,19 +52,19 @@
         <div class="bg-white dark:bg-zinc-900 shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900">Form Responses</h3>
-                    <div class="text-sm text-gray-500">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">Form Responses</h3>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
                         {{ $this->responses->total() }} total responses
                     </div>
                 </div>
 
                 @if($this->responses->isEmpty())
                     <div class="text-center py-12">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">No form responses found</h3>
-                        <p class="mt-1 text-sm text-gray-500">No responses match your current filters.</p>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No form responses found</h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No responses match your current filters.</p>
                     </div>
                 @else
                     <div class="overflow-x-auto">
@@ -81,7 +81,7 @@
                             </thead>
                             <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-gray-700">
                                 @foreach($this->responses as $response)
-                                    <tr class="hover:bg-gray-50">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div>
                                                 <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $response->camper->full_name }}</div>
@@ -102,8 +102,8 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                @if($response->is_complete) bg-green-100 text-green-800
-                                                @else bg-yellow-100 text-yellow-800 @endif">
+                                                @if($response->is_complete) bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200
+                                                @else bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 @endif">
                                                 {{ $response->is_complete ? 'Complete' : 'Incomplete' }}
                                             </span>
                                         </td>
@@ -154,8 +154,8 @@
             <div class="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white dark:bg-zinc-900">
                 <div class="mt-3">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Form Response Details</h3>
-                        <button wire:click="$set('showResponseModal', false)" class="text-gray-400 hover:text-gray-600">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Form Response Details</h3>
+                        <button wire:click="$set('showResponseModal', false)" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
@@ -163,21 +163,21 @@
                     </div>
 
                     <!-- Response Header -->
-                    <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <div class="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 mb-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <h4 class="text-sm font-medium text-gray-900">Camper Information</h4>
-                                <p class="text-sm text-gray-600">{{ $selectedResponse->camper->full_name }}</p>
-                                <p class="text-sm text-gray-600">{{ $selectedResponse->camper->family->name }}</p>
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Camper Information</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ $selectedResponse->camper->full_name }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ $selectedResponse->camper->family->name }}</p>
                             </div>
                             <div>
-                                <h4 class="text-sm font-medium text-gray-900">Form Information</h4>
-                                <p class="text-sm text-gray-600">{{ $selectedResponse->formTemplate->name }}</p>
-                                <p class="text-sm text-gray-600">{{ ucfirst($selectedResponse->formTemplate->scope) }}</p>
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Form Information</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ $selectedResponse->formTemplate->name }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ ucfirst($selectedResponse->formTemplate->scope) }}</p>
                             </div>
                             <div>
-                                <h4 class="text-sm font-medium text-gray-900">Submission Details</h4>
-                                <p class="text-sm text-gray-600">
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Submission Details</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
                                     @if($selectedResponse->submitted_at)
                                         {{ $selectedResponse->submitted_at->format('M j, Y g:i A') }}
                                     @else
@@ -185,12 +185,12 @@
                                     @endif
                                 </p>
                                 @if($selectedResponse->submittedBy)
-                                    <p class="text-sm text-gray-600">By: {{ $selectedResponse->submittedBy->name }}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">By: {{ $selectedResponse->submittedBy->name }}</p>
                                 @endif
                             </div>
                             <div>
-                                <h4 class="text-sm font-medium text-gray-900">Status</h4>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $selectedResponse->is_complete ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Status</h4>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $selectedResponse->is_complete ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' }}">
                                     {{ $selectedResponse->is_complete ? 'Complete' : 'Incomplete' }}
                                 </span>
                             </div>
