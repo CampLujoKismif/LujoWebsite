@@ -106,7 +106,7 @@ class TestUsersSeeder extends Seeder
                 'first_name' => 'John',
                 'last_name' => 'Smith',
                 'date_of_birth' => now()->subYears(12),
-                'gender' => 'male',
+                'biological_gender' => 'Male',
                 'grade' => 6,
                 'school' => 'Anytown Elementary',
             ]);
@@ -116,7 +116,7 @@ class TestUsersSeeder extends Seeder
                 'first_name' => 'Jane',
                 'last_name' => 'Smith',
                 'date_of_birth' => now()->subYears(10),
-                'gender' => 'female',
+                'biological_gender' => 'Female',
                 'grade' => 4,
                 'school' => 'Anytown Elementary',
                 'allergies' => json_encode(['Peanuts', 'Shellfish']),
