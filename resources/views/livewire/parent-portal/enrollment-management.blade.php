@@ -8,12 +8,12 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Current Enrollments -->
-            <div class="bg-white shadow rounded-lg">
+            <div class="bg-white dark:bg-zinc-900 shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Current Enrollments</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Current Enrollments</h3>
                     @if($enrollments->isEmpty())
                         <div class="mt-6 text-center">
-                            <div class="mx-auto h-12 w-12 text-gray-400">
+                            <div class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
@@ -51,39 +51,39 @@
             </div>
 
             <!-- Upcoming Sessions -->
-            <div class="bg-white shadow rounded-lg">
+            <div class="bg-white dark:bg-zinc-900 shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Open for Registration</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Open for Registration</h3>
                     @if($upcomingSessions->isEmpty())
                         <div class="text-center py-6">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">No sessions open for registration</h3>
-                            <p class="mt-1 text-sm text-gray-500">Check back later for new camp sessions.</p>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No sessions open for registration</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Check back later for new camp sessions.</p>
                         </div>
                     @else
                         <div class="space-y-4">
                             @foreach($upcomingSessions as $session)
-                                <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                                     <div class="flex items-center justify-between">
                                         <div>
-                                            <h4 class="text-sm font-medium text-gray-900">{{ $session->camp->display_name }} {{ $session->year }}</h4>
+                                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ $session->camp->display_name }} {{ $session->year }}</h4>
                                             @if($session->start_date && $session->end_date)
-                                                <p class="text-sm text-gray-500">{{ $session->start_date->format('M j') }} - {{ $session->end_date->format('M j, Y') }}</p>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $session->start_date->format('M j') }} - {{ $session->end_date->format('M j, Y') }}</p>
                                             @endif
                                             @if($session->price)
-                                                <p class="text-sm text-gray-600">${{ number_format($session->price, 2) }}</p>
+                                                <p class="text-sm text-gray-600 dark:text-gray-300">${{ number_format($session->price, 2) }}</p>
                                             @endif
                                         </div>
                                         <div class="text-right">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                                                 Registration Open
                                             </span>
                                         </div>
                                     </div>
                                     <div class="mt-3">
-                                        <a href="#" class="text-sm text-indigo-600 hover:text-indigo-500">Register Now</a>
+                                        <a href="#" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">Register Now</a>
                                     </div>
                                 </div>
                             @endforeach
@@ -94,25 +94,25 @@
         </div>
 
         <!-- Enrollment Statistics -->
-        <div class="mt-6 bg-white shadow rounded-lg">
+        <div class="mt-6 bg-white dark:bg-zinc-900 shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Enrollment Statistics</h3>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Enrollment Statistics</h3>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-gray-900">{{ $enrollments->count() }}</div>
-                        <div class="text-sm text-gray-500">Total Enrollments</div>
+                        <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $enrollments->count() }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Total Enrollments</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-green-600">{{ $enrollments->where('status', 'confirmed')->count() }}</div>
-                        <div class="text-sm text-gray-500">Confirmed</div>
+                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $enrollments->where('status', 'confirmed')->count() }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Confirmed</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-yellow-600">{{ $enrollments->where('status', 'pending')->count() }}</div>
-                        <div class="text-sm text-gray-500">Pending</div>
+                        <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ $enrollments->where('status', 'pending')->count() }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Pending</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-blue-600">{{ $enrollments->where('status', 'waitlisted')->count() }}</div>
-                        <div class="text-sm text-gray-500">Waitlisted</div>
+                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $enrollments->where('status', 'waitlisted')->count() }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Waitlisted</div>
                     </div>
                 </div>
             </div>
