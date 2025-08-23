@@ -14,8 +14,6 @@ class EnrollmentManagement extends Component
 {
     use WithPagination;
 
-    public $enrollments;
-    public $campInstances;
     public $selectedEnrollment;
     public $showDetailsModal = false;
     public $showStatusModal = false;
@@ -51,10 +49,7 @@ class EnrollmentManagement extends Component
 
     public function loadData()
     {
-        $this->campInstances = CampInstance::with('camp')
-            ->where('is_active', true)
-            ->orderBy('start_date')
-            ->get();
+        // Data is loaded in computed properties
     }
 
     public function updatedStatusFilter()
@@ -187,6 +182,14 @@ class EnrollmentManagement extends Component
         }
 
         return $query->paginate(15);
+    }
+
+    public function getCampInstancesProperty()
+    {
+        return CampInstance::with('camp')
+            ->where('is_active', true)
+            ->orderBy('start_date')
+            ->get();
     }
 
     public function getStatusColor($status)

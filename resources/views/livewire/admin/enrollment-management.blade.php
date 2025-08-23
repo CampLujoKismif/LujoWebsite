@@ -29,7 +29,7 @@
                         <label for="campInstanceFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Camp Session</label>
                         <select wire:model.live="campInstanceFilter" id="campInstanceFilter" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                             <option value="">All Sessions</option>
-                            @foreach($campInstances as $instance)
+                            @foreach($this->campInstances as $instance)
                                 <option value="{{ $instance->id }}">{{ $instance->camp->display_name }} {{ $instance->year }}</option>
                             @endforeach
                         </select>
