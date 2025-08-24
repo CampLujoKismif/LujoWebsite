@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             CampInstanceSeeder::class,
             SuperAdminSeeder::class,
             TestUsersSeeder::class,
+            UrlForwardSeeder::class,
         ]);
 
         // User::factory(10)->create();

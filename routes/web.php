@@ -145,9 +145,9 @@ Route::get('/api/frontpage-images', function () {
     return response()->json($images);
 });
 
-// URL Forwarding - this should be after other specific routes but before auth routes
-Route::get('{internalUrl}', [App\Http\Controllers\UrlForwardController::class, 'forward'])
-    ->where('internalUrl', '.*')
-    ->name('url.forward');
-
 require __DIR__.'/auth.php';
+
+// URL Forwarding - this should be the very last route to catch any unmatched URLs
+Route::get('{internalUrl}', [App\Http\Controllers\UrlForwardController::class, 'forward'])
+    ->where('internalUrl', '[a-zA-Z0-9\/\-_]+')
+    ->name('url.forward');
