@@ -283,6 +283,28 @@ class FormTemplateManagement extends Component
         $this->fieldOptions = array_values($this->fieldOptions);
     }
 
+    public function reorderFields($fieldIds)
+    {
+        if (!$this->selectedTemplate) {
+            return;
+        }
+
+        try {
+            DB::transaction(function () use ($fieldIds) {
+                foreach ($fieldIds as $index => $fieldId) {
+                    FormField::where('id', $fieldId)
+                        ->where('form_template_id', $this->selectedTemplate->id)
+                        ->update(['sort' => $index + 1]);
+                }
+            });
+
+            $this->selectedTemplate->load('fields');
+            $this->dispatch('fields-reordered');
+        } catch (\Exception $e) {
+            $this->dispatch('error', 'Failed to reorder fields. Please try again.');
+        }
+    }
+
     public function resetTemplateForm()
     {
         $this->name = '';
