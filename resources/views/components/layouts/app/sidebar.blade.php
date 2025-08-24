@@ -38,6 +38,9 @@
                         <flux:navlist.item icon="users" :href="route('dashboard.admin.enrollments')" :current="request()->routeIs('dashboard.admin.enrollments')" wire:navigate>
                             {{ __('Manage Enrollments') }}
                         </flux:navlist.item>
+                        <flux:navlist.item icon="building-library" :href="route('dashboard.admin.church-congregations')" :current="request()->routeIs('dashboard.admin.church-congregations')" wire:navigate>
+                            {{ __('Church Congregations') }}
+                        </flux:navlist.item>
                     </flux:navlist.group>
                 @endrole
 

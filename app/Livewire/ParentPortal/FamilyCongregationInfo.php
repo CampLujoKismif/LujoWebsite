@@ -121,6 +121,11 @@ class FamilyCongregationInfo extends Component
         $this->dispatch('congregation-added');
     }
 
+    public function selectCongregation($congregationId)
+    {
+        $this->home_congregation_id = $congregationId;
+    }
+
     public function closeModal()
     {
         $this->showEditModal = false;

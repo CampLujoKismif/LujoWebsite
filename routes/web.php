@@ -63,6 +63,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
                 Route::get('/enrollments', App\Livewire\ParentPortal\EnrollmentManagement::class)->name('enrollments');
                 Route::get('/medical-records', App\Livewire\ParentPortal\MedicalRecords::class)->name('medical-records');
                 Route::get('/forms', App\Livewire\ParentPortal\FormFilling::class)->name('forms');
+                Route::get('/families/{family}', App\Livewire\ParentPortal\FamilyDetails::class)->name('family-details');
                 Route::get('/families/{family}/attachments', App\Livewire\ParentPortal\FamilyAttachments::class)->name('family-attachments');
                 Route::get('/families/{family}/insurance', App\Livewire\ParentPortal\FamilyInsuranceInfo::class)->name('family-insurance');
                 Route::get('/families/{family}/congregation', App\Livewire\ParentPortal\FamilyCongregationInfo::class)->name('family-congregation');
