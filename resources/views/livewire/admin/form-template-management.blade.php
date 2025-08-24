@@ -391,9 +391,8 @@
 
     <!-- Drag and Drop JavaScript -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('livewire:load', function() {
             let dragSrcEl = null;
-            let dragSrcIndex = null;
 
             function handleDragStart(e) {
                 // Only allow dragging if clicking on the drag handle
@@ -409,7 +408,6 @@
                 }
                 
                 dragSrcEl = this;
-                dragSrcIndex = Array.from(this.parentNode.children).indexOf(this);
                 this.style.opacity = '0.4';
                 this.classList.add('dragging');
             }
@@ -420,9 +418,7 @@
             }
 
             function handleDragOver(e) {
-                if (e.preventDefault) {
-                    e.preventDefault();
-                }
+                e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
                 return false;
             }
@@ -436,12 +432,13 @@
             }
 
             function handleDrop(e) {
-                if (e.stopPropagation) {
-                    e.stopPropagation();
-                }
+                e.preventDefault();
+                e.stopPropagation();
 
                 if (dragSrcEl !== this) {
                     const container = document.getElementById('fields-container');
+                    if (!container) return;
+                    
                     const items = Array.from(container.children);
                     const dragSrcIndex = items.indexOf(dragSrcEl);
                     const dropIndex = items.indexOf(this);
@@ -465,10 +462,6 @@
                 return false;
             }
 
-            function handleDragDrop(e) {
-                this.classList.remove('over');
-            }
-
             function initializeDragAndDrop() {
                 const container = document.getElementById('fields-container');
                 if (!container) return;
@@ -483,20 +476,15 @@
                     item.addEventListener('dragenter', handleDragEnter, false);
                     item.addEventListener('dragleave', handleDragLeave, false);
                     item.addEventListener('drop', handleDrop, false);
-                    item.addEventListener('dragdrop', handleDragDrop, false);
                 });
             }
 
-            // Initialize on page load
-            initializeDragAndDrop();
+            // Initialize after a short delay to ensure DOM is ready
+            setTimeout(initializeDragAndDrop, 100);
 
-            // Re-initialize when Livewire updates the DOM
-            document.addEventListener('livewire:load', function() {
-                Livewire.hook('message.processed', (message, component) => {
-                    if (component.fingerprint.name === 'admin.form-template-management') {
-                        setTimeout(initializeDragAndDrop, 100);
-                    }
-                });
+            // Re-initialize when the component updates
+            Livewire.hook('message.processed', (message, component) => {
+                setTimeout(initializeDragAndDrop, 50);
             });
         });
     </script>
