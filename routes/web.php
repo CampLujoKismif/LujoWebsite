@@ -41,6 +41,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
         Route::get('/', App\Livewire\Admin\Dashboard::class)->name('index');
         Route::get('/users', App\Livewire\Admin\UserManagement::class)->name('users');
         Route::get('/camps', App\Livewire\Admin\CampManagement::class)->name('camps');
+        Route::get('/church-congregations', App\Livewire\Admin\ChurchCongregationManagement::class)->name('church-congregations');
         Route::get('/form-templates', App\Livewire\Admin\FormTemplateManagement::class)->name('form-templates');
         Route::get('/form-responses', App\Livewire\Admin\FormResponseManagement::class)->name('form-responses');
         Route::get('/enrollments', App\Livewire\Admin\EnrollmentManagement::class)->name('enrollments');
@@ -62,6 +63,9 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
                 Route::get('/enrollments', App\Livewire\ParentPortal\EnrollmentManagement::class)->name('enrollments');
                 Route::get('/medical-records', App\Livewire\ParentPortal\MedicalRecords::class)->name('medical-records');
                 Route::get('/forms', App\Livewire\ParentPortal\FormFilling::class)->name('forms');
+                Route::get('/families/{family}/attachments', App\Livewire\ParentPortal\FamilyAttachments::class)->name('family-attachments');
+                Route::get('/families/{family}/insurance', App\Livewire\ParentPortal\FamilyInsuranceInfo::class)->name('family-insurance');
+                Route::get('/families/{family}/congregation', App\Livewire\ParentPortal\FamilyCongregationInfo::class)->name('family-congregation');
             });
 });
 
@@ -107,6 +111,13 @@ Route::middleware(['auth', 'role:system-admin'])->prefix('admin')->name('admin.'
     Route::patch('url-forwards/{id}/restore', [App\Http\Controllers\Admin\UrlForwardManagementController::class, 'restore'])->name('url-forwards.restore');
     Route::delete('url-forwards/{id}/force-delete', [App\Http\Controllers\Admin\UrlForwardManagementController::class, 'forceDelete'])->name('url-forwards.force-delete');
     Route::patch('url-forwards/{urlForward}/toggle-status', [App\Http\Controllers\Admin\UrlForwardManagementController::class, 'toggleStatus'])->name('url-forwards.toggle-status');
+    
+    // Church Congregation management
+    Route::resource('church-congregations', App\Http\Controllers\Admin\ChurchCongregationController::class);
+    Route::get('church-congregations/trashed', [App\Http\Controllers\Admin\ChurchCongregationController::class, 'trashed'])->name('church-congregations.trashed');
+    Route::patch('church-congregations/{id}/restore', [App\Http\Controllers\Admin\ChurchCongregationController::class, 'restore'])->name('church-congregations.restore');
+    Route::delete('church-congregations/{id}/force-delete', [App\Http\Controllers\Admin\ChurchCongregationController::class, 'forceDelete'])->name('church-congregations.force-delete');
+    Route::get('api/congregations', [App\Http\Controllers\Admin\ChurchCongregationController::class, 'getCongregations'])->name('api.congregations');
 });
 
 // Camp dashboard routes (for users with camp access)

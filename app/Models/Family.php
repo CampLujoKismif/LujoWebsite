@@ -24,6 +24,11 @@ class Family extends Model
         'emergency_contact_name',
         'emergency_contact_phone',
         'emergency_contact_relationship',
+        'insurance_provider',
+        'insurance_policy_number',
+        'insurance_group_number',
+        'insurance_phone',
+        'home_congregation_id',
     ];
 
     protected $casts = [
@@ -72,6 +77,22 @@ class Family extends Model
     public function enrollments(): HasMany
     {
         return $this->hasManyThrough(Enrollment::class, Camper::class);
+    }
+
+    /**
+     * Get the home congregation for this family.
+     */
+    public function homeCongregation(): BelongsTo
+    {
+        return $this->belongsTo(ChurchCongregation::class, 'home_congregation_id');
+    }
+
+    /**
+     * Get the documents/attachments for this family.
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class);
     }
 
     /**

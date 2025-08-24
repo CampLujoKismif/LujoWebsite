@@ -14,6 +14,7 @@ class Document extends Model
     protected $fillable = [
         'camper_id',
         'camp_instance_id',
+        'family_id',
         'path',
         'label',
         'description',
@@ -58,7 +59,7 @@ class Document extends Model
      */
     public function family(): BelongsTo
     {
-        return $this->camper->family();
+        return $this->belongsTo(Family::class);
     }
 
     /**
@@ -154,6 +155,14 @@ class Document extends Model
     public function scopeForCampInstance($query, $campInstanceId)
     {
         return $query->where('camp_instance_id', $campInstanceId);
+    }
+
+    /**
+     * Scope to filter documents by family.
+     */
+    public function scopeForFamily($query, $familyId)
+    {
+        return $query->where('family_id', $familyId);
     }
 
     /**
