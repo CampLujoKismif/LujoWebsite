@@ -213,7 +213,7 @@
                                             @break
 
                                         @case('date')
-                                            <input type="date" wire:model="formData.{{ $field->id }}" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
+                                            <input type="date" wire:model="formData.{{ $field->id }}" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white" placeholder="Select a date">
                                             @break
 
                                         @case('select')
@@ -254,6 +254,17 @@
                                         @default
                                             <input type="text" wire:model="formData.{{ $field->id }}" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
                                     @endswitch
+                                    
+                                    @error('formData.' . $field->id)
+                                        <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                    @enderror
+                                    
+                                    @if(config('app.debug'))
+                                        <p class="mt-1 text-xs text-gray-500">
+                                            Field ID: {{ $field->id }}, Type: {{ $field->type }}, 
+                                            Value: {{ is_array($formData[$field->id] ?? null) ? json_encode($formData[$field->id]) : ($formData[$field->id] ?? 'null') }}
+                                        </p>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>

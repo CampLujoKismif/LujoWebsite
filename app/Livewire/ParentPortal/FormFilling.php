@@ -78,10 +78,20 @@ class FormFilling extends Component
         $this->fileUploads = [];
 
         foreach ($this->selectedTemplate->fields as $field) {
-            $this->formData[$field->id] = '';
-            
-            if (in_array($field->type, ['checkbox', 'radio'])) {
-                $this->formData[$field->id] = [];
+            // Initialize based on field type
+            switch ($field->type) {
+                case 'checkbox':
+                    $this->formData[$field->id] = [];
+                    break;
+                case 'date':
+                    $this->formData[$field->id] = null;
+                    break;
+                case 'radio':
+                    $this->formData[$field->id] = '';
+                    break;
+                default:
+                    $this->formData[$field->id] = '';
+                    break;
             }
         }
     }
@@ -96,6 +106,9 @@ class FormFilling extends Component
     public function submitForm()
     {
         if (!$this->selectedTemplate || !$this->selectedCamper) return;
+
+        // Validate required fields
+        $this->validateFormData();
 
         $this->isSubmitting = true;
 
@@ -147,6 +160,11 @@ class FormFilling extends Component
                                 $answerData['value_text'] = $value;
                             }
                             break;
+                        case 'date':
+                            if (!empty($value)) {
+                                $answerData['value_text'] = $value;
+                            }
+                            break;
                         default:
                             if (!empty($value)) {
                                 $answerData['value_text'] = $value;
@@ -175,6 +193,59 @@ class FormFilling extends Component
         $this->fileUploads = [];
         $this->selectedTemplate = null;
         $this->currentResponse = null;
+    }
+
+    public function validateFormData()
+    {
+        if (!$this->selectedTemplate) return;
+
+        $rules = [];
+        $messages = [];
+
+        foreach ($this->selectedTemplate->fields as $field) {
+            if ($field->required) {
+                $fieldRules = ['required'];
+                
+                // Add field-specific validation
+                switch ($field->type) {
+                    case 'email':
+                        $fieldRules[] = 'email';
+                        break;
+                    case 'number':
+                        $fieldRules[] = 'numeric';
+                        break;
+                    case 'date':
+                        $fieldRules[] = 'date';
+                        break;
+                    case 'checkbox':
+                        $fieldRules[] = 'array';
+                        $fieldRules[] = 'min:1';
+                        break;
+                }
+
+                $rules["formData.{$field->id}"] = $fieldRules;
+                $messages["formData.{$field->id}.required"] = "The {$field->label} field is required.";
+            }
+        }
+
+        if (!empty($rules)) {
+            $this->validate($rules, $messages);
+        }
+    }
+
+    public function hasFieldValue($fieldId)
+    {
+        if (!isset($this->formData[$fieldId])) {
+            return false;
+        }
+
+        $value = $this->formData[$fieldId];
+        
+        if (is_array($value)) {
+            return !empty(array_filter($value));
+        }
+        
+        return !empty($value);
     }
 
     public function getAvailableTemplatesForCamper($camper)
