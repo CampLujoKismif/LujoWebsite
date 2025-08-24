@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
         Route::get('/form-templates', App\Livewire\Admin\FormTemplateManagement::class)->name('form-templates');
         Route::get('/form-responses', App\Livewire\Admin\FormResponseManagement::class)->name('form-responses');
         Route::get('/enrollments', App\Livewire\Admin\EnrollmentManagement::class)->name('enrollments');
+        Route::get('/url-forwards', App\Livewire\Admin\UrlForwardManagement::class)->name('url-forwards');
     });
     
     // Manager Dashboard
@@ -99,6 +100,13 @@ Route::middleware(['auth', 'role:system-admin'])->prefix('admin')->name('admin.'
     Route::get('permissions/trashed', [App\Http\Controllers\Admin\PermissionManagementController::class, 'trashed'])->name('permissions.trashed');
     Route::patch('permissions/{id}/restore', [App\Http\Controllers\Admin\PermissionManagementController::class, 'restore'])->name('permissions.restore');
     Route::delete('permissions/{id}/force-delete', [App\Http\Controllers\Admin\PermissionManagementController::class, 'forceDelete'])->name('permissions.force-delete');
+    
+    // URL Forward management
+    Route::resource('url-forwards', App\Http\Controllers\Admin\UrlForwardManagementController::class);
+    Route::get('url-forwards/trashed', [App\Http\Controllers\Admin\UrlForwardManagementController::class, 'trashed'])->name('url-forwards.trashed');
+    Route::patch('url-forwards/{id}/restore', [App\Http\Controllers\Admin\UrlForwardManagementController::class, 'restore'])->name('url-forwards.restore');
+    Route::delete('url-forwards/{id}/force-delete', [App\Http\Controllers\Admin\UrlForwardManagementController::class, 'forceDelete'])->name('url-forwards.force-delete');
+    Route::patch('url-forwards/{urlForward}/toggle-status', [App\Http\Controllers\Admin\UrlForwardManagementController::class, 'toggleStatus'])->name('url-forwards.toggle-status');
 });
 
 // Camp dashboard routes (for users with camp access)
@@ -136,5 +144,10 @@ Route::get('/api/frontpage-images', function () {
     
     return response()->json($images);
 });
+
+// URL Forwarding - this should be after other specific routes but before auth routes
+Route::get('{internalUrl}', [App\Http\Controllers\UrlForwardController::class, 'forward'])
+    ->where('internalUrl', '.*')
+    ->name('url.forward');
 
 require __DIR__.'/auth.php';
