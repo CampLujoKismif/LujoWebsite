@@ -346,27 +346,41 @@
                         <!-- Fields List -->
                         <div>
                             <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Current Fields</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Drag the handle to reorder fields</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Use the arrows to reorder fields</p>
                             @if($selectedTemplate->fields->isEmpty())
                                 <div class="text-center py-6">
                                     <p class="text-sm text-gray-500 dark:text-gray-400">No fields added yet.</p>
                                 </div>
                             @else
-                                <div id="fields-container" class="space-y-2" wire:ignore>
-                                    @foreach($selectedTemplate->fields->sortBy('sort') as $field)
-                                        <div class="field-item flex items-center justify-between p-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 rounded-lg cursor-move hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors" data-field-id="{{ $field->id }}">
+                                <div class="space-y-2">
+                                    @foreach($selectedTemplate->fields->sortBy('sort') as $index => $field)
+                                        <div class="field-item flex items-center justify-between p-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors">
                                             <div class="flex items-center space-x-3">
-                                                <div class="drag-handle text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9h8M8 15h8M8 12h8"></path>
-                                                    </svg>
+                                                <div class="text-gray-400 dark:text-gray-500 text-sm font-medium w-8 text-center">
+                                                    {{ $index + 1 }}
                                                 </div>
                                                 <div>
                                                     <h5 class="text-sm font-medium text-gray-900 dark:text-white">{{ $field->label }}</h5>
                                                     <p class="text-xs text-gray-500 dark:text-gray-400">{{ ucfirst($field->type) }} @if($field->required)(Required)@endif</p>
                                                 </div>
                                             </div>
-                                            <div class="flex space-x-2">
+                                            <div class="flex items-center space-x-2">
+                                                <div class="flex flex-col space-y-1">
+                                                    <button wire:click="moveFieldUp({{ $field->id }})" 
+                                                            class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            @if($index === 0) disabled @endif>
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                                        </svg>
+                                                    </button>
+                                                    <button wire:click="moveFieldDown({{ $field->id }})" 
+                                                            class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            @if($index === $selectedTemplate->fields->count() - 1) disabled @endif>
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                                 <button wire:click="editField({{ $field->id }})" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -389,139 +403,5 @@
         </div>
     @endif
 
-    <!-- Drag and Drop JavaScript -->
-    <script>
-        document.addEventListener('livewire:load', function() {
-            let dragSrcEl = null;
 
-            function handleDragStart(e) {
-                // Only allow dragging if clicking on the drag handle
-                if (!e.target.closest('.drag-handle') && !e.target.classList.contains('drag-handle')) {
-                    e.preventDefault();
-                    return false;
-                }
-                
-                // Prevent dragging if clicking on buttons
-                if (e.target.closest('button')) {
-                    e.preventDefault();
-                    return false;
-                }
-                
-                dragSrcEl = this;
-                this.style.opacity = '0.4';
-                this.classList.add('dragging');
-            }
-
-            function handleDragEnd(e) {
-                this.style.opacity = '1';
-                this.classList.remove('dragging');
-            }
-
-            function handleDragOver(e) {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-                return false;
-            }
-
-            function handleDragEnter(e) {
-                this.classList.add('over');
-            }
-
-            function handleDragLeave(e) {
-                this.classList.remove('over');
-            }
-
-            function handleDrop(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                if (dragSrcEl !== this) {
-                    const container = document.getElementById('fields-container');
-                    if (!container) return;
-                    
-                    const items = Array.from(container.children);
-                    const dragSrcIndex = items.indexOf(dragSrcEl);
-                    const dropIndex = items.indexOf(this);
-
-                    // Reorder the DOM
-                    if (dragSrcIndex < dropIndex) {
-                        this.parentNode.insertBefore(dragSrcEl, this.nextSibling);
-                    } else {
-                        this.parentNode.insertBefore(dragSrcEl, this);
-                    }
-
-                    // Get the new order of field IDs
-                    const newOrder = Array.from(container.children).map(item => 
-                        parseInt(item.getAttribute('data-field-id'))
-                    );
-
-                    // Call Livewire method to update the order
-                    @this.reorderFields(newOrder);
-                }
-
-                return false;
-            }
-
-            function initializeDragAndDrop() {
-                const container = document.getElementById('fields-container');
-                if (!container) return;
-
-                const items = container.querySelectorAll('.field-item');
-                
-                items.forEach(function(item) {
-                    item.setAttribute('draggable', 'true');
-                    item.addEventListener('dragstart', handleDragStart, false);
-                    item.addEventListener('dragend', handleDragEnd, false);
-                    item.addEventListener('dragover', handleDragOver, false);
-                    item.addEventListener('dragenter', handleDragEnter, false);
-                    item.addEventListener('dragleave', handleDragLeave, false);
-                    item.addEventListener('drop', handleDrop, false);
-                });
-            }
-
-            // Initialize after a short delay to ensure DOM is ready
-            setTimeout(initializeDragAndDrop, 100);
-
-            // Re-initialize when the component updates
-            Livewire.hook('message.processed', (message, component) => {
-                setTimeout(initializeDragAndDrop, 50);
-            });
-        });
-    </script>
-
-    <style>
-        .field-item.dragging {
-            transform: rotate(5deg);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-
-        .field-item.over {
-            border-color: #3b82f6;
-            background-color: #eff6ff;
-        }
-
-        .dark .field-item.over {
-            background-color: #1e3a8a;
-        }
-
-        .drag-handle {
-            cursor: grab;
-            transition: all 0.2s ease;
-        }
-
-        .drag-handle:hover {
-            background-color: #f3f4f6;
-            transform: scale(1.1);
-        }
-
-        .dark .drag-handle:hover {
-            background-color: #374151;
-        }
-
-        .drag-handle:active {
-            cursor: grabbing;
-            transform: scale(0.95);
-        }
-    </style>
 </div>
