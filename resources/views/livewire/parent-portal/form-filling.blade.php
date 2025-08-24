@@ -165,14 +165,21 @@
         <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div class="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white dark:bg-zinc-900">
                 <div class="mt-3">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">{{ $selectedTemplate->name }} - {{ $selectedCamper->full_name }}</h3>
-                        <button wire:click="$set('showFormModal', false)" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
+                                         <div class="flex items-center justify-between mb-4">
+                         <div>
+                             <h3 class="text-lg font-medium text-gray-900 dark:text-white">{{ $selectedTemplate->name }} - {{ $selectedCamper->full_name }}</h3>
+                             @if($currentResponse)
+                                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                     Last submitted: {{ $currentResponse->submitted_at?->format('M j, Y g:i A') ?? 'Unknown' }}
+                                 </p>
+                             @endif
+                         </div>
+                         <button wire:click="$set('showFormModal', false)" class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                             </svg>
+                         </button>
+                     </div>
 
                     @if($selectedTemplate->description)
                         <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -276,6 +283,9 @@
                                             Field ID: {{ $field->id }}, Type: {{ $field->type }}, 
                                             Options: {{ json_encode($field->options_json) }},
                                             Value: {{ is_array($formData[$field->id] ?? null) ? json_encode($formData[$field->id]) : ($formData[$field->id] ?? 'null') }}
+                                            @if($currentResponse)
+                                                <br>Existing: {{ $currentResponse->getValueForField($field) ?? 'none' }}
+                                            @endif
                                         </p>
                                     @endif
                                 </div>
@@ -286,10 +296,10 @@
                             <button type="button" wire:click="$set('showFormModal', false)" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700">
                                 Cancel
                             </button>
-                            <button type="submit" wire:loading.attr="disabled" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
-                                <span wire:loading.remove>Submit Form</span>
-                                <span wire:loading>Submitting...</span>
-                            </button>
+                                                         <button type="submit" wire:loading.attr="disabled" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                                 <span wire:loading.remove>{{ $currentResponse ? 'Update Form' : 'Submit Form' }}</span>
+                                 <span wire:loading>{{ $currentResponse ? 'Updating...' : 'Submitting...' }}</span>
+                             </button>
                         </div>
                     </form>
                 </div>

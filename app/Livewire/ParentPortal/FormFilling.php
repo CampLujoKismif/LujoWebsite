@@ -67,6 +67,7 @@ class FormFilling extends Component
     {
         $this->selectedTemplate = $this->templates->find($templateId);
         $this->initializeFormData();
+        $this->loadExistingResponse();
         $this->showFormModal = true;
     }
 
@@ -99,6 +100,63 @@ class FormFilling extends Component
                     break;
                 default:
                     $this->formData[$field->id] = '';
+                    break;
+            }
+        }
+    }
+
+    public function loadExistingResponse()
+    {
+        if (!$this->selectedTemplate || !$this->selectedCamper) return;
+
+        // Find existing response
+        $response = FormResponse::where('form_template_id', $this->selectedTemplate->id)
+            ->where('camper_id', $this->selectedCamper->id)
+            ->where('enrollment_id', $this->selectedEnrollment?->id)
+            ->with('answers')
+            ->first();
+
+        if (!$response) {
+            if (config('app.debug')) {
+                \Log::info('No existing response found for template: ' . $this->selectedTemplate->id . ', camper: ' . $this->selectedCamper->id);
+            }
+            return;
+        }
+
+        $this->currentResponse = $response;
+
+        if (config('app.debug')) {
+            \Log::info('Loading existing response: ' . $response->id . ' with ' . $response->answers->count() . ' answers');
+        }
+
+        // Load existing answers
+        foreach ($response->answers as $answer) {
+            $field = $this->selectedTemplate->fields->find($answer->form_field_id);
+            if (!$field) continue;
+
+            if (config('app.debug')) {
+                \Log::info('Loading answer for field ' . $field->id . ' (' . $field->type . '): ' . ($answer->value_text ?? json_encode($answer->value_json)));
+            }
+
+            switch ($field->type) {
+                case 'checkbox':
+                    // Check if it's a single checkbox or multi-option checkbox
+                    $options = $field->options_json ? json_decode($field->options_json, true) : [];
+                    if (empty($options)) {
+                        // Single checkbox - check if "Yes" was stored
+                        $this->formData[$field->id] = ($answer->value_text === 'Yes');
+                    } else {
+                        // Multi-option checkbox - load from JSON
+                        $this->formData[$field->id] = $answer->value_json ? json_decode($answer->value_json, true) : [];
+                    }
+                    break;
+                case 'file':
+                    // For file fields, we don't pre-populate the file input
+                    // but we could show the existing file name if needed
+                    break;
+                default:
+                    // For text, textarea, email, number, date, select, radio
+                    $this->formData[$field->id] = $answer->value_text ?? '';
                     break;
             }
         }
