@@ -81,7 +81,15 @@ class FormFilling extends Component
             // Initialize based on field type
             switch ($field->type) {
                 case 'checkbox':
-                    $this->formData[$field->id] = [];
+                    // Check if it's a single checkbox (no options) or multi-option checkbox
+                    $options = $field->options_json ? json_decode($field->options_json, true) : [];
+                    if (empty($options)) {
+                        // Single checkbox (like "I Understand")
+                        $this->formData[$field->id] = false;
+                    } else {
+                        // Multi-option checkbox
+                        $this->formData[$field->id] = [];
+                    }
                     break;
                 case 'date':
                     $this->formData[$field->id] = null;
@@ -151,8 +159,18 @@ class FormFilling extends Component
                             }
                             break;
                         case 'checkbox':
-                            if (is_array($value) && !empty($value)) {
-                                $answerData['value_json'] = json_encode($value);
+                            // Check if it's a single checkbox or multi-option checkbox
+                            $options = $field->options_json ? json_decode($field->options_json, true) : [];
+                            if (empty($options)) {
+                                // Single checkbox - store as boolean
+                                if ($value) {
+                                    $answerData['value_text'] = 'Yes';
+                                }
+                            } else {
+                                // Multi-option checkbox - store as JSON array
+                                if (is_array($value) && !empty($value)) {
+                                    $answerData['value_json'] = json_encode($value);
+                                }
                             }
                             break;
                         case 'radio':
@@ -218,8 +236,16 @@ class FormFilling extends Component
                         $fieldRules[] = 'date';
                         break;
                     case 'checkbox':
-                        $fieldRules[] = 'array';
-                        $fieldRules[] = 'min:1';
+                        // Check if it's a single checkbox or multi-option checkbox
+                        $options = $field->options_json ? json_decode($field->options_json, true) : [];
+                        if (empty($options)) {
+                            // Single checkbox - validate as boolean
+                            $fieldRules[] = 'accepted';
+                        } else {
+                            // Multi-option checkbox - validate as array
+                            $fieldRules[] = 'array';
+                            $fieldRules[] = 'min:1';
+                        }
                         break;
                 }
 
@@ -243,6 +269,10 @@ class FormFilling extends Component
         
         if (is_array($value)) {
             return !empty(array_filter($value));
+        }
+        
+        if (is_bool($value)) {
+            return $value === true;
         }
         
         return !empty($value);

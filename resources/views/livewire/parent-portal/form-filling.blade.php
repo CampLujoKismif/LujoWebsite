@@ -237,14 +237,26 @@
                                             @break
 
                                         @case('checkbox')
-                                            <div class="space-y-2">
-                                                @foreach(json_decode($field->options_json, true) ?: [] as $option)
-                                                    <div class="flex items-center">
-                                                        <input type="checkbox" wire:model="formData.{{ $field->id }}" value="{{ $option }}" id="checkbox_{{ $field->id }}_{{ $loop->index }}" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                                                        <label for="checkbox_{{ $field->id }}_{{ $loop->index }}" class="ml-2 block text-sm text-gray-900 dark:text-white">{{ $option }}</label>
-                                                    </div>
-                                                @endforeach
-                                            </div>
+                                            @php
+                                                $options = json_decode($field->options_json, true) ?: [];
+                                            @endphp
+                                            @if(empty($options))
+                                                <!-- Single checkbox (like "I Understand") -->
+                                                <div class="flex items-center">
+                                                    <input type="checkbox" wire:model="formData.{{ $field->id }}" value="1" id="checkbox_{{ $field->id }}" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                    <label for="checkbox_{{ $field->id }}" class="ml-2 block text-sm text-gray-900 dark:text-white">I understand and agree</label>
+                                                </div>
+                                            @else
+                                                <!-- Multi-option checkboxes -->
+                                                <div class="space-y-2">
+                                                    @foreach($options as $option)
+                                                        <div class="flex items-center">
+                                                            <input type="checkbox" wire:model="formData.{{ $field->id }}" value="{{ $option }}" id="checkbox_{{ $field->id }}_{{ $loop->index }}" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                            <label for="checkbox_{{ $field->id }}_{{ $loop->index }}" class="ml-2 block text-sm text-gray-900 dark:text-white">{{ $option }}</label>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                             @break
 
                                         @case('file')
@@ -262,6 +274,7 @@
                                     @if(config('app.debug'))
                                         <p class="mt-1 text-xs text-gray-500">
                                             Field ID: {{ $field->id }}, Type: {{ $field->type }}, 
+                                            Options: {{ json_encode($field->options_json) }},
                                             Value: {{ is_array($formData[$field->id] ?? null) ? json_encode($formData[$field->id]) : ($formData[$field->id] ?? 'null') }}
                                         </p>
                                     @endif
