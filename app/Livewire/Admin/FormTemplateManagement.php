@@ -99,6 +99,7 @@ class FormTemplateManagement extends Component
     {
         $this->selectedTemplate = $template;
         $this->resetFieldForm();
+        $this->normalizeFieldSortOrders();
         $this->showFieldsModal = true;
     }
 
@@ -212,6 +213,7 @@ class FormTemplateManagement extends Component
 
         $this->resetFieldForm();
         $this->selectedTemplate->load('fields');
+        $this->normalizeFieldSortOrders();
         $this->dispatch('field-added');
     }
 
@@ -268,6 +270,7 @@ class FormTemplateManagement extends Component
         if ($field) {
             $field->delete();
             $this->selectedTemplate->load('fields');
+            $this->normalizeFieldSortOrders();
             $this->dispatch('field-deleted');
         }
     }
@@ -316,6 +319,7 @@ class FormTemplateManagement extends Component
             });
 
             $this->selectedTemplate->load('fields');
+            $this->normalizeFieldSortOrders();
             $this->dispatch('field-moved');
         } catch (\Exception $e) {
             $this->dispatch('error', 'Failed to move field. Please try again.');
@@ -355,9 +359,39 @@ class FormTemplateManagement extends Component
             });
 
             $this->selectedTemplate->load('fields');
+            $this->normalizeFieldSortOrders();
             $this->dispatch('field-moved');
         } catch (\Exception $e) {
             $this->dispatch('error', 'Failed to move field. Please try again.');
+        }
+    }
+
+    /**
+     * Normalize field sort orders to ensure they are sequential (1, 2, 3, 4, etc.)
+     * This prevents issues with duplicate or non-sequential sort values.
+     */
+    private function normalizeFieldSortOrders()
+    {
+        if (!$this->selectedTemplate) {
+            return;
+        }
+
+        try {
+            $fields = $this->selectedTemplate->fields()->orderBy('sort')->get();
+            
+            DB::transaction(function () use ($fields) {
+                foreach ($fields as $index => $field) {
+                    $newSort = $index + 1;
+                    if ($field->sort !== $newSort) {
+                        $field->update(['sort' => $newSort]);
+                    }
+                }
+            });
+
+            $this->selectedTemplate->load('fields');
+        } catch (\Exception $e) {
+            // Log the error but don't show to user as this is a background operation
+            \Log::error('Failed to normalize field sort orders: ' . $e->getMessage());
         }
     }
 
