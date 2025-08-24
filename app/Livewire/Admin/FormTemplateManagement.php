@@ -295,21 +295,28 @@ class FormTemplateManagement extends Component
                 return;
             }
 
-            $previousField = $this->selectedTemplate->fields()
-                ->where('sort', '<', $currentField->sort)
-                ->orderBy('sort', 'desc')
-                ->first();
+            // Get all fields ordered by sort to find the exact previous one
+            $orderedFields = $this->selectedTemplate->fields()->orderBy('sort')->get();
+            $currentIndex = $orderedFields->search(function($field) use ($currentField) {
+                return $field->id === $currentField->id;
+            });
 
-            if ($previousField) {
-                DB::transaction(function () use ($currentField, $previousField) {
-                    $tempSort = $currentField->sort;
-                    $currentField->update(['sort' => $previousField->sort]);
-                    $previousField->update(['sort' => $tempSort]);
-                });
-
-                $this->selectedTemplate->load('fields');
-                $this->dispatch('field-moved');
+            // If this is the first field (index 0), we can't move it up
+            if ($currentIndex <= 0) {
+                return;
             }
+
+            $previousField = $orderedFields[$currentIndex - 1];
+
+            DB::transaction(function () use ($currentField, $previousField) {
+                // Swap the sort values
+                $tempSort = $currentField->sort;
+                $currentField->update(['sort' => $previousField->sort]);
+                $previousField->update(['sort' => $tempSort]);
+            });
+
+            $this->selectedTemplate->load('fields');
+            $this->dispatch('field-moved');
         } catch (\Exception $e) {
             $this->dispatch('error', 'Failed to move field. Please try again.');
         }
@@ -327,21 +334,28 @@ class FormTemplateManagement extends Component
                 return;
             }
 
-            $nextField = $this->selectedTemplate->fields()
-                ->where('sort', '>', $currentField->sort)
-                ->orderBy('sort', 'asc')
-                ->first();
+            // Get all fields ordered by sort to find the exact next one
+            $orderedFields = $this->selectedTemplate->fields()->orderBy('sort')->get();
+            $currentIndex = $orderedFields->search(function($field) use ($currentField) {
+                return $field->id === $currentField->id;
+            });
 
-            if ($nextField) {
-                DB::transaction(function () use ($currentField, $nextField) {
-                    $tempSort = $currentField->sort;
-                    $currentField->update(['sort' => $nextField->sort]);
-                    $nextField->update(['sort' => $tempSort]);
-                });
-
-                $this->selectedTemplate->load('fields');
-                $this->dispatch('field-moved');
+            // If this is the last field, we can't move it down
+            if ($currentIndex >= $orderedFields->count() - 1) {
+                return;
             }
+
+            $nextField = $orderedFields[$currentIndex + 1];
+
+            DB::transaction(function () use ($currentField, $nextField) {
+                // Swap the sort values
+                $tempSort = $currentField->sort;
+                $currentField->update(['sort' => $nextField->sort]);
+                $nextField->update(['sort' => $tempSort]);
+            });
+
+            $this->selectedTemplate->load('fields');
+            $this->dispatch('field-moved');
         } catch (\Exception $e) {
             $this->dispatch('error', 'Failed to move field. Please try again.');
         }
