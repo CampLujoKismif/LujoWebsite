@@ -14,31 +14,8 @@ class UrlForwardManagementController extends Controller
      */
     public function index(Request $request)
     {
-        $query = UrlForward::with('creator');
-
-        // Search functionality
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('internal_url', 'like', "%{$search}%")
-                  ->orWhere('external_url', 'like', "%{$search}%")
-                  ->orWhere('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-
-        // Filter by status
-        if ($request->filled('status')) {
-            if ($request->status === 'active') {
-                $query->where('is_active', true);
-            } elseif ($request->status === 'inactive') {
-                $query->where('is_active', false);
-            }
-        }
-
-        $urlForwards = $query->orderBy('created_at', 'desc')->paginate(15);
-
-        return view('admin.url-forwards.index', compact('urlForwards'));
+        // Redirect to the Livewire component
+        return redirect()->route('dashboard.admin.url-forwards');
     }
 
     /**
@@ -46,7 +23,8 @@ class UrlForwardManagementController extends Controller
      */
     public function create()
     {
-        return view('admin.url-forwards.create');
+        // Redirect to the Livewire component
+        return redirect()->route('dashboard.admin.url-forwards');
     }
 
     /**
@@ -79,9 +57,8 @@ class UrlForwardManagementController extends Controller
      */
     public function show(UrlForward $urlForward)
     {
-        $urlForward->load('creator');
-        
-        return view('admin.url-forwards.show', compact('urlForward'));
+        // Redirect to the Livewire component
+        return redirect()->route('dashboard.admin.url-forwards');
     }
 
     /**
@@ -89,7 +66,8 @@ class UrlForwardManagementController extends Controller
      */
     public function edit(UrlForward $urlForward)
     {
-        return view('admin.url-forwards.edit', compact('urlForward'));
+        // Redirect to the Livewire component
+        return redirect()->route('dashboard.admin.url-forwards');
     }
 
     /**
