@@ -37,13 +37,44 @@
 }
 
 @layer base {
-
     *,
     ::after,
     ::before,
     ::backdrop,
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+/* Modern forced-colors support for accessibility */
+@media (forced-colors: active) {
+    /* Ensure proper contrast in high contrast mode */
+    * {
+        forced-color-adjust: auto;
+    }
+    
+    /* Improve button and link visibility */
+    button, a, [role="button"] {
+        forced-color-adjust: none;
+    }
+    
+    /* Ensure form elements are visible */
+    input, textarea, select {
+        forced-color-adjust: none;
+    }
+    
+    /* Improve focus indicators */
+    :focus-visible {
+        outline: 2px solid CanvasText;
+        outline-offset: 2px;
+    }
+}
+
+/* Override any legacy -ms-high-contrast styles from frameworks */
+@media (-ms-high-contrast: active), (-ms-high-contrast: none) {
+    /* This will override any legacy high-contrast styles */
+    * {
+        forced-color-adjust: auto;
     }
 }
 

@@ -14,7 +14,7 @@
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
 
         <!-- Styles -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite('resources/css/app.css')
         
         <!-- Alpine.js -->
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -124,5 +124,7 @@
                 </div>
             </div>
         </footer>
+        
+        @vite('resources/js/app.js')
     </body>
 </html> 
