@@ -61,6 +61,8 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
                 Route::get('/families', App\Livewire\ParentPortal\FamilyManagement::class)->name('families');
                 Route::get('/campers', App\Livewire\ParentPortal\CamperManagement::class)->name('campers');
                 Route::get('/enrollments', App\Livewire\ParentPortal\EnrollmentManagement::class)->name('enrollments');
+                Route::get('/payments', App\Livewire\ParentPortal\PaymentProcessing::class)->name('payments');
+                Route::get('/register/{campInstance}', App\Livewire\ParentPortal\CampRegistration::class)->name('register');
                 Route::get('/medical-records', App\Livewire\ParentPortal\MedicalRecords::class)->name('medical-records');
                 Route::get('/forms', App\Livewire\ParentPortal\FormFilling::class)->name('forms');
                 Route::get('/families/{family}', App\Livewire\ParentPortal\FamilyDetails::class)->name('family-details');
@@ -158,6 +160,9 @@ Route::get('/api/frontpage-images', function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Stripe webhook route
+Route::post('/stripe/webhook', [App\Http\Controllers\StripeWebhookController::class, 'handleWebhook'])->name('cashier.webhook');
 
 // URL Forwarding - this should be the very last route to catch any unmatched URLs
 Route::get('{internalUrl}', [App\Http\Controllers\UrlForwardController::class, 'forward'])

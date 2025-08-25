@@ -2,8 +2,20 @@
     <div class="px-4 py-6 sm:px-0">
         <!-- Header -->
         <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Enrollment Management</h1>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage your family's camp enrollments</p>
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Enrollment Management</h1>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage your family's camp enrollments</p>
+                </div>
+                <div class="flex space-x-3">
+                    <a href="{{ route('dashboard.parent.payments') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                        </svg>
+                        Process Payments
+                    </a>
+                </div>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -36,9 +48,17 @@
                                                 @if($enrollment->status === 'confirmed') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
                                                 @elseif($enrollment->status === 'pending') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
                                                 @elseif($enrollment->status === 'waitlisted') bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200
+                                                @elseif($enrollment->status === 'registered_awaiting_payment') bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200
+                                                @elseif($enrollment->status === 'registered_fully_paid') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
                                                 @else bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
                                                 @endif">
-                                                {{ ucfirst($enrollment->status) }}
+                                                @if($enrollment->status === 'registered_awaiting_payment')
+                                                    Awaiting Payment
+                                                @elseif($enrollment->status === 'registered_fully_paid')
+                                                    Fully Paid
+                                                @else
+                                                    {{ ucfirst($enrollment->status) }}
+                                                @endif
                                             </span>
                                             <p class="mt-1 text-sm text-gray-900 dark:text-white">Balance: ${{ number_format($enrollment->balance_cents / 100, 2) }}</p>
                                         </div>
@@ -83,7 +103,7 @@
                                         </div>
                                     </div>
                                     <div class="mt-3">
-                                        <a href="#" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">Register Now</a>
+                                        <a href="{{ route('dashboard.parent.register', $session) }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">Register Now</a>
                                     </div>
                                 </div>
                             @endforeach
@@ -97,10 +117,10 @@
         <div class="mt-6 bg-white dark:bg-zinc-900 shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
                 <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Enrollment Statistics</h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
                     <div class="text-center">
                         <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $enrollments->count() }}</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">Total Enrollments</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Total</div>
                     </div>
                     <div class="text-center">
                         <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $enrollments->where('status', 'confirmed')->count() }}</div>
@@ -113,6 +133,14 @@
                     <div class="text-center">
                         <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $enrollments->where('status', 'waitlisted')->count() }}</div>
                         <div class="text-sm text-gray-500 dark:text-gray-400">Waitlisted</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ $enrollments->where('status', 'registered_awaiting_payment')->count() }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Awaiting Payment</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $enrollments->where('status', 'registered_fully_paid')->count() }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Fully Paid</div>
                     </div>
                 </div>
             </div>

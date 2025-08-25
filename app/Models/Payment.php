@@ -16,14 +16,21 @@ class Payment extends Model
         'amount_cents',
         'method',
         'reference',
+        'stripe_payment_intent_id',
+        'stripe_charge_id',
+        'status',
+        'stripe_metadata',
         'paid_at',
+        'processed_at',
         'notes',
         'processed_by_user_id',
     ];
 
     protected $casts = [
         'amount_cents' => 'integer',
+        'stripe_metadata' => 'array',
         'paid_at' => 'datetime',
+        'processed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -90,7 +97,62 @@ class Payment extends Model
      */
     public function isConfirmed(): bool
     {
-        return !is_null($this->paid_at);
+        return $this->status === 'succeeded' && $this->paid_at !== null;
+    }
+
+    /**
+     * Check if the payment is pending.
+     */
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    /**
+     * Check if the payment is processing.
+     */
+    public function isProcessing(): bool
+    {
+        return $this->status === 'processing';
+    }
+
+    /**
+     * Check if the payment failed.
+     */
+    public function hasFailed(): bool
+    {
+        return $this->status === 'failed';
+    }
+
+    /**
+     * Check if the payment was cancelled.
+     */
+    public function isCancelled(): bool
+    {
+        return $this->status === 'cancelled';
+    }
+
+    /**
+     * Check if this is a Stripe payment.
+     */
+    public function isStripePayment(): bool
+    {
+        return $this->stripe_payment_intent_id !== null;
+    }
+
+    /**
+     * Get the payment status color for UI.
+     */
+    public function getStatusColorAttribute(): string
+    {
+        return match($this->status) {
+            'succeeded' => 'text-green-600',
+            'processing' => 'text-yellow-600',
+            'pending' => 'text-blue-600',
+            'failed' => 'text-red-600',
+            'cancelled' => 'text-gray-600',
+            default => 'text-gray-600',
+        };
     }
 
     /**

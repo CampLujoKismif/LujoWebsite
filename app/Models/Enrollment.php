@@ -195,6 +195,46 @@ class Enrollment extends Model
     }
 
     /**
+     * Check if the enrollment is registered but awaiting payment.
+     */
+    public function isRegisteredAwaitingPayment(): bool
+    {
+        return $this->status === 'registered_awaiting_payment';
+    }
+
+    /**
+     * Check if the enrollment is registered and fully paid.
+     */
+    public function isRegisteredFullyPaid(): bool
+    {
+        return $this->status === 'registered_fully_paid';
+    }
+
+    /**
+     * Check if the enrollment is registered (either awaiting payment or fully paid).
+     */
+    public function isRegistered(): bool
+    {
+        return in_array($this->status, ['registered_awaiting_payment', 'registered_fully_paid']);
+    }
+
+    /**
+     * Mark enrollment as registered awaiting payment.
+     */
+    public function markAsRegisteredAwaitingPayment(): void
+    {
+        $this->update(['status' => 'registered_awaiting_payment']);
+    }
+
+    /**
+     * Mark enrollment as registered fully paid.
+     */
+    public function markAsRegisteredFullyPaid(): void
+    {
+        $this->update(['status' => 'registered_fully_paid']);
+    }
+
+    /**
      * Update the balance after a payment.
      */
     public function updateBalanceAfterPayment(int $paymentAmountCents): void

@@ -114,7 +114,7 @@ class EnrollmentManagement extends Component
     public function updateStatus()
     {
         $this->validate([
-            'newStatus' => 'required|in:pending,confirmed,waitlisted,cancelled',
+            'newStatus' => 'required|in:pending,confirmed,waitlisted,cancelled,registered_awaiting_payment,registered_fully_paid',
             'statusNotes' => 'nullable|string|max:500',
         ]);
 
@@ -207,6 +207,8 @@ class EnrollmentManagement extends Component
             'pending' => 'bg-yellow-100 text-yellow-800',
             'waitlisted' => 'bg-blue-100 text-blue-800',
             'cancelled' => 'bg-red-100 text-red-800',
+            'registered_awaiting_payment' => 'bg-orange-100 text-orange-800',
+            'registered_fully_paid' => 'bg-green-100 text-green-800',
             'completed' => 'bg-gray-100 text-gray-800',
             default => 'bg-gray-100 text-gray-800',
         };
