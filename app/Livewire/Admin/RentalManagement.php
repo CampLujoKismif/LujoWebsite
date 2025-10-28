@@ -18,7 +18,7 @@ class RentalManagement extends Component
     // Search and filters
     public $searchTerm = '';
     public $statusFilter = '';
-    public $dateFilter = '';
+    public $dateFilter = 'upcoming';
     public $paymentMethodFilter = '';
 
     // Modal states
@@ -48,7 +48,7 @@ class RentalManagement extends Component
     protected $queryString = [
         'searchTerm' => ['except' => ''],
         'statusFilter' => ['except' => ''],
-        'dateFilter' => ['except' => ''],
+        'dateFilter' => ['except' => 'upcoming'],
         'paymentMethodFilter' => ['except' => ''],
     ];
 
