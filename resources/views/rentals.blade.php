@@ -82,13 +82,13 @@
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <div class="text-blue-600 text-4xl mb-4">🏕️</div>
                         <h3 class="text-xl font-semibold text-gray-900 mb-2">Accommodations</h3>
-                        <p class="text-gray-600">Comfortable cabins and dormitory-style lodging for groups of all sizes.</p>
+                        <p class="text-gray-600">Comfortable dormitory-style lodging for groups of all sizes.</p>
                     </div>
                     
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <div class="text-blue-600 text-4xl mb-4">🍽️</div>
                         <h3 class="text-xl font-semibold text-gray-900 mb-2">Dining Facilities</h3>
-                        <p class="text-gray-600">Full-service kitchen and dining hall to accommodate your group's needs.</p>
+                        <p class="text-gray-600">Full kitchen and dining hall to accommodate your group's needs.</p>
                     </div>
                     
                     <div class="bg-white p-6 rounded-lg shadow-md">
@@ -112,7 +112,7 @@
                     <div class="text-center">
                         <div class="text-4xl font-bold text-blue-600 mb-2">$20</div>
                         <div class="text-xl text-gray-700 mb-4">per person per day</div>
-                        <p class="text-gray-600">Includes accommodations, meals, and access to all facilities</p>
+                        <p class="text-gray-600">Includes access to all facilities</p>
                     </div>
                 </div>
             </div>
@@ -123,7 +123,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h2 class="text-3xl font-bold text-gray-900 mb-4">Questions?</h2>
                 <p class="text-lg text-gray-600 mb-8">Contact us for more information about our facilities and availability</p>
-                <a href="mailto:info@camplujokismif.org" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold">
+                <a href="mailto:contact@lujo.camp" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold">
                     Contact Us
                 </a>
             </div>
