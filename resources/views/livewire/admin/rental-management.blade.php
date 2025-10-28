@@ -297,9 +297,14 @@
                                         <div class="text-sm text-gray-900 dark:text-white">
                                             ${{ number_format($reservation->final_amount, 2) }}
                                         </div>
-                                        @if($reservation->deposit_amount)
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                Deposit: ${{ number_format($reservation->deposit_amount, 2) }}
+                                        @if($reservation->amount_paid > 0)
+                                            <div class="text-xs text-green-600 dark:text-green-400">
+                                                Paid: ${{ number_format($reservation->amount_paid, 2) }}
+                                            </div>
+                                        @endif
+                                        @if($reservation->remaining_balance > 0)
+                                            <div class="text-xs text-orange-600 dark:text-orange-400">
+                                                Balance: ${{ number_format($reservation->remaining_balance, 2) }}
                                             </div>
                                         @endif
                                     </td>
@@ -327,35 +332,56 @@
                                                 @break
                                         @endswitch
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                        @if($reservation->stripe_payment_intent_id)
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($reservation->isFullyPaid())
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
-                                                Online
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Paid
+                                            </span>
+                                        @elseif($reservation->isPartiallyPaid())
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+                                                Partial
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
-                                                Mail Check
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+                                                Unpaid
                                             </span>
+                                        @endif
+                                        @if($reservation->payment_method)
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                {{ ucfirst(str_replace('_', ' ', $reservation->payment_method)) }}
+                                            </div>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex space-x-2">
-                                            <button wire:click="openEditModal({{ $reservation->id }})" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
-                                                Edit
-                                            </button>
-                                            @if($reservation->canBeCancelled())
-                                                <button wire:click="openCancelModal({{ $reservation->id }})" class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300">
-                                                    Cancel
+                                        <div class="flex flex-col space-y-1">
+                                            <div class="flex space-x-2">
+                                                <button wire:click="openEditModal({{ $reservation->id }})" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
+                                                    Edit
                                                 </button>
-                                            @endif
-                                            @if($reservation->status === 'confirmed' && $reservation->stripe_payment_intent_id)
-                                                <button wire:click="openRefundModal({{ $reservation->id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
-                                                    Refund
+                                                @if(!$reservation->isFullyPaid())
+                                                    <button wire:click="openPaymentModal({{ $reservation->id }})" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">
+                                                        Payment
+                                                    </button>
+                                                @endif
+                                                @if($reservation->canBeCancelled())
+                                                    <button wire:click="openCancelModal({{ $reservation->id }})" class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300">
+                                                        Cancel
+                                                    </button>
+                                                @endif
+                                            </div>
+                                            <div class="flex space-x-2">
+                                                @if($reservation->status === 'confirmed' && $reservation->stripe_payment_intent_id)
+                                                    <button wire:click="openRefundModal({{ $reservation->id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                                                        Refund
+                                                    </button>
+                                                @endif
+                                                <button wire:click="openDeleteModal({{ $reservation->id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                                                    Delete
                                                 </button>
-                                            @endif
-                                            <button wire:click="openDeleteModal({{ $reservation->id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
-                                                Delete
-                                            </button>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -516,6 +542,34 @@
                                             <textarea wire:model="reservationData.rental_purpose" id="rental_purpose" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm"></textarea>
                                             @error('reservationData.rental_purpose') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                         </div>
+
+                                        <!-- Custom Pricing Toggle -->
+                                        <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                                            <div class="flex items-center mb-4">
+                                                <input type="checkbox" wire:model.live="useCustomPricing" id="use_custom_pricing" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                                <label for="use_custom_pricing" class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Use Custom Pricing
+                                                </label>
+                                            </div>
+
+                                            @if($useCustomPricing)
+                                                <div class="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label for="custom_total" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Total Amount</label>
+                                                        <input type="number" step="0.01" wire:model="reservationData.custom_total" id="custom_total" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
+                                                        @error('reservationData.custom_total') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                                    </div>
+                                                    <div>
+                                                        <label for="custom_deposit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Deposit Amount (Optional)</label>
+                                                        <input type="number" step="0.01" wire:model="reservationData.custom_deposit" id="custom_deposit" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
+                                                        @error('reservationData.custom_deposit') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                                    </div>
+                                                </div>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                                    Custom pricing will override the standard pricing calculation.
+                                                </p>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -602,6 +656,28 @@
                                             <label for="edit_notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
                                             <textarea wire:model="reservationData.notes" id="edit_notes" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm"></textarea>
                                             @error('reservationData.notes') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                        </div>
+
+                                        <!-- Pricing Section -->
+                                        <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                                            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Pricing Details</h4>
+                                            <div class="grid grid-cols-3 gap-4">
+                                                <div>
+                                                    <label for="edit_total_amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Total Amount</label>
+                                                    <input type="number" step="0.01" wire:model="reservationData.total_amount" id="edit_total_amount" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
+                                                    @error('reservationData.total_amount') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                                </div>
+                                                <div>
+                                                    <label for="edit_deposit_amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Deposit</label>
+                                                    <input type="number" step="0.01" wire:model="reservationData.deposit_amount" id="edit_deposit_amount" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
+                                                    @error('reservationData.deposit_amount') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                                </div>
+                                                <div>
+                                                    <label for="edit_final_amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Final Amount</label>
+                                                    <input type="number" step="0.01" wire:model="reservationData.final_amount" id="edit_final_amount" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
+                                                    @error('reservationData.final_amount') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -893,6 +969,97 @@
                                 Create Discount Code
                             </button>
                             <button type="button" wire:click="$set('showDiscountModal', false)" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-zinc-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Record Payment Modal -->
+    @if($showPaymentModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="inline-block align-bottom bg-white dark:bg-zinc-900 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <form wire:submit.prevent="recordPayment">
+                        <div class="bg-white dark:bg-zinc-900 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <div class="sm:flex sm:items-start">
+                                <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4" id="modal-title">
+                                        Record Payment
+                                    </h3>
+
+                                    @if($selectedReservation)
+                                        <!-- Payment Summary -->
+                                        <div class="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 mb-4">
+                                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                                <div>
+                                                    <span class="text-gray-500 dark:text-gray-400">Contact:</span>
+                                                    <span class="text-gray-900 dark:text-white font-medium ml-2">{{ $selectedReservation->contact_name }}</span>
+                                                </div>
+                                                <div>
+                                                    <span class="text-gray-500 dark:text-gray-400">Total Amount:</span>
+                                                    <span class="text-gray-900 dark:text-white font-medium ml-2">${{ number_format($selectedReservation->final_amount, 2) }}</span>
+                                                </div>
+                                                <div>
+                                                    <span class="text-gray-500 dark:text-gray-400">Already Paid:</span>
+                                                    <span class="text-green-600 dark:text-green-400 font-medium ml-2">${{ number_format($selectedReservation->amount_paid ?? 0, 2) }}</span>
+                                                </div>
+                                                <div>
+                                                    <span class="text-gray-500 dark:text-gray-400">Balance Due:</span>
+                                                    <span class="text-orange-600 dark:text-orange-400 font-medium ml-2">${{ number_format($selectedReservation->remaining_balance, 2) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    <div class="space-y-4">
+                                        <!-- Quick Option: Mark as Fully Paid -->
+                                        <div class="flex items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                            <input type="checkbox" wire:model.live="paymentData.mark_as_paid" id="mark_as_paid" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                                            <label for="mark_as_paid" class="ml-3 block text-sm font-medium text-gray-900 dark:text-white">
+                                                Mark as Fully Paid
+                                                <span class="block text-xs text-gray-500 dark:text-gray-400">This will mark the entire balance as paid</span>
+                                            </label>
+                                        </div>
+
+                                        @if(!$paymentData['mark_as_paid'])
+                                            <div>
+                                                <label for="payment_amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Payment Amount</label>
+                                                <div class="mt-1 relative rounded-md shadow-sm">
+                                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                        <span class="text-gray-500 dark:text-gray-400 sm:text-sm">$</span>
+                                                    </div>
+                                                    <input type="number" step="0.01" wire:model="paymentData.amount" id="payment_amount" class="pl-7 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm" placeholder="0.00">
+                                                </div>
+                                                @error('paymentData.amount') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                            </div>
+                                        @endif
+
+                                        <div>
+                                            <label for="payment_method" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Payment Method</label>
+                                            <select wire:model="paymentData.payment_method" id="payment_method" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
+                                                <option value="check">Check</option>
+                                                <option value="cash">Cash</option>
+                                                <option value="credit_card">Credit Card</option>
+                                                <option value="stripe">Stripe (Online)</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                            @error('paymentData.payment_method') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-zinc-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                Record Payment
+                            </button>
+                            <button type="button" wire:click="$set('showPaymentModal', false)" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-zinc-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                                 Cancel
                             </button>
                         </div>

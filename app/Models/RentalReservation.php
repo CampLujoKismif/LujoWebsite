@@ -23,6 +23,10 @@ class RentalReservation extends Model
         'deposit_amount',
         'discount_code_id',
         'final_amount',
+        'amount_paid',
+        'payment_status',
+        'payment_method',
+        'payment_date',
         'stripe_payment_intent_id',
         'status',
         'notes',
@@ -34,6 +38,8 @@ class RentalReservation extends Model
         'total_amount' => 'decimal:2',
         'deposit_amount' => 'decimal:2',
         'final_amount' => 'decimal:2',
+        'amount_paid' => 'decimal:2',
+        'payment_date' => 'datetime',
     ];
 
     /**
@@ -89,5 +95,59 @@ class RentalReservation extends Model
                      ->where('end_date', '>=', $endDate);
               });
         });
+    }
+
+    /**
+     * Check if the reservation is fully paid.
+     */
+    public function isFullyPaid(): bool
+    {
+        return $this->payment_status === 'paid' || 
+               ($this->amount_paid && $this->amount_paid >= $this->final_amount);
+    }
+
+    /**
+     * Check if the reservation is partially paid.
+     */
+    public function isPartiallyPaid(): bool
+    {
+        return $this->amount_paid > 0 && $this->amount_paid < $this->final_amount;
+    }
+
+    /**
+     * Get the remaining balance.
+     */
+    public function getRemainingBalanceAttribute(): float
+    {
+        return max(0, $this->final_amount - ($this->amount_paid ?? 0));
+    }
+
+    /**
+     * Mark reservation as paid.
+     */
+    public function markAsPaid(string $paymentMethod = null, float $amount = null): void
+    {
+        $this->update([
+            'payment_status' => 'paid',
+            'amount_paid' => $amount ?? $this->final_amount,
+            'payment_method' => $paymentMethod ?? $this->payment_method,
+            'payment_date' => now(),
+        ]);
+    }
+
+    /**
+     * Record a partial payment.
+     */
+    public function recordPayment(float $amount, string $paymentMethod = null): void
+    {
+        $newAmountPaid = ($this->amount_paid ?? 0) + $amount;
+        $paymentStatus = $newAmountPaid >= $this->final_amount ? 'paid' : 'partial';
+
+        $this->update([
+            'amount_paid' => $newAmountPaid,
+            'payment_status' => $paymentStatus,
+            'payment_method' => $paymentMethod ?? $this->payment_method,
+            'payment_date' => now(),
+        ]);
     }
 }

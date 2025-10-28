@@ -29,6 +29,7 @@ class RentalManagement extends Component
     public $showRefundModal = false;
     public $showPricingModal = false;
     public $showDiscountModal = false;
+    public $showPaymentModal = false;
 
     // Selected items
     public $selectedReservation = null;
@@ -38,6 +39,11 @@ class RentalManagement extends Component
     public $reservationData = [];
     public $pricingData = [];
     public $discountData = [];
+    public $paymentData = [];
+    
+    // Pricing options
+    public $useCustomPricing = false;
+    public $calculatedTotal = 0;
 
     protected $queryString = [
         'searchTerm' => ['except' => ''],
@@ -90,6 +96,9 @@ class RentalManagement extends Component
             'start_date' => $this->selectedReservation->start_date->format('Y-m-d'),
             'end_date' => $this->selectedReservation->end_date->format('Y-m-d'),
             'status' => $this->selectedReservation->status,
+            'total_amount' => $this->selectedReservation->total_amount,
+            'deposit_amount' => $this->selectedReservation->deposit_amount,
+            'final_amount' => $this->selectedReservation->final_amount,
             'notes' => $this->selectedReservation->notes,
         ];
         $this->showEditModal = true;
@@ -134,7 +143,7 @@ class RentalManagement extends Component
     {
         $this->authorize('create', RentalReservation::class);
         
-        $this->validate([
+        $rules = [
             'reservationData.contact_name' => 'required|string|max:255',
             'reservationData.contact_email' => 'required|email|max:255',
             'reservationData.contact_phone' => 'required|string|max:20',
@@ -142,20 +151,35 @@ class RentalManagement extends Component
             'reservationData.number_of_people' => 'required|integer|min:1|max:100',
             'reservationData.start_date' => 'required|date|after:today',
             'reservationData.end_date' => 'required|date|after:start_date',
-        ]);
+        ];
+
+        // Add custom pricing validation if enabled
+        if ($this->useCustomPricing) {
+            $rules['reservationData.custom_total'] = 'required|numeric|min:0';
+            $rules['reservationData.custom_deposit'] = 'nullable|numeric|min:0';
+        }
+
+        $this->validate($rules);
 
         $startDate = Carbon::parse($this->reservationData['start_date']);
         $endDate = Carbon::parse($this->reservationData['end_date']);
         $numberOfDays = $startDate->diffInDays($endDate) + 1;
 
-        // Calculate pricing
-        $pricing = RentalPricing::current();
-        if (!$pricing) {
-            session()->flash('error', 'No active pricing found. Please set up pricing first.');
-            return;
+        // Determine pricing
+        if ($this->useCustomPricing) {
+            $baseTotal = $this->reservationData['custom_total'];
+            $depositAmount = $this->reservationData['custom_deposit'] ?? null;
+        } else {
+            // Calculate pricing
+            $pricing = RentalPricing::current();
+            if (!$pricing) {
+                session()->flash('error', 'No active pricing found. Please set up pricing first or use custom pricing.');
+                return;
+            }
+            
+            $baseTotal = $pricing->calculateTotal($this->reservationData['number_of_people'], $numberOfDays);
+            $depositAmount = $pricing->deposit_amount;
         }
-        
-        $baseTotal = $pricing->calculateTotal($this->reservationData['number_of_people'], $numberOfDays);
 
         RentalReservation::create([
             'start_date' => $startDate,
@@ -166,10 +190,12 @@ class RentalManagement extends Component
             'rental_purpose' => $this->reservationData['rental_purpose'],
             'number_of_people' => $this->reservationData['number_of_people'],
             'total_amount' => $baseTotal,
-            'deposit_amount' => $pricing->deposit_amount,
+            'deposit_amount' => $depositAmount,
             'final_amount' => $baseTotal,
+            'payment_status' => 'unpaid',
+            'amount_paid' => 0,
             'status' => 'confirmed',
-            'notes' => 'Created by admin: ' . Auth::user()->name,
+            'notes' => 'Created by admin: ' . Auth::user()->name . ($this->useCustomPricing ? ' (Custom pricing)' : ''),
         ]);
 
         $this->showCreateModal = false;
@@ -190,6 +216,9 @@ class RentalManagement extends Component
             'reservationData.start_date' => 'required|date',
             'reservationData.end_date' => 'required|date|after:start_date',
             'reservationData.status' => 'required|in:pending,confirmed,cancelled,completed',
+            'reservationData.total_amount' => 'required|numeric|min:0',
+            'reservationData.deposit_amount' => 'nullable|numeric|min:0',
+            'reservationData.final_amount' => 'required|numeric|min:0',
         ]);
 
         $this->selectedReservation->update([
@@ -201,6 +230,9 @@ class RentalManagement extends Component
             'start_date' => $this->reservationData['start_date'],
             'end_date' => $this->reservationData['end_date'],
             'status' => $this->reservationData['status'],
+            'total_amount' => $this->reservationData['total_amount'],
+            'deposit_amount' => $this->reservationData['deposit_amount'],
+            'final_amount' => $this->reservationData['final_amount'],
             'notes' => $this->reservationData['notes'],
         ]);
 
@@ -313,6 +345,43 @@ class RentalManagement extends Component
         }
     }
 
+    public function openPaymentModal($reservationId)
+    {
+        $this->selectedReservation = RentalReservation::findOrFail($reservationId);
+        $this->paymentData = [
+            'amount' => $this->selectedReservation->remaining_balance,
+            'payment_method' => $this->selectedReservation->payment_method ?? 'check',
+            'mark_as_paid' => false,
+        ];
+        $this->showPaymentModal = true;
+    }
+
+    public function recordPayment()
+    {
+        $this->validate([
+            'paymentData.amount' => 'required|numeric|min:0.01',
+            'paymentData.payment_method' => 'required|string|in:check,cash,credit_card,stripe,other',
+        ]);
+
+        if ($this->paymentData['mark_as_paid']) {
+            // Mark as fully paid
+            $this->selectedReservation->markAsPaid(
+                $this->paymentData['payment_method'],
+                $this->selectedReservation->final_amount
+            );
+        } else {
+            // Record partial or full payment
+            $this->selectedReservation->recordPayment(
+                $this->paymentData['amount'],
+                $this->paymentData['payment_method']
+            );
+        }
+
+        $this->showPaymentModal = false;
+        $this->selectedReservation = null;
+        session()->flash('message', 'Payment recorded successfully.');
+    }
+
     public function resetFormData()
     {
         $this->reservationData = [
@@ -324,6 +393,11 @@ class RentalManagement extends Component
             'start_date' => '',
             'end_date' => '',
             'status' => 'pending',
+            'custom_total' => '',
+            'custom_deposit' => '',
+            'total_amount' => '',
+            'deposit_amount' => '',
+            'final_amount' => '',
             'notes' => '',
         ];
 
@@ -343,6 +417,15 @@ class RentalManagement extends Component
             'valid_until' => '',
             'description' => '',
         ];
+
+        $this->paymentData = [
+            'amount' => 0,
+            'payment_method' => 'check',
+            'mark_as_paid' => false,
+        ];
+
+        $this->useCustomPricing = false;
+        $this->calculatedTotal = 0;
     }
 
     public function render()
