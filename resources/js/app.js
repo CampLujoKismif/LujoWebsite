@@ -3,6 +3,7 @@ import './bootstrap'
 import VueExample from './components/VueExample.vue'
 import RentalCalendar from './components/RentalCalendar.vue'
 import RentalForm from './components/RentalForm.vue'
+import StripePaymentForm from './components/StripePaymentForm.vue'
 
 // Create Vue app instance
 const app = createApp({})
@@ -11,6 +12,7 @@ const app = createApp({})
 app.component('vue-example', VueExample)
 app.component('rental-calendar', RentalCalendar)
 app.component('rental-form', RentalForm)
+app.component('stripe-payment-form', StripePaymentForm)
 
 // Make Vue available globally for Blade templates
 window.Vue = createApp
@@ -52,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
         elementApp.component('rental-calendar', RentalCalendar);
         elementApp.component('rental-form', RentalForm);
         elementApp.component('vue-example', VueExample);
+        elementApp.component('stripe-payment-form', StripePaymentForm);
         
         // Mount the app to this specific element
         try {

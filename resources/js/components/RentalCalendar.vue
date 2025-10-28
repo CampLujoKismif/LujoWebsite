@@ -222,7 +222,8 @@
             <h4 class="font-semibold text-gray-900 mb-4">Choose Payment Method:</h4>
             <div class="space-y-3">
               <!-- Credit Card Option -->
-<!--               <label class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+              <label class="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                     :class="selectedPaymentMethod === 'credit_card' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'">
                 <input 
                   type="radio" 
                   v-model="selectedPaymentMethod" 
@@ -238,10 +239,11 @@
                     <div class="text-sm text-gray-600">Pay securely online with Stripe</div>
                   </div>
                 </div>
-              </label> -->
+              </label>
 
               <!-- Mail Check Option -->
-              <label class="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+              <label class="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                     :class="selectedPaymentMethod === 'mail_check' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'">
                 <input 
                   type="radio" 
                   v-model="selectedPaymentMethod" 
@@ -261,6 +263,15 @@
             </div>
           </div>
 
+          <!-- Show Stripe Form After Reservation Created -->
+          <div v-if="selectedPaymentMethod === 'credit_card' && reservationCreated" class="mb-6">
+            <stripe-payment-form 
+              :amount="calculateFinalAmount()"
+              :reservation-id="createdReservationId"
+              @payment-success="handlePaymentSuccess"
+            />
+          </div>
+
           <!-- Payment Instructions for Mail Check -->
           <div v-if="selectedPaymentMethod === 'mail_check'" class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <h5 class="font-semibold text-yellow-800 mb-2">Payment Instructions:</h5>
@@ -274,7 +285,7 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex justify-between">
+          <div v-if="!reservationCreated" class="flex justify-between">
             <button 
               @click="goBackToForm"
               class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
@@ -283,10 +294,13 @@
             </button>
             <button 
               @click="completeReservation"
-              :disabled="!selectedPaymentMethod"
+              :disabled="!selectedPaymentMethod || processingReservation"
               class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
             >
-              {{ selectedPaymentMethod === 'mail_check' ? 'Complete Reservation' : 'Process Payment' }}
+              <span v-if="!processingReservation">
+                {{ selectedPaymentMethod === 'mail_check' ? 'Complete Reservation' : 'Continue to Payment' }}
+              </span>
+              <span v-else>Processing...</span>
             </button>
           </div>
         </div>
@@ -331,6 +345,9 @@ export default {
       currentStep: 1,
       pricing: null,
       selectedPaymentMethod: null,
+      processingReservation: false,
+      reservationCreated: false,
+      createdReservationId: null,
       formData: {
         number_of_people: 0,
         discount_code: '',
@@ -634,6 +651,8 @@ export default {
       console.log('Payment method:', this.selectedPaymentMethod)
       console.log('Final amount:', this.calculateFinalAmount())
       
+      this.processingReservation = true
+      
       try {
         // Prepare reservation data
         const reservationData = {
@@ -667,7 +686,7 @@ export default {
         
         if (!response.ok) {
           const errorData = await response.json()
-          throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+          throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`)
         }
         
         const result = await response.json()
@@ -675,24 +694,67 @@ export default {
         
         if (this.selectedPaymentMethod === 'mail_check') {
           alert('Reservation completed! Please mail your check as instructed. You will receive a confirmation email shortly.')
-        } else {
-          alert('Reservation completed! Payment will be processed securely. You will receive a confirmation email shortly.')
+          this.resetForm()
+        } else if (this.selectedPaymentMethod === 'credit_card') {
+          // For credit card, show Stripe payment form
+          this.reservationCreated = true
+          this.createdReservationId = result.reservation.id
+          console.log('Showing Stripe payment form for reservation ID:', this.createdReservationId)
         }
-        
-        // Reset the form
-        this.currentStep = 1
-        this.selectedDates = []
-        this.formData = {
-          number_of_people: 0,
-          discount_code: '',
-          discount_amount: 0
-        }
-        this.selectedPaymentMethod = null
         
       } catch (error) {
         console.error('Error creating reservation:', error)
-        alert('Error creating reservation. Please try again or contact support.')
+        alert('Error creating reservation: ' + error.message)
+      } finally {
+        this.processingReservation = false
       }
+    },
+    async handlePaymentSuccess(paymentData) {
+      console.log('Payment successful:', paymentData)
+      
+      try {
+        // Confirm payment on backend
+        const response = await fetch('/api/rental/confirm-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+          },
+          body: JSON.stringify({
+            payment_intent_id: paymentData.paymentIntentId,
+            reservation_id: this.createdReservationId
+          })
+        })
+        
+        if (!response.ok) {
+          throw new Error('Failed to confirm payment')
+        }
+        
+        const result = await response.json()
+        console.log('Payment confirmed:', result)
+        
+        alert('Payment successful! Your reservation is confirmed. You will receive a confirmation email shortly.')
+        
+        // Reset form and return to calendar
+        this.resetForm()
+        
+      } catch (error) {
+        console.error('Error confirming payment:', error)
+        alert('Payment was processed but there was an error confirming your reservation. Please contact support with your confirmation number.')
+      }
+    },
+    resetForm() {
+      this.currentStep = 1
+      this.selectedDates = []
+      this.formData = {
+        number_of_people: 0,
+        discount_code: '',
+        discount_amount: 0
+      }
+      this.selectedPaymentMethod = null
+      this.reservationCreated = false
+      this.createdReservationId = null
+      this.processingReservation = false
     },
     handleReservationCreated(reservation) {
       // Handle successful reservation creation

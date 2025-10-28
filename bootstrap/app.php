@@ -17,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \App\Http\Middleware\CheckPermission::class,
             'camp.access' => \App\Http\Middleware\CheckCampAccess::class,
         ]);
+        
+        // Exclude Stripe webhook from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'api/webhooks/stripe',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -11,7 +11,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Stripe\Stripe;
+use Stripe\PaymentIntent;
 
 class RentalController extends Controller
 {
@@ -424,5 +427,125 @@ class RentalController extends Controller
                 ];
             }),
         ]);
+    }
+
+    /**
+     * Create a payment intent for a rental reservation.
+     */
+    public function createPaymentIntent(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'amount' => 'required|numeric|min:0.01',
+            'reservation_id' => 'nullable|exists:rental_reservations,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        try {
+            Stripe::setApiKey(config('services.stripe.secret'));
+
+            $amount = $request->input('amount');
+            $amountCents = (int) ($amount * 100);
+
+            $metadata = [
+                'type' => 'rental_reservation',
+            ];
+
+            if ($request->input('reservation_id')) {
+                $metadata['reservation_id'] = $request->input('reservation_id');
+            }
+
+            $paymentIntent = PaymentIntent::create([
+                'amount' => $amountCents,
+                'currency' => 'usd',
+                'metadata' => $metadata,
+                'automatic_payment_methods' => [
+                    'enabled' => true,
+                ],
+            ]);
+
+            return response()->json([
+                'client_secret' => $paymentIntent->client_secret,
+                'payment_intent_id' => $paymentIntent->id,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Stripe payment intent creation failed', [
+                'error' => $e->getMessage(),
+                'amount' => $request->input('amount'),
+            ]);
+
+            return response()->json([
+                'error' => 'Failed to create payment intent'
+            ], 500);
+        }
+    }
+
+    /**
+     * Confirm payment for a rental reservation.
+     */
+    public function confirmPayment(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'payment_intent_id' => 'required|string',
+            'reservation_id' => 'required|exists:rental_reservations,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        try {
+            Stripe::setApiKey(config('services.stripe.secret'));
+
+            $paymentIntent = PaymentIntent::retrieve($request->input('payment_intent_id'));
+
+            if ($paymentIntent->status === 'succeeded') {
+                $reservation = RentalReservation::find($request->input('reservation_id'));
+                
+                if ($reservation) {
+                    $reservation->update([
+                        'stripe_payment_intent_id' => $paymentIntent->id,
+                        'payment_status' => 'paid',
+                        'payment_method' => 'credit_card',
+                        'payment_date' => now(),
+                        'amount_paid' => $paymentIntent->amount / 100,
+                        'status' => 'confirmed',
+                    ]);
+
+                    Log::info('Rental payment confirmed', [
+                        'reservation_id' => $reservation->id,
+                        'payment_intent_id' => $paymentIntent->id,
+                        'amount' => $paymentIntent->amount / 100,
+                    ]);
+
+                    return response()->json([
+                        'success' => true,
+                        'reservation' => [
+                            'id' => $reservation->id,
+                            'status' => $reservation->status,
+                            'payment_status' => $reservation->payment_status,
+                        ],
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'error' => 'Payment not successful'
+            ], 400);
+
+        } catch (\Exception $e) {
+            Log::error('Rental payment confirmation failed', [
+                'error' => $e->getMessage(),
+                'payment_intent_id' => $request->input('payment_intent_id'),
+                'reservation_id' => $request->input('reservation_id'),
+            ]);
+
+            return response()->json([
+                'error' => 'Failed to confirm payment'
+            ], 500);
+        }
     }
 }

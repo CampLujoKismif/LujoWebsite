@@ -34,17 +34,68 @@ CASHIER_PATH=stripe
 
 ### 2. Set Up Webhooks
 
-1. Go to Developers > Webhooks in your Stripe Dashboard
-2. Click "Add endpoint"
-3. Set the endpoint URL to: `https://yourdomain.com/stripe/webhook`
+Webhooks allow Stripe to notify your application about payment events asynchronously.
+
+#### Development/Testing Setup:
+
+1. **Install Stripe CLI** (for local testing):
+   ```bash
+   # For macOS
+   brew install stripe/stripe-cli/stripe
+   
+   # For Linux
+   curl -s https://packages.stripe.com/api/v1/public-key.gpg | sudo apt-key add -
+   echo "deb https://packages.stripe.com/stripe-cli/ stable main" | sudo tee /etc/apt/sources.list.d/stripe.list
+   sudo apt update
+   sudo apt install stripe
+   ```
+
+2. **Login to Stripe CLI**:
+   ```bash
+   stripe login
+   ```
+
+3. **Forward webhooks to your local development server**:
+   ```bash
+   # This will give you a webhook signing secret
+   stripe listen --forward-to localhost/api/webhooks/stripe
+   ```
+
+4. **Copy the webhook signing secret** (starts with `whsec_`) and add it to your `.env`:
+   ```env
+   STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+   ```
+
+5. **Test the webhook** (in another terminal):
+   ```bash
+   stripe trigger payment_intent.succeeded
+   ```
+
+#### Production Setup:
+
+1. Go to [Stripe Dashboard > Developers > Webhooks](https://dashboard.stripe.com/webhooks)
+2. Click **"Add endpoint"**
+3. Set the endpoint URL to: `https://yourdomain.com/api/webhooks/stripe`
 4. Select the following events:
    - `payment_intent.succeeded`
    - `payment_intent.payment_failed`
    - `payment_intent.canceled`
-   - `charge.succeeded`
-   - `charge.failed`
    - `charge.refunded`
-5. Copy the webhook signing secret and add it to your `.env` file
+   - `charge.dispute.created`
+5. Click **"Add endpoint"**
+6. Copy the **Signing secret** (starts with `whsec_`)
+7. Add it to your production `.env` file:
+   ```env
+   STRIPE_WEBHOOK_SECRET=whsec_your_production_webhook_secret
+   ```
+
+#### Webhook Events Handled:
+
+- **payment_intent.succeeded**: Payment completed successfully
+- **payment_intent.payment_failed**: Payment failed
+- **payment_intent.canceled**: Payment canceled by customer or system
+- **charge.refunded**: Refund processed
+- **charge.dispute.created**: Customer disputed the charge
 
 ### 3. Test Mode vs Live Mode
 
@@ -110,24 +161,76 @@ Use these test card numbers:
 4. **Implement proper error handling** for failed payments
 5. **Log all payment events** for audit trails
 
+## Webhook Endpoint
+
+Your application has a webhook endpoint at:
+```
+POST /api/webhooks/stripe
+```
+
+This endpoint:
+- ✅ Verifies webhook signatures for security
+- ✅ Handles payment events asynchronously
+- ✅ Updates reservation status automatically
+- ✅ Logs all events for debugging
+- ✅ Returns 200 OK to acknowledge receipt
+
+## Testing Webhooks Locally
+
+1. **Start your local server**:
+   ```bash
+   sail up -d
+   sail npm run dev
+   ```
+
+2. **Start Stripe webhook forwarding** (in another terminal):
+   ```bash
+   stripe listen --forward-to localhost/api/webhooks/stripe
+   ```
+
+3. **Make a test payment** through your rental form
+
+4. **Or trigger test events manually**:
+   ```bash
+   stripe trigger payment_intent.succeeded
+   stripe trigger payment_intent.payment_failed
+   stripe trigger charge.refunded
+   ```
+
+5. **Check logs**:
+   ```bash
+   sail logs -f
+   # or
+   tail -f storage/logs/laravel.log
+   ```
+
 ## Troubleshooting
 
 ### Common Issues
 
 1. **Webhook not receiving events**:
-   - Check webhook endpoint URL
-   - Verify webhook secret
-   - Check server logs
+   - Check webhook endpoint URL is correct
+   - Verify webhook secret in `.env` matches Stripe Dashboard
+   - Check server logs: `sail logs -f`
+   - Ensure endpoint is not behind authentication
+   - Verify CSRF exception is configured
 
-2. **Payment processing errors**:
-   - Verify Stripe keys are correct
+2. **Webhook signature verification failed**:
+   - Ensure `STRIPE_WEBHOOK_SECRET` is set correctly
+   - Check you're using the correct secret (test vs live mode)
+   - Verify the webhook endpoint URL matches exactly
+
+3. **Payment processing errors**:
+   - Verify Stripe keys are correct in `.env`
    - Check Stripe Dashboard for error details
-   - Review application logs
+   - Review application logs: `storage/logs/laravel.log`
+   - Test with Stripe CLI: `stripe trigger payment_intent.succeeded`
 
-3. **Enrollment status not updating**:
-   - Check webhook event processing
-   - Verify database migrations ran
+4. **Reservation status not updating**:
+   - Check webhook event processing in logs
+   - Verify database migrations ran: `sail artisan migrate:status`
    - Check payment service logic
+   - Ensure reservation ID is in payment intent metadata
 
 ### Debug Mode
 

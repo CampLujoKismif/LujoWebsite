@@ -9,8 +9,11 @@ use App\Models\RentalPricing;
 use App\Models\RentalBlackoutDate;
 use App\Models\DiscountCode;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Carbon\Carbon;
+use Stripe\Stripe;
+use Stripe\Refund;
 
 class RentalManagement extends Component
 {
@@ -294,18 +297,98 @@ class RentalManagement extends Component
     {
         $this->authorize('refund', $this->selectedReservation);
         
-        if ($this->selectedReservation) {
-            // Here you would integrate with your payment processor (Stripe, etc.)
-            // For now, we'll just mark it as refunded in notes
-            $this->selectedReservation->update([
-                'status' => 'cancelled',
-                'notes' => $this->selectedReservation->notes . "\nRefund processed by admin: " . Auth::user()->name . " on " . now()->format('Y-m-d H:i:s'),
-            ]);
-
-            $this->showRefundModal = false;
-            $this->selectedReservation = null;
-            session()->flash('message', 'Refund processed successfully.');
+        if (!$this->selectedReservation) {
+            session()->flash('error', 'Reservation not found.');
+            return;
         }
+
+        try {
+            $reservation = $this->selectedReservation;
+            
+            // Check if this was paid through Stripe
+            if ($reservation->stripe_payment_intent_id) {
+                // Process Stripe refund
+                Stripe::setApiKey(config('services.stripe.secret'));
+                
+                $refundAmount = $reservation->amount_paid ?? $reservation->final_amount;
+                
+                // Create refund in Stripe
+                $refund = Refund::create([
+                    'payment_intent' => $reservation->stripe_payment_intent_id,
+                    'amount' => (int) ($refundAmount * 100), // Convert to cents
+                    'reason' => 'requested_by_customer',
+                    'metadata' => [
+                        'reservation_id' => $reservation->id,
+                        'refunded_by' => Auth::user()->name,
+                        'refunded_by_id' => Auth::id(),
+                    ],
+                ]);
+
+                Log::info('Stripe refund processed by admin', [
+                    'reservation_id' => $reservation->id,
+                    'refund_id' => $refund->id,
+                    'amount' => $refundAmount,
+                    'admin_user' => Auth::user()->name,
+                ]);
+
+                // Update reservation - webhook will also update this, but we update immediately too
+                $reservation->update([
+                    'status' => 'cancelled',
+                    'payment_status' => 'refunded',
+                    'amount_paid' => 0,
+                    'notes' => ($reservation->notes ?? '') . "\n[" . now()->format('Y-m-d H:i:s') . "] Stripe refund processed by admin: " . Auth::user()->name . " - Refund ID: " . $refund->id . " - Amount: $" . number_format($refundAmount, 2),
+                ]);
+
+                session()->flash('message', 'Refund of $' . number_format($refundAmount, 2) . ' processed successfully through Stripe.');
+                
+            } else {
+                // No Stripe payment - just mark as refunded/cancelled
+                $reservation->update([
+                    'status' => 'cancelled',
+                    'payment_status' => 'refunded',
+                    'notes' => ($reservation->notes ?? '') . "\n[" . now()->format('Y-m-d H:i:s') . "] Manual refund processed by admin: " . Auth::user()->name . " (no Stripe payment to refund)",
+                ]);
+
+                Log::info('Manual refund processed by admin', [
+                    'reservation_id' => $reservation->id,
+                    'admin_user' => Auth::user()->name,
+                ]);
+
+                session()->flash('message', 'Reservation cancelled and marked as refunded (no Stripe payment was found).');
+            }
+
+        } catch (\Stripe\Exception\InvalidRequestException $e) {
+            Log::error('Stripe refund failed - Invalid Request', [
+                'reservation_id' => $this->selectedReservation->id,
+                'error' => $e->getMessage(),
+                'payment_intent_id' => $this->selectedReservation->stripe_payment_intent_id,
+            ]);
+            
+            session()->flash('error', 'Stripe refund failed: ' . $e->getMessage());
+            return;
+            
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            Log::error('Stripe refund failed - API Error', [
+                'reservation_id' => $this->selectedReservation->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            session()->flash('error', 'Stripe refund failed. Please check the Stripe dashboard and try again.');
+            return;
+            
+        } catch (\Exception $e) {
+            Log::error('Refund processing failed', [
+                'reservation_id' => $this->selectedReservation->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            session()->flash('error', 'Failed to process refund: ' . $e->getMessage());
+            return;
+        }
+
+        $this->showRefundModal = false;
+        $this->selectedReservation = null;
     }
 
     public function updatePricing()

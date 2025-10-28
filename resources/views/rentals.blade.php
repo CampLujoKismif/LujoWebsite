@@ -17,6 +17,12 @@
         <!-- Alpine.js -->
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
         
+        <!-- Stripe.js -->
+        <script src="https://js.stripe.com/v3/"></script>
+        <script>
+            window.stripePublishableKey = '{{ config('services.stripe.key') }}';
+        </script>
+        
         <!-- Styles -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         
