@@ -442,6 +442,7 @@ export default {
       }
       
       // Load availability for each month
+      const allAvailabilityData = {}
       for (const yearMonth of monthsToLoad) {
         const [year, month] = yearMonth.split('-')
         
@@ -449,13 +450,18 @@ export default {
           const response = await fetch(`/api/rental/availability/${year}/${month}`)
           const data = await response.json()
           
-          // Merge the availability data
+          // Collect the availability data
           if (data.availability) {
-            this.availability = { ...this.availability, ...data.availability }
+            Object.assign(allAvailabilityData, data.availability)
           }
         } catch (error) {
           console.error('Error loading availability for', year, month, ':', error)
         }
+      }
+      
+      // Merge all collected data at once to avoid multiple reactive updates
+      if (Object.keys(allAvailabilityData).length > 0) {
+        this.availability = { ...this.availability, ...allAvailabilityData }
       }
     },
     async previousMonth() {
@@ -503,7 +509,7 @@ export default {
         await this.loadAvailabilityForRange(startDate, endDate)
         
         // Generate all dates in the range (inclusive of both start and end dates)
-        this.selectedDates = []
+        const newSelectedDates = []
         const currentDate = new Date(startDate.getTime()) // Create a copy to avoid mutation
         
         while (currentDate <= endDate) {
@@ -513,10 +519,13 @@ export default {
           const isClickedDate = dateStr === firstClickedDate || dateStr === secondClickedDate
           
           if ((dayData && dayData.available && !dayData.is_past) || isClickedDate) {
-            this.selectedDates.push(dateStr)
+            newSelectedDates.push(dateStr)
           }
           currentDate.setDate(currentDate.getDate() + 1)
         }
+        
+        // Update selectedDates all at once to avoid multiple reactive updates
+        this.selectedDates = newSelectedDates
         
       } else {
         // Clear selection and start new one

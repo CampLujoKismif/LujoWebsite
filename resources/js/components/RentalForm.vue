@@ -131,7 +131,7 @@
         <div v-else class="space-y-2">
           <div class="flex justify-between">
             <span>{{ form.number_of_people || 0 }} people × {{ selectedDates.length }} days</span>
-            <span>${{ pricing.price_per_person_per_day }} per person per day</span>
+            <span>${{ parseFloat(pricing.price_per_person_per_day).toFixed(2) }} per person per day</span>
           </div>
           <div class="flex justify-between font-semibold">
             <span>Subtotal:</span>
@@ -143,7 +143,7 @@
           </div>
           <div v-if="pricing.deposit_amount" class="flex justify-between">
             <span>Deposit Required:</span>
-            <span>${{ pricing.deposit_amount.toFixed(2) }}</span>
+            <span>${{ parseFloat(pricing.deposit_amount).toFixed(2) }}</span>
           </div>
           <hr class="border-gray-300">
           <div class="flex justify-between text-lg font-bold">
@@ -243,7 +243,7 @@ export default {
     },
     subtotal() {
       if (!this.form.number_of_people || this.selectedDates.length === 0 || !this.pricing) return 0
-      return this.form.number_of_people * this.selectedDates.length * this.pricing.price_per_person_per_day
+      return this.form.number_of_people * this.selectedDates.length * parseFloat(this.pricing.price_per_person_per_day)
     },
     finalAmount() {
       return Math.max(0, this.subtotal - this.discountAmount)
