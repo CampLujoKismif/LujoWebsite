@@ -26,4 +26,5 @@ Route::prefix('rental')->group(function () {
     Route::post('/calculate-pricing', [RentalController::class, 'calculatePricing']);
     Route::post('/reservation', [RentalController::class, 'createReservation']);
     Route::get('/pricing', [RentalController::class, 'getPricing']);
+    Route::get('/blackout-dates', [RentalController::class, 'getBlackoutDates']);
 });

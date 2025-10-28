@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\RentalReservation;
 use App\Models\RentalPricing;
+use App\Models\RentalBlackoutDate;
 use App\Models\DiscountCode;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -56,6 +57,18 @@ class RentalController extends Controller
             })
             ->get();
 
+        // Get all active blackout dates that overlap with this month
+        $blackoutDates = RentalBlackoutDate::where('is_active', true)
+            ->where(function ($query) use ($startOfMonth, $endOfMonth) {
+                $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
+                      ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth])
+                      ->orWhere(function ($q) use ($startOfMonth, $endOfMonth) {
+                          $q->where('start_date', '<=', $startOfMonth)
+                            ->where('end_date', '>=', $endOfMonth);
+                      });
+            })
+            ->get();
+
         // Create availability array for the month
         $availability = [];
         $currentDate = $startOfMonth->copy();
@@ -64,20 +77,36 @@ class RentalController extends Controller
             $dateString = $currentDate->toDateString();
             $isAvailable = true;
             $isPast = $currentDate->isPast();
+            $blockedReason = null;
             
             // Check if this date is blocked by any reservation
             foreach ($reservations as $reservation) {
                 if ($currentDate->between($reservation->start_date, $reservation->end_date)) {
                     $isAvailable = false;
+                    $blockedReason = 'reserved';
                     break;
                 }
             }
             
             // Check if this date is blocked by any camp session
-            foreach ($campSessions as $campSession) {
-                if ($currentDate->between($campSession->start_date, $campSession->end_date)) {
-                    $isAvailable = false;
-                    break;
+            if ($isAvailable) {
+                foreach ($campSessions as $campSession) {
+                    if ($currentDate->between($campSession->start_date, $campSession->end_date)) {
+                        $isAvailable = false;
+                        $blockedReason = 'camp_session';
+                        break;
+                    }
+                }
+            }
+            
+            // Check if this date is blocked by any blackout date
+            if ($isAvailable) {
+                foreach ($blackoutDates as $blackout) {
+                    if ($currentDate->between($blackout->start_date, $blackout->end_date)) {
+                        $isAvailable = false;
+                        $blockedReason = 'blackout';
+                        break;
+                    }
                 }
             }
             
@@ -85,6 +114,7 @@ class RentalController extends Controller
                 'date' => $dateString,
                 'available' => $isAvailable && !$isPast,
                 'is_past' => $isPast,
+                'blocked_reason' => $blockedReason,
             ];
             
             $currentDate->addDay();
@@ -279,6 +309,18 @@ class RentalController extends Controller
                 return response()->json(['error' => 'Selected dates conflict with camp sessions'], 409);
             }
 
+            // Check for blackout dates
+            if (RentalBlackoutDate::hasConflict($startDate, $endDate)) {
+                $conflicts = RentalBlackoutDate::getConflicts($startDate, $endDate);
+                $conflictMessages = $conflicts->map(function ($blackout) {
+                    return $blackout->reason . ' (' . $blackout->start_date->format('M j, Y') . ' - ' . $blackout->end_date->format('M j, Y') . ')';
+                })->implode(', ');
+                
+                return response()->json([
+                    'error' => 'Selected dates conflict with blackout period(s): ' . $conflictMessages
+                ], 409);
+            }
+
             // Calculate pricing
             $pricing = RentalPricing::current();
             if (!$pricing) {
@@ -361,6 +403,26 @@ class RentalController extends Controller
             'price_per_person_per_day' => $pricing->price_per_person_per_day,
             'deposit_amount' => $pricing->deposit_amount,
             'description' => $pricing->description,
+        ]);
+    }
+
+    /**
+     * Get all active blackout dates.
+     */
+    public function getBlackoutDates(): JsonResponse
+    {
+        $blackoutDates = RentalBlackoutDate::getActive();
+        
+        return response()->json([
+            'blackout_dates' => $blackoutDates->map(function ($blackout) {
+                return [
+                    'id' => $blackout->id,
+                    'start_date' => $blackout->start_date->toDateString(),
+                    'end_date' => $blackout->end_date->toDateString(),
+                    'reason' => $blackout->reason,
+                    'notes' => $blackout->notes,
+                ];
+            }),
         ]);
     }
 }
