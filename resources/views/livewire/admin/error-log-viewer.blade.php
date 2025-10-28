@@ -19,15 +19,15 @@
     </div>
 
     @if (session()->has('message'))
-        <flux:alert variant="success" class="mb-6">
+        <flux:callout variant="success" class="mb-6">
             {{ session('message') }}
-        </flux:alert>
+        </flux:callout>
     @endif
 
     @if (session()->has('error'))
-        <flux:alert variant="danger" class="mb-6">
+        <flux:callout variant="danger" class="mb-6">
             {{ session('error') }}
-        </flux:alert>
+        </flux:callout>
     @endif
 
     <!-- Filters -->

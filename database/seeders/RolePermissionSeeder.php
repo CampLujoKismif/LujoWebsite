@@ -61,6 +61,16 @@ class RolePermissionSeeder extends Seeder
             ['name' => 'view_reports', 'display_name' => 'View Reports', 'group' => 'reports'],
             ['name' => 'create_reports', 'display_name' => 'Create Reports', 'group' => 'reports'],
             ['name' => 'export_reports', 'display_name' => 'Export Reports', 'group' => 'reports'],
+            
+            // Rental permissions
+            ['name' => 'view_rentals', 'display_name' => 'View Rentals', 'group' => 'rentals'],
+            ['name' => 'create_rentals', 'display_name' => 'Create Rentals', 'group' => 'rentals'],
+            ['name' => 'edit_rentals', 'display_name' => 'Edit Rentals', 'group' => 'rentals'],
+            ['name' => 'delete_rentals', 'display_name' => 'Delete Rentals', 'group' => 'rentals'],
+            ['name' => 'manage_rental_pricing', 'display_name' => 'Manage Rental Pricing', 'group' => 'rentals'],
+            ['name' => 'manage_rental_discounts', 'display_name' => 'Manage Rental Discounts', 'group' => 'rentals'],
+            ['name' => 'process_rental_refunds', 'display_name' => 'Process Rental Refunds', 'group' => 'rentals'],
+            ['name' => 'view_rental_analytics', 'display_name' => 'View Rental Analytics', 'group' => 'rentals'],
         ];
 
         foreach ($permissions as $permission) {
@@ -85,6 +95,14 @@ class RolePermissionSeeder extends Seeder
                 'display_name' => 'Camp Manager',
                 'description' => 'Manages camp operations and staff',
                 'is_admin' => false
+            ]
+        );
+        $rentalAdmin = Role::firstOrCreate(
+            ['name' => 'rental-admin'],
+            [
+                'display_name' => 'Rental Administrator',
+                'description' => 'Manages facility rentals and reservations',
+                'is_admin' => true
             ]
         );
         $parent = Role::firstOrCreate(
@@ -117,6 +135,21 @@ class RolePermissionSeeder extends Seeder
             'create_form_templates',
             'edit_form_templates',
             'delete_form_templates',
+            'view_reports',
+            'create_reports',
+            'export_reports',
+        ]);
+
+        // Assign permissions to rental admin
+        $rentalAdmin->givePermissionTo([
+            'view_rentals',
+            'create_rentals',
+            'edit_rentals',
+            'delete_rentals',
+            'manage_rental_pricing',
+            'manage_rental_discounts',
+            'process_rental_refunds',
+            'view_rental_analytics',
             'view_reports',
             'create_reports',
             'export_reports',

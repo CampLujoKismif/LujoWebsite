@@ -53,6 +53,11 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
         Route::get('/error-logs', App\Livewire\Admin\ErrorLogViewer::class)->name('error-logs');
     });
     
+    // Rental Admin Dashboard
+    Route::middleware(['role:rental-admin,system-admin'])->prefix('rental-admin')->name('rental-admin.')->group(function () {
+        Route::get('/', App\Livewire\Admin\RentalManagement::class)->name('index');
+    });
+    
     // Manager Dashboard
     Route::middleware(['role:camp-manager,system-admin'])->prefix('manager')->name('manager.')->group(function () {
         Route::get('/', App\Livewire\Manager\Dashboard::class)->name('index');

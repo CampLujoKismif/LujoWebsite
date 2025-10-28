@@ -8,12 +8,18 @@ use App\Models\Camper;
 use App\Models\Enrollment;
 use App\Models\FormTemplate;
 use App\Models\MedicalRecord;
+use App\Models\RentalReservation;
+use App\Models\RentalPricing;
+use App\Models\DiscountCode;
 use App\Policies\CampInstancePolicy;
 use App\Policies\CampPolicy;
 use App\Policies\CamperPolicy;
 use App\Policies\EnrollmentPolicy;
 use App\Policies\FormTemplatePolicy;
 use App\Policies\MedicalRecordPolicy;
+use App\Policies\RentalReservationPolicy;
+use App\Policies\RentalPricingPolicy;
+use App\Policies\DiscountCodePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -30,6 +36,9 @@ class AuthServiceProvider extends ServiceProvider
         Enrollment::class => EnrollmentPolicy::class,
         MedicalRecord::class => MedicalRecordPolicy::class,
         FormTemplate::class => FormTemplatePolicy::class,
+        RentalReservation::class => RentalReservationPolicy::class,
+        RentalPricing::class => RentalPricingPolicy::class,
+        DiscountCode::class => DiscountCodePolicy::class,
     ];
 
     /**
