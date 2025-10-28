@@ -67,11 +67,29 @@ class ErrorLogViewer extends Component
         }
     }
 
-    public function refreshLogs()
+    public function downloadLogs()
     {
-        $this->currentPage = 1;
-        $this->loadLogEntries();
-        session()->flash('message', 'Logs refreshed successfully.');
+        $logPath = storage_path('logs/' . $this->logFile);
+        
+        if (!File::exists($logPath)) {
+            session()->flash('error', 'Log file not found.');
+            return;
+        }
+
+        $content = File::get($logPath);
+        $fileSize = File::size($logPath);
+        $fileSizeFormatted = $fileSize > 1024 ? number_format($fileSize / 1024, 2) . 'KB' : $fileSize . 'B';
+        $filename = 'error-logs-' . date('Y-m-d-H-i-s') . '-' . $fileSizeFormatted . '.log';
+        
+        // Flash a success message before starting the download
+        session()->flash('message', 'Download started. File: ' . $filename);
+        
+        return response()->streamDownload(function () use ($content) {
+            echo $content;
+        }, $filename, [
+            'Content-Type' => 'text/plain',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 
     public function loadLogEntries()
