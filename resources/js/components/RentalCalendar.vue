@@ -1,45 +1,45 @@
 <template>
-  <div class="rental-calendar bg-white rounded-lg shadow-lg p-6">
+  <div class="rental-calendar bg-white rounded-lg shadow-lg p-3 sm:p-6">
     <!-- Step Indicator -->
-    <div class="mb-8">
-      <div class="flex items-center justify-center space-x-8">
+    <div class="mb-6 sm:mb-8">
+      <div class="flex items-center justify-center space-x-2 sm:space-x-8">
         <!-- Step 1: Date Selection -->
-        <div class="flex items-center space-x-3">
-          <div class="flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-300"
+        <div class="flex items-center space-x-1 sm:space-x-3">
+          <div class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-all duration-300"
                :class="currentStep >= 1 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-500'">
-            <span class="text-sm font-semibold">1</span>
+            <span class="text-xs sm:text-sm font-semibold">1</span>
           </div>
-          <span class="text-sm font-medium transition-colors duration-300"
+          <span class="text-xs sm:text-sm font-medium transition-colors duration-300 hidden sm:inline"
                 :class="currentStep >= 1 ? 'text-blue-600' : 'text-gray-500'">
             Select Dates
           </span>
         </div>
         
         <!-- Arrow -->
-        <div class="w-8 h-0.5 bg-gray-300"></div>
+        <div class="w-4 sm:w-8 h-0.5 bg-gray-300"></div>
         
         <!-- Step 2: Form Info -->
-        <div class="flex items-center space-x-3">
-          <div class="flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-300"
+        <div class="flex items-center space-x-1 sm:space-x-3">
+          <div class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-all duration-300"
                :class="currentStep >= 2 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-500'">
-            <span class="text-sm font-semibold">2</span>
+            <span class="text-xs sm:text-sm font-semibold">2</span>
           </div>
-          <span class="text-sm font-medium transition-colors duration-300"
+          <span class="text-xs sm:text-sm font-medium transition-colors duration-300 hidden sm:inline"
                 :class="currentStep >= 2 ? 'text-blue-600' : 'text-gray-500'">
             Reservation Info
           </span>
         </div>
         
         <!-- Arrow -->
-        <div class="w-8 h-0.5 bg-gray-300"></div>
+        <div class="w-4 sm:w-8 h-0.5 bg-gray-300"></div>
         
         <!-- Step 3: Payment -->
-        <div class="flex items-center space-x-3">
-          <div class="flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-300"
+        <div class="flex items-center space-x-1 sm:space-x-3">
+          <div class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-all duration-300"
                :class="currentStep >= 3 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-500'">
-            <span class="text-sm font-semibold">3</span>
+            <span class="text-xs sm:text-sm font-semibold">3</span>
           </div>
-          <span class="text-sm font-medium transition-colors duration-300"
+          <span class="text-xs sm:text-sm font-medium transition-colors duration-300 hidden sm:inline"
                 :class="currentStep >= 3 ? 'text-blue-600' : 'text-gray-500'">
             Payment
           </span>
@@ -54,15 +54,15 @@
            :class="currentStep === 1 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full absolute inset-0'">
         
         <!-- Calendar Header -->
-        <div class="flex justify-between items-center mb-4">
-          <div>
-            <h3 class="text-2xl font-bold text-gray-900">Select Your Dates</h3>
-            <p class="text-sm text-gray-600 mt-1">Click two dates to select a range</p>
+        <div class="mb-4">
+          <div class="mb-3">
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900">Select Your Dates</h3>
+            <p class="text-xs sm:text-sm text-gray-600 mt-1">Click two dates to select a range</p>
           </div>
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center justify-between">
             <button 
               @click="previousMonth"
-              class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              class="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
               :disabled="loading"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,13 +70,13 @@
               </svg>
             </button>
             
-            <h4 class="text-lg font-semibold text-gray-700 min-w-[200px] text-center">
+            <h4 class="text-base sm:text-lg font-semibold text-gray-700 text-center px-2">
               {{ currentMonthName }} {{ currentYear }}
             </h4>
             
             <button 
               @click="nextMonth"
-              class="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              class="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
               :disabled="loading"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,24 +89,24 @@
         <!-- Calendar Grid -->
         <div class="mb-6">
           <!-- Day Headers -->
-          <div class="grid grid-cols-7 gap-1 mb-2">
-            <div v-for="day in dayHeaders" :key="day" class="text-center text-sm font-semibold text-gray-500 py-2">
+          <div class="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2">
+            <div v-for="day in dayHeaders" :key="day" class="text-center text-xs sm:text-sm font-semibold text-gray-500 py-1 sm:py-2">
               {{ day }}
             </div>
           </div>
           
           <!-- Calendar Days -->
-          <div v-if="loading" class="grid grid-cols-7 gap-1">
-            <div v-for="i in 42" :key="i" class="aspect-square flex items-center justify-center text-sm font-medium rounded-lg bg-gray-100 animate-pulse">
-              <div class="w-4 h-4 bg-gray-300 rounded"></div>
+          <div v-if="loading" class="grid grid-cols-7 gap-0.5 sm:gap-1">
+            <div v-for="i in 42" :key="i" class="aspect-square flex items-center justify-center text-xs sm:text-sm font-medium rounded-md sm:rounded-lg bg-gray-100 animate-pulse">
+              <div class="w-3 h-3 sm:w-4 sm:h-4 bg-gray-300 rounded"></div>
             </div>
           </div>
-          <div v-else class="grid grid-cols-7 gap-1">
+          <div v-else class="grid grid-cols-7 gap-0.5 sm:gap-1">
             <div 
               v-for="day in calendarDays" 
               :key="day.date"
               @click="selectDate(day)"
-              class="aspect-square flex items-center justify-center text-sm font-medium rounded-lg cursor-pointer transition-all duration-200 hover:scale-105"
+              class="aspect-square flex items-center justify-center text-xs sm:text-sm font-medium rounded-md sm:rounded-lg cursor-pointer transition-all duration-200 hover:scale-105"
               :class="getDayClasses(day)"
               :disabled="!day.available"
             >
@@ -295,21 +295,21 @@
 
     <!-- Legend -->
     <div class="mt-6 pt-6 border-t border-gray-200">
-      <div class="flex items-center justify-center space-x-6 text-sm">
-        <div class="flex items-center space-x-2">
-          <div class="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
+      <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm">
+        <div class="flex items-center space-x-1.5 sm:space-x-2">
+          <div class="w-3 h-3 sm:w-4 sm:h-4 bg-green-100 border border-green-300 rounded"></div>
           <span class="text-gray-600">Available</span>
         </div>
-        <div class="flex items-center space-x-2">
-          <div class="w-4 h-4 bg-red-100 border border-red-300 rounded"></div>
+        <div class="flex items-center space-x-1.5 sm:space-x-2">
+          <div class="w-3 h-3 sm:w-4 sm:h-4 bg-red-100 border border-red-300 rounded"></div>
           <span class="text-gray-600">Unavailable</span>
         </div>
-        <div class="flex items-center space-x-2">
-          <div class="w-4 h-4 bg-gray-100 border border-gray-300 rounded"></div>
+        <div class="flex items-center space-x-1.5 sm:space-x-2">
+          <div class="w-3 h-3 sm:w-4 sm:h-4 bg-gray-100 border border-gray-300 rounded"></div>
           <span class="text-gray-600">Past Date</span>
         </div>
-        <div class="flex items-center space-x-2">
-          <div class="w-4 h-4 bg-blue-100 border border-blue-300 rounded"></div>
+        <div class="flex items-center space-x-1.5 sm:space-x-2">
+          <div class="w-3 h-3 sm:w-4 sm:h-4 bg-blue-100 border border-blue-300 rounded"></div>
           <span class="text-gray-600">Selected</span>
         </div>
       </div>

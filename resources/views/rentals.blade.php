@@ -108,12 +108,12 @@
 
                     <!-- Right Column: Rental Calendar -->
                     <div>
-                        <div class="mb-8">
-                            <h2 class="text-3xl font-bold text-gray-900 mb-4">Check Availability</h2>
-                            <p class="text-lg text-gray-600">Select your dates to see availability and pricing</p>
+                        <div class="mb-6 sm:mb-8">
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">Check Availability</h2>
+                            <p class="text-base sm:text-lg text-gray-600">Select your dates to see availability and pricing</p>
                         </div>
                         
-                        <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="bg-white p-0 sm:p-6 rounded-lg shadow-md overflow-hidden">
                             <x-vue-component component="RentalCalendar" />
                         </div>
                     </div>
