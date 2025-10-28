@@ -107,8 +107,8 @@
                                                 <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $instance->name }}</div>
                                                 <div class="text-xs text-gray-500 dark:text-gray-400">
                                                     {{ $instance->start_date->format('M j, Y') }} - {{ $instance->end_date->format('M j, Y') }}
-                                                    @if($instance->capacity)
-                                                        • Capacity: {{ $instance->capacity }}
+                                                    @if($instance->max_capacity)
+                                                        • Capacity: {{ $instance->max_capacity }}
                                                     @endif
                                                     @if($instance->price)
                                                         • ${{ number_format($instance->price, 2) }}
