@@ -10,6 +10,7 @@ use App\Models\FormTemplate;
 use App\Models\MedicalRecord;
 use App\Models\RentalReservation;
 use App\Models\RentalPricing;
+use App\Models\RentalBlackoutDate;
 use App\Models\DiscountCode;
 use App\Policies\CampInstancePolicy;
 use App\Policies\CampPolicy;
@@ -19,6 +20,7 @@ use App\Policies\FormTemplatePolicy;
 use App\Policies\MedicalRecordPolicy;
 use App\Policies\RentalReservationPolicy;
 use App\Policies\RentalPricingPolicy;
+use App\Policies\RentalBlackoutDatePolicy;
 use App\Policies\DiscountCodePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -38,6 +40,7 @@ class AuthServiceProvider extends ServiceProvider
         FormTemplate::class => FormTemplatePolicy::class,
         RentalReservation::class => RentalReservationPolicy::class,
         RentalPricing::class => RentalPricingPolicy::class,
+        RentalBlackoutDate::class => RentalBlackoutDatePolicy::class,
         DiscountCode::class => DiscountCodePolicy::class,
     ];
 

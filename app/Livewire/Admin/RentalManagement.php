@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\RentalReservation;
 use App\Models\RentalPricing;
+use App\Models\RentalBlackoutDate;
 use App\Models\DiscountCode;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -30,16 +31,21 @@ class RentalManagement extends Component
     public $showPricingModal = false;
     public $showDiscountModal = false;
     public $showPaymentModal = false;
+    public $showBlackoutModal = false;
+    public $showBlackoutEditModal = false;
+    public $showBlackoutDeleteModal = false;
 
     // Selected items
     public $selectedReservation = null;
     public $selectedDiscount = null;
+    public $selectedBlackout = null;
 
     // Form data
     public $reservationData = [];
     public $pricingData = [];
     public $discountData = [];
     public $paymentData = [];
+    public $blackoutData = [];
     
     // Pricing options
     public $useCustomPricing = false;
@@ -163,6 +169,18 @@ class RentalManagement extends Component
 
         $startDate = Carbon::parse($this->reservationData['start_date']);
         $endDate = Carbon::parse($this->reservationData['end_date']);
+        
+        // Check for blackout dates
+        if (RentalBlackoutDate::hasConflict($startDate, $endDate)) {
+            $conflicts = RentalBlackoutDate::getConflicts($startDate, $endDate);
+            $conflictMessages = $conflicts->map(function ($blackout) {
+                return $blackout->reason . ' (' . $blackout->start_date->format('M j, Y') . ' - ' . $blackout->end_date->format('M j, Y') . ')';
+            })->implode(', ');
+            
+            session()->flash('error', 'Cannot create reservation. The selected dates conflict with blackout period(s): ' . $conflictMessages);
+            return;
+        }
+        
         $numberOfDays = $startDate->diffInDays($endDate) + 1;
 
         // Determine pricing
@@ -220,6 +238,20 @@ class RentalManagement extends Component
             'reservationData.deposit_amount' => 'nullable|numeric|min:0',
             'reservationData.final_amount' => 'required|numeric|min:0',
         ]);
+
+        // Check for blackout dates (if dates are being changed)
+        $startDate = Carbon::parse($this->reservationData['start_date']);
+        $endDate = Carbon::parse($this->reservationData['end_date']);
+        
+        if (RentalBlackoutDate::hasConflict($startDate, $endDate)) {
+            $conflicts = RentalBlackoutDate::getConflicts($startDate, $endDate);
+            $conflictMessages = $conflicts->map(function ($blackout) {
+                return $blackout->reason . ' (' . $blackout->start_date->format('M j, Y') . ' - ' . $blackout->end_date->format('M j, Y') . ')';
+            })->implode(', ');
+            
+            session()->flash('error', 'Cannot update reservation. The selected dates conflict with blackout period(s): ' . $conflictMessages);
+            return;
+        }
 
         $this->selectedReservation->update([
             'contact_name' => $this->reservationData['contact_name'],
@@ -382,6 +414,110 @@ class RentalManagement extends Component
         session()->flash('message', 'Payment recorded successfully.');
     }
 
+    // Blackout Date Methods
+
+    public function openBlackoutModal()
+    {
+        $this->authorize('create', RentalBlackoutDate::class);
+        $this->resetBlackoutData();
+        $this->showBlackoutModal = true;
+    }
+
+    public function openBlackoutEditModal($blackoutId)
+    {
+        $this->selectedBlackout = RentalBlackoutDate::findOrFail($blackoutId);
+        $this->authorize('update', $this->selectedBlackout);
+        
+        $this->blackoutData = [
+            'start_date' => $this->selectedBlackout->start_date->format('Y-m-d'),
+            'end_date' => $this->selectedBlackout->end_date->format('Y-m-d'),
+            'reason' => $this->selectedBlackout->reason,
+            'notes' => $this->selectedBlackout->notes,
+            'is_active' => $this->selectedBlackout->is_active,
+        ];
+        $this->showBlackoutEditModal = true;
+    }
+
+    public function openBlackoutDeleteModal($blackoutId)
+    {
+        $this->selectedBlackout = RentalBlackoutDate::findOrFail($blackoutId);
+        $this->authorize('delete', $this->selectedBlackout);
+        $this->showBlackoutDeleteModal = true;
+    }
+
+    public function createBlackoutDate()
+    {
+        $this->authorize('create', RentalBlackoutDate::class);
+        
+        $this->validate([
+            'blackoutData.start_date' => 'required|date',
+            'blackoutData.end_date' => 'required|date|after_or_equal:blackoutData.start_date',
+            'blackoutData.reason' => 'required|string|max:255',
+            'blackoutData.notes' => 'nullable|string|max:1000',
+        ]);
+
+        RentalBlackoutDate::create([
+            'start_date' => $this->blackoutData['start_date'],
+            'end_date' => $this->blackoutData['end_date'],
+            'reason' => $this->blackoutData['reason'],
+            'notes' => $this->blackoutData['notes'] ?? null,
+            'is_active' => true,
+        ]);
+
+        $this->showBlackoutModal = false;
+        $this->resetBlackoutData();
+        session()->flash('message', 'Blackout date created successfully.');
+    }
+
+    public function updateBlackoutDate()
+    {
+        $this->authorize('update', $this->selectedBlackout);
+        
+        $this->validate([
+            'blackoutData.start_date' => 'required|date',
+            'blackoutData.end_date' => 'required|date|after_or_equal:blackoutData.start_date',
+            'blackoutData.reason' => 'required|string|max:255',
+            'blackoutData.notes' => 'nullable|string|max:1000',
+            'blackoutData.is_active' => 'required|boolean',
+        ]);
+
+        $this->selectedBlackout->update([
+            'start_date' => $this->blackoutData['start_date'],
+            'end_date' => $this->blackoutData['end_date'],
+            'reason' => $this->blackoutData['reason'],
+            'notes' => $this->blackoutData['notes'] ?? null,
+            'is_active' => $this->blackoutData['is_active'],
+        ]);
+
+        $this->showBlackoutEditModal = false;
+        $this->selectedBlackout = null;
+        $this->resetBlackoutData();
+        session()->flash('message', 'Blackout date updated successfully.');
+    }
+
+    public function deleteBlackoutDate()
+    {
+        $this->authorize('delete', $this->selectedBlackout);
+        
+        if ($this->selectedBlackout) {
+            $this->selectedBlackout->delete();
+            $this->showBlackoutDeleteModal = false;
+            $this->selectedBlackout = null;
+            session()->flash('message', 'Blackout date deleted successfully.');
+        }
+    }
+
+    public function resetBlackoutData()
+    {
+        $this->blackoutData = [
+            'start_date' => '',
+            'end_date' => '',
+            'reason' => '',
+            'notes' => '',
+            'is_active' => true,
+        ];
+    }
+
     public function resetFormData()
     {
         $this->reservationData = [
@@ -503,11 +639,13 @@ class RentalManagement extends Component
         ];
 
         $discountCodes = DiscountCode::where('type', 'rental')->orderBy('created_at', 'desc')->get();
+        $blackoutDates = RentalBlackoutDate::orderBy('start_date', 'desc')->get();
 
         return view('livewire.admin.rental-management', [
             'reservations' => $reservations,
             'analytics' => $analytics,
             'discountCodes' => $discountCodes,
+            'blackoutDates' => $blackoutDates,
         ]);
     }
 }
