@@ -55,66 +55,69 @@
             </div>
         </section>
 
-        <!-- Features Section -->
+        <!-- Main Content Section with Side-by-Side Layout -->
         <section class="py-16 bg-gray-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4">What We Offer</h2>
-                    <p class="text-lg text-gray-600">Perfect facilities for your next event</p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="bg-white p-6 rounded-lg shadow-md">
-                        <div class="text-blue-600 text-4xl mb-4">🏕️</div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Accommodations</h3>
-                        <p class="text-gray-600">Comfortable dormitory-style lodging for groups of all sizes.</p>
-                    </div>
-                    
-                    <div class="bg-white p-6 rounded-lg shadow-md">
-                        <div class="text-blue-600 text-4xl mb-4">🍽️</div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Dining Facilities</h3>
-                        <p class="text-gray-600">Full kitchen and dining hall to accommodate your group's needs.</p>
-                    </div>
-                    
-                    <div class="bg-white p-6 rounded-lg shadow-md">
-                        <div class="text-blue-600 text-4xl mb-4">🎯</div>
-                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Recreation</h3>
-                        <p class="text-gray-600">Outdoor activities, meeting spaces, and recreational facilities.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <!-- Left Column: Features and Pricing -->
+                    <div class="space-y-12">
+                        <!-- Features -->
+                        <div>
+                            <div class="mb-8">
+                                <h2 class="text-3xl font-bold text-gray-900 mb-4">What We Offer</h2>
+                                <p class="text-lg text-gray-600">Perfect facilities for your next event</p>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <div class="text-blue-600 text-4xl mb-4">🏕️</div>
+                                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Accommodations</h3>
+                                    <p class="text-gray-600">Comfortable dormitory-style lodging for groups of all sizes.</p>
+                                </div>
+                                
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <div class="text-blue-600 text-4xl mb-4">🍽️</div>
+                                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Dining Facilities</h3>
+                                    <p class="text-gray-600">Full kitchen and dining hall to accommodate your group's needs.</p>
+                                </div>
+                                
+                                <div class="bg-white p-6 rounded-lg shadow-md">
+                                    <div class="text-blue-600 text-4xl mb-4">🎯</div>
+                                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Recreation</h3>
+                                    <p class="text-gray-600">Outdoor activities, meeting spaces, and recreational facilities.</p>
+                                </div>
+                            </div>
+                        </div>
 
-        <!-- Pricing Section -->
-        <section class="py-16 bg-white">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Simple Pricing</h2>
-                    <p class="text-lg text-gray-600">Transparent pricing with no hidden fees</p>
-                </div>
-                
-                <div class="max-w-md mx-auto bg-blue-50 p-8 rounded-lg">
-                    <div class="text-center">
-                        <div class="text-4xl font-bold text-blue-600 mb-2">$20</div>
-                        <div class="text-xl text-gray-700 mb-4">per person per day</div>
-                        <p class="text-gray-600">Includes access to all facilities</p>
+                        <!-- Pricing -->
+                        <div>
+                            <div class="mb-8">
+                                <h2 class="text-3xl font-bold text-gray-900 mb-4">Simple Pricing</h2>
+                                <p class="text-lg text-gray-600">Transparent pricing with no hidden fees</p>
+                            </div>
+                            
+                            <div class="bg-blue-50 p-8 rounded-lg">
+                                <div class="text-center">
+                                    <div class="text-4xl font-bold text-blue-600 mb-2">$20</div>
+                                    <div class="text-xl text-gray-700 mb-4">per person per day</div>
+                                    <p class="text-gray-600">Includes access to all facilities</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Rental Calendar -->
+                    <div>
+                        <div class="mb-8">
+                            <h2 class="text-3xl font-bold text-gray-900 mb-4">Check Availability</h2>
+                            <p class="text-lg text-gray-600">Select your dates to see availability and pricing</p>
+                        </div>
+                        
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <x-vue-component component="RentalCalendar" />
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Rental Calendar Section -->
-        <section class="py-16 bg-gray-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Check Availability</h2>
-                    <p class="text-lg text-gray-600">Select your dates to see availability and pricing</p>
-                </div>
-                
-        <!-- Vue Rental Calendar Component -->
-        <div class="max-w-4xl mx-auto">
-            <x-vue-component component="RentalCalendar" />
-        </div>
             </div>
         </section>
 
