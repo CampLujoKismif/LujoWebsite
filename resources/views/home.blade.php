@@ -513,14 +513,6 @@
                         <div class="text-xl text-gray-700">Baptisms</div>
                     </div>
                 </div>
-                
-                <!-- Vue Component Test -->
-                <div class="mt-12">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Vue 3 Integration Test</h3>
-                    <div class="max-w-md mx-auto">
-                        <x-vue-component component="VueExample" />
-                    </div>
-                </div>
             </div>
         </section>
 
