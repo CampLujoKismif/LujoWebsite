@@ -56,6 +56,21 @@ export default {
       type: Number,
       required: false,
       default: null
+    },
+    customerName: {
+      type: String,
+      required: false,
+      default: null
+    },
+    customerEmail: {
+      type: String,
+      required: false,
+      default: null
+    },
+    customerPhone: {
+      type: String,
+      required: false,
+      default: null
     }
   },
   data() {
@@ -93,7 +108,10 @@ export default {
           },
           body: JSON.stringify({
             amount: this.amount,
-            reservation_id: this.reservationId
+            reservation_id: this.reservationId,
+            customer_name: this.customerName,
+            customer_email: this.customerEmail,
+            customer_phone: this.customerPhone
           })
         })
 
@@ -141,12 +159,34 @@ export default {
       this.error = null
 
       try {
+        // Confirm the payment with billing details
+        const confirmParams = {
+          return_url: window.location.href, // This won't be used since we're not redirecting
+        }
+        
+        // Add billing details if we have customer info
+        if (this.customerName || this.customerEmail || this.customerPhone) {
+          confirmParams.payment_method_data = {
+            billing_details: {}
+          }
+          
+          if (this.customerName) {
+            confirmParams.payment_method_data.billing_details.name = this.customerName
+          }
+          
+          if (this.customerEmail) {
+            confirmParams.payment_method_data.billing_details.email = this.customerEmail
+          }
+          
+          if (this.customerPhone) {
+            confirmParams.payment_method_data.billing_details.phone = this.customerPhone
+          }
+        }
+        
         // Confirm the payment
         const { error, paymentIntent } = await this.stripe.confirmPayment({
           elements: this.elements,
-          confirmParams: {
-            return_url: window.location.href, // This won't be used since we're not redirecting
-          },
+          confirmParams: confirmParams,
           redirect: 'if_required'
         })
 

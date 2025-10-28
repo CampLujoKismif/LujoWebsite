@@ -8,12 +8,16 @@ use App\Models\RentalReservation;
 use App\Models\RentalPricing;
 use App\Models\RentalBlackoutDate;
 use App\Models\DiscountCode;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Carbon\Carbon;
 use Stripe\Stripe;
 use Stripe\Refund;
+use App\Mail\RentalRefunded;
+use App\Mail\RentalRefundAdminNotification;
 
 class RentalManagement extends Component
 {
@@ -339,10 +343,15 @@ class RentalManagement extends Component
                     'notes' => ($reservation->notes ?? '') . "\n[" . now()->format('Y-m-d H:i:s') . "] Stripe refund processed by admin: " . Auth::user()->name . " - Refund ID: " . $refund->id . " - Amount: $" . number_format($refundAmount, 2),
                 ]);
 
+                // Send refund emails
+                $this->sendRefundEmails($reservation, $refundAmount, true, Auth::user()->name);
+
                 session()->flash('message', 'Refund of $' . number_format($refundAmount, 2) . ' processed successfully through Stripe.');
                 
             } else {
                 // No Stripe payment - just mark as refunded/cancelled
+                $refundAmount = $reservation->amount_paid ?? $reservation->final_amount;
+                
                 $reservation->update([
                     'status' => 'cancelled',
                     'payment_status' => 'refunded',
@@ -353,6 +362,9 @@ class RentalManagement extends Component
                     'reservation_id' => $reservation->id,
                     'admin_user' => Auth::user()->name,
                 ]);
+
+                // Send refund emails
+                $this->sendRefundEmails($reservation, $refundAmount, true, Auth::user()->name);
 
                 session()->flash('message', 'Reservation cancelled and marked as refunded (no Stripe payment was found).');
             }
@@ -645,6 +657,52 @@ class RentalManagement extends Component
 
         $this->useCustomPricing = false;
         $this->calculatedTotal = 0;
+    }
+
+    /**
+     * Send refund notification emails to customer and admins.
+     */
+    protected function sendRefundEmails(RentalReservation $reservation, float $refundAmount, bool $isFullRefund, string $processedBy): void
+    {
+        // Send refund confirmation email to customer
+        try {
+            Mail::to($reservation->contact_email)
+                ->send(new RentalRefunded($reservation, $refundAmount, $isFullRefund));
+            
+            Log::info('Rental refund email sent to customer', [
+                'reservation_id' => $reservation->id,
+                'email' => $reservation->contact_email,
+                'refund_amount' => $refundAmount,
+                'processed_by' => $processedBy,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send rental refund email to customer', [
+                'reservation_id' => $reservation->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Send notification emails to rental admins
+        try {
+            $rentalAdmins = User::role(['rental-admin', 'system-admin'])->get();
+            
+            foreach ($rentalAdmins as $admin) {
+                Mail::to($admin->email)
+                    ->send(new RentalRefundAdminNotification($reservation, $refundAmount, $isFullRefund, $processedBy));
+            }
+            
+            Log::info('Rental refund notification emails sent to admins', [
+                'reservation_id' => $reservation->id,
+                'admin_count' => $rentalAdmins->count(),
+                'refund_amount' => $refundAmount,
+                'processed_by' => $processedBy,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send rental refund notification emails to admins', [
+                'reservation_id' => $reservation->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function render()

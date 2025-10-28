@@ -14,6 +14,16 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
 
+        <!-- Force light mode on public pages -->
+        <script>
+            // Public pages always use light mode
+            localStorage.setItem('flux.appearance', 'light');
+            document.documentElement.classList.remove('dark');
+            if (document.body) {
+                document.body.classList.remove('dark');
+            }
+        </script>
+
         <!-- Alpine.js -->
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
         

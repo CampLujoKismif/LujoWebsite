@@ -268,6 +268,9 @@
             <stripe-payment-form 
               :amount="calculateFinalAmount()"
               :reservation-id="createdReservationId"
+              :customer-name="formData.contact_name"
+              :customer-email="formData.contact_email"
+              :customer-phone="formData.contact_phone"
               @payment-success="handlePaymentSuccess"
             />
           </div>

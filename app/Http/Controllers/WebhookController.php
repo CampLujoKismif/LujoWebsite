@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\RentalReservation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Stripe\Stripe;
 use Stripe\Webhook;
 use Stripe\Exception\SignatureVerificationException;
+use App\Mail\RentalRefunded;
+use App\Mail\RentalRefundAdminNotification;
 
 class WebhookController extends Controller
 {
@@ -245,8 +249,43 @@ class WebhookController extends Controller
             'is_full_refund' => $isFullRefund,
         ]);
 
-        // TODO: Send refund confirmation email to customer
-        // TODO: Send notification to admin
+        // Send refund confirmation email to customer
+        try {
+            Mail::to($reservation->contact_email)
+                ->send(new RentalRefunded($reservation, $refundAmount, $isFullRefund));
+            
+            Log::info('Rental refund email sent to customer', [
+                'reservation_id' => $reservation->id,
+                'email' => $reservation->contact_email,
+                'refund_amount' => $refundAmount,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send rental refund email to customer', [
+                'reservation_id' => $reservation->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        // Send notification emails to rental admins
+        try {
+            $rentalAdmins = User::role(['rental-admin', 'system-admin'])->get();
+            
+            foreach ($rentalAdmins as $admin) {
+                Mail::to($admin->email)
+                    ->send(new RentalRefundAdminNotification($reservation, $refundAmount, $isFullRefund, 'Stripe Webhook'));
+            }
+            
+            Log::info('Rental refund notification emails sent to admins', [
+                'reservation_id' => $reservation->id,
+                'admin_count' => $rentalAdmins->count(),
+                'refund_amount' => $refundAmount,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send rental refund notification emails to admins', [
+                'reservation_id' => $reservation->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

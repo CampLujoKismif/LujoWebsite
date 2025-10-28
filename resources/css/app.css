@@ -59,3 +59,36 @@ textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
     @apply outline-none ring-2 ring-blue-500 ring-offset-2;
 }
+
+/* Improved contrast for light mode */
+@layer components {
+    /* Darker borders for inputs in light mode */
+    .border-gray-300:not(.dark *) {
+        border-color: rgb(203 213 225) !important; /* slate-300 - more visible */
+    }
+    
+    /* Stronger card borders in light mode */
+    .shadow:not(.dark *) {
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1),
+                    0 0 0 1px rgb(226 232 240 / 0.5); /* Add subtle border */
+    }
+    
+    /* Better contrast for secondary buttons in light mode */
+    .bg-white:not(.dark *) {
+        background-color: rgb(249 250 251) !important; /* gray-50 */
+    }
+    
+    /* Darker text for better readability */
+    .text-gray-600:not(.dark *) {
+        color: rgb(71 85 105) !important; /* slate-600 */
+    }
+    
+    .text-gray-700:not(.dark *) {
+        color: rgb(51 65 85) !important; /* slate-700 */
+    }
+    
+    /* Stronger hover states for light mode buttons */
+    .hover\:bg-gray-50:hover:not(.dark *) {
+        background-color: rgb(241 245 249) !important; /* slate-100 */
+    }
+}

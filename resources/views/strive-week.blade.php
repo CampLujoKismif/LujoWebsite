@@ -13,6 +13,16 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
 
+        <!-- Force light mode on public pages -->
+        <script>
+            // Public pages always use light mode
+            localStorage.setItem('flux.appearance', 'light');
+            document.documentElement.classList.remove('dark');
+            if (document.body) {
+                document.body.classList.remove('dark');
+            }
+        </script>
+
         <!-- Styles -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         

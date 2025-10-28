@@ -16,6 +16,16 @@
         <!-- Styles -->
         @vite('resources/css/app.css')
         
+        <!-- Force light mode on public pages -->
+        <script>
+            // Public pages always use light mode
+            localStorage.setItem('flux.appearance', 'light');
+            document.documentElement.classList.remove('dark');
+            if (document.body) {
+                document.body.classList.remove('dark');
+            }
+        </script>
+        
         <!-- Alpine.js -->
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
@@ -38,6 +48,7 @@
                         <a href="{{ route('rentals') }}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Rentals</a>
                         <a href="{{ route('home') }}#faq" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">FAQ</a>
                         <a href="{{ route('home') }}#contact" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
+                        
                         @auth
                             <a href="{{ url('/dashboard') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">Dashboard</a>
                         @else

@@ -12,9 +12,15 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
+use Stripe\Customer;
+use Stripe\PaymentMethod;
+use App\Mail\RentalConfirmed;
+use App\Mail\RentalAdminNotification;
+use App\Models\User;
 
 class RentalController extends Controller
 {
@@ -437,6 +443,9 @@ class RentalController extends Controller
         $validator = Validator::make($request->all(), [
             'amount' => 'required|numeric|min:0.01',
             'reservation_id' => 'nullable|exists:rental_reservations,id',
+            'customer_name' => 'nullable|string|max:255',
+            'customer_email' => 'nullable|email|max:255',
+            'customer_phone' => 'nullable|string|max:20',
         ]);
 
         if ($validator->fails()) {
@@ -457,14 +466,66 @@ class RentalController extends Controller
                 $metadata['reservation_id'] = $request->input('reservation_id');
             }
 
-            $paymentIntent = PaymentIntent::create([
+            // Add customer info to metadata
+            if ($request->input('customer_name')) {
+                $metadata['customer_name'] = $request->input('customer_name');
+            }
+            if ($request->input('customer_email')) {
+                $metadata['customer_email'] = $request->input('customer_email');
+            }
+            if ($request->input('customer_phone')) {
+                $metadata['customer_phone'] = $request->input('customer_phone');
+            }
+
+            // Create Stripe Customer with name, email, and phone
+            $stripeCustomer = null;
+            if ($request->input('customer_email')) {
+                $customerData = [
+                    'email' => $request->input('customer_email'),
+                    'metadata' => [
+                        'source' => 'rental_reservation',
+                    ],
+                ];
+                
+                if ($request->input('customer_name')) {
+                    $customerData['name'] = $request->input('customer_name');
+                }
+                
+                if ($request->input('customer_phone')) {
+                    $customerData['phone'] = $request->input('customer_phone');
+                }
+                
+                $stripeCustomer = Customer::create($customerData);
+                
+                Log::info('Stripe customer created for rental', [
+                    'customer_id' => $stripeCustomer->id,
+                    'name' => $request->input('customer_name'),
+                    'email' => $request->input('customer_email'),
+                    'phone' => $request->input('customer_phone'),
+                ]);
+            }
+
+            $paymentIntentData = [
                 'amount' => $amountCents,
                 'currency' => 'usd',
                 'metadata' => $metadata,
                 'automatic_payment_methods' => [
                     'enabled' => true,
                 ],
-            ]);
+            ];
+
+            // Attach customer to payment intent
+            if ($stripeCustomer) {
+                $paymentIntentData['customer'] = $stripeCustomer->id;
+                $paymentIntentData['receipt_email'] = $request->input('customer_email');
+            }
+
+            // Add description with customer name if provided
+            if ($request->input('customer_name')) {
+                $paymentIntentData['description'] = 'Rental reservation for ' . $request->input('customer_name');
+            }
+
+            $paymentIntent = PaymentIntent::create($paymentIntentData);
 
             return response()->json([
                 'client_secret' => $paymentIntent->client_secret,
@@ -506,6 +567,39 @@ class RentalController extends Controller
                 $reservation = RentalReservation::find($request->input('reservation_id'));
                 
                 if ($reservation) {
+                    // Attach payment method to customer for future use
+                    if ($paymentIntent->payment_method && $paymentIntent->customer) {
+                        try {
+                            $paymentMethod = PaymentMethod::retrieve($paymentIntent->payment_method);
+                            
+                            // Attach payment method to customer if not already attached
+                            if (!$paymentMethod->customer) {
+                                $paymentMethod->attach(['customer' => $paymentIntent->customer]);
+                                
+                                Log::info('Payment method attached to customer', [
+                                    'payment_method_id' => $paymentMethod->id,
+                                    'customer_id' => $paymentIntent->customer,
+                                ]);
+                            }
+                            
+                            // Set as default payment method for this customer
+                            Customer::update(
+                                $paymentIntent->customer,
+                                ['invoice_settings' => ['default_payment_method' => $paymentMethod->id]]
+                            );
+                            
+                            Log::info('Default payment method set for customer', [
+                                'payment_method_id' => $paymentMethod->id,
+                                'customer_id' => $paymentIntent->customer,
+                            ]);
+                        } catch (\Exception $e) {
+                            Log::warning('Failed to attach payment method to customer', [
+                                'error' => $e->getMessage(),
+                                'payment_intent_id' => $paymentIntent->id,
+                            ]);
+                        }
+                    }
+                    
                     $reservation->update([
                         'stripe_payment_intent_id' => $paymentIntent->id,
                         'payment_status' => 'paid',
@@ -519,7 +613,45 @@ class RentalController extends Controller
                         'reservation_id' => $reservation->id,
                         'payment_intent_id' => $paymentIntent->id,
                         'amount' => $paymentIntent->amount / 100,
+                        'payment_method_id' => $paymentIntent->payment_method,
+                        'customer_id' => $paymentIntent->customer,
                     ]);
+
+                    // Send confirmation email to customer
+                    try {
+                        Mail::to($reservation->contact_email)
+                            ->send(new RentalConfirmed($reservation));
+                        
+                        Log::info('Rental confirmation email sent to customer', [
+                            'reservation_id' => $reservation->id,
+                            'email' => $reservation->contact_email,
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send rental confirmation email to customer', [
+                            'reservation_id' => $reservation->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
+
+                    // Send notification emails to rental admins
+                    try {
+                        $rentalAdmins = User::role(['rental-admin', 'system-admin'])->get();
+                        
+                        foreach ($rentalAdmins as $admin) {
+                            Mail::to($admin->email)
+                                ->send(new RentalAdminNotification($reservation));
+                        }
+                        
+                        Log::info('Rental notification emails sent to admins', [
+                            'reservation_id' => $reservation->id,
+                            'admin_count' => $rentalAdmins->count(),
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to send rental notification emails to admins', [
+                            'reservation_id' => $reservation->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
 
                     return response()->json([
                         'success' => true,

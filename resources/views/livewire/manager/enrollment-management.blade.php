@@ -164,7 +164,7 @@
                             <!-- Status Filter -->
                             <div>
                                 <label for="statusFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                                <select wire:model.live="statusFilter" id="statusFilter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
+                                <select wire:model.live="statusFilter" id="statusFilter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
                                     <option value="">All Statuses</option>
                                     <option value="pending">Pending</option>
                                     <option value="confirmed">Confirmed</option>
@@ -176,7 +176,7 @@
                             <!-- Balance Filter -->
                             <div>
                                 <label for="balanceFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Payment Status</label>
-                                <select wire:model.live="balanceFilter" id="balanceFilter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
+                                <select wire:model.live="balanceFilter" id="balanceFilter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
                                     <option value="">All Payments</option>
                                     <option value="has_balance">Has Balance</option>
                                     <option value="paid_in_full">Paid in Full</option>
