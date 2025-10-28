@@ -32,6 +32,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'email_verified_at' => now(),
             ]
         );
 
