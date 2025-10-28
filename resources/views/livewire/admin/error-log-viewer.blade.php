@@ -37,15 +37,15 @@
                 <flux:field>
                     <flux:label>Log Level</flux:label>
                     <flux:select wire:model.live="logLevel">
-                        <flux:option value="all">All Levels</flux:option>
-                        <flux:option value="emergency">Emergency</flux:option>
-                        <flux:option value="alert">Alert</flux:option>
-                        <flux:option value="critical">Critical</flux:option>
-                        <flux:option value="error">Error</flux:option>
-                        <flux:option value="warning">Warning</flux:option>
-                        <flux:option value="notice">Notice</flux:option>
-                        <flux:option value="info">Info</flux:option>
-                        <flux:option value="debug">Debug</flux:option>
+                        <flux:select.option value="all">All Levels</flux:select.option>
+                        <flux:select.option value="emergency">Emergency</flux:select.option>
+                        <flux:select.option value="alert">Alert</flux:select.option>
+                        <flux:select.option value="critical">Critical</flux:select.option>
+                        <flux:select.option value="error">Error</flux:select.option>
+                        <flux:select.option value="warning">Warning</flux:select.option>
+                        <flux:select.option value="notice">Notice</flux:select.option>
+                        <flux:select.option value="info">Info</flux:select.option>
+                        <flux:select.option value="debug">Debug</flux:select.option>
                     </flux:select>
                 </flux:field>
             </div>
@@ -59,10 +59,10 @@
                 <flux:field>
                     <flux:label>Lines Per Page</flux:label>
                     <flux:select wire:model.live="linesPerPage">
-                        <flux:option value="25">25</flux:option>
-                        <flux:option value="50">50</flux:option>
-                        <flux:option value="100">100</flux:option>
-                        <flux:option value="200">200</flux:option>
+                        <flux:select.option value="25">25</flux:select.option>
+                        <flux:select.option value="50">50</flux:select.option>
+                        <flux:select.option value="100">100</flux:select.option>
+                        <flux:select.option value="200">200</flux:select.option>
                     </flux:select>
                 </flux:field>
             </div>

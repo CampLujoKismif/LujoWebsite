@@ -8,11 +8,12 @@ use App\Models\RentalReservation;
 use App\Models\RentalPricing;
 use App\Models\DiscountCode;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Carbon\Carbon;
 
 class RentalManagement extends Component
 {
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     // Search and filters
     public $searchTerm = '';
@@ -47,6 +48,7 @@ class RentalManagement extends Component
 
     public function mount()
     {
+        $this->authorize('viewAny', RentalReservation::class);
         $this->resetFormData();
     }
 
@@ -130,6 +132,8 @@ class RentalManagement extends Component
 
     public function createReservation()
     {
+        $this->authorize('create', RentalReservation::class);
+        
         $this->validate([
             'reservationData.contact_name' => 'required|string|max:255',
             'reservationData.contact_email' => 'required|email|max:255',
@@ -170,6 +174,8 @@ class RentalManagement extends Component
 
     public function updateReservation()
     {
+        $this->authorize('update', $this->selectedReservation);
+        
         $this->validate([
             'reservationData.contact_name' => 'required|string|max:255',
             'reservationData.contact_email' => 'required|email|max:255',
@@ -201,6 +207,8 @@ class RentalManagement extends Component
 
     public function cancelReservation()
     {
+        $this->authorize('cancel', $this->selectedReservation);
+        
         if ($this->selectedReservation && $this->selectedReservation->canBeCancelled()) {
             $this->selectedReservation->update([
                 'status' => 'cancelled',
@@ -215,6 +223,8 @@ class RentalManagement extends Component
 
     public function processRefund()
     {
+        $this->authorize('refund', $this->selectedReservation);
+        
         if ($this->selectedReservation) {
             // Here you would integrate with your payment processor (Stripe, etc.)
             // For now, we'll just mark it as refunded in notes
@@ -231,6 +241,8 @@ class RentalManagement extends Component
 
     public function updatePricing()
     {
+        $this->authorize('create', RentalPricing::class);
+        
         $this->validate([
             'pricingData.price_per_person_per_day' => 'required|numeric|min:0',
             'pricingData.deposit_amount' => 'nullable|numeric|min:0',
@@ -254,6 +266,8 @@ class RentalManagement extends Component
 
     public function createDiscountCode()
     {
+        $this->authorize('create', DiscountCode::class);
+        
         $this->validate([
             'discountData.code' => 'required|string|max:50|unique:discount_codes,code',
             'discountData.type' => 'required|in:rental,camper',
@@ -284,6 +298,8 @@ class RentalManagement extends Component
 
     public function deleteReservation()
     {
+        $this->authorize('delete', $this->selectedReservation);
+        
         if ($this->selectedReservation) {
             $this->selectedReservation->delete();
             $this->showDeleteModal = false;
@@ -381,8 +397,21 @@ class RentalManagement extends Component
             'pending_reservations' => RentalReservation::where('status', 'pending')->count(),
             'confirmed_reservations' => RentalReservation::where('status', 'confirmed')->count(),
             'cancelled_reservations' => RentalReservation::where('status', 'cancelled')->count(),
+            'completed_reservations' => RentalReservation::where('status', 'completed')->count(),
             'total_revenue' => RentalReservation::where('status', 'confirmed')->sum('final_amount'),
             'pending_revenue' => RentalReservation::where('status', 'pending')->sum('final_amount'),
+            'monthly_revenue' => RentalReservation::where('status', 'confirmed')
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('final_amount'),
+            'yearly_revenue' => RentalReservation::where('status', 'confirmed')
+                ->whereYear('created_at', now()->year)
+                ->sum('final_amount'),
+            'average_reservation_value' => RentalReservation::where('status', 'confirmed')->avg('final_amount'),
+            'upcoming_reservations' => RentalReservation::where('status', 'confirmed')
+                ->where('start_date', '>', now())
+                ->count(),
+            'recent_reservations' => RentalReservation::where('created_at', '>=', now()->subDays(7))->count(),
         ];
 
         $discountCodes = DiscountCode::where('type', 'rental')->orderBy('created_at', 'desc')->get();
