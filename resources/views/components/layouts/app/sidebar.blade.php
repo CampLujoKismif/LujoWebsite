@@ -44,6 +44,9 @@
                         <flux:navlist.item icon="exclamation-triangle" :href="route('dashboard.admin.error-logs')" :current="request()->routeIs('dashboard.admin.error-logs')" wire:navigate>
                             {{ __('Error Logs') }}
                         </flux:navlist.item>
+                        <flux:navlist.item icon="building-office" :href="route('dashboard.admin.rentals')" :current="request()->routeIs('dashboard.admin.rentals')" wire:navigate>
+                            {{ __('Rental Management') }}
+                        </flux:navlist.item>
                     </flux:navlist.group>
                 @endrole
 
