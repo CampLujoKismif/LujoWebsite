@@ -41,6 +41,9 @@
                         <flux:navlist.item icon="building-library" :href="route('dashboard.admin.church-congregations')" :current="request()->routeIs('dashboard.admin.church-congregations')" wire:navigate>
                             {{ __('Church Congregations') }}
                         </flux:navlist.item>
+                        <flux:navlist.item icon="exclamation-triangle" :href="route('dashboard.admin.error-logs')" :current="request()->routeIs('dashboard.admin.error-logs')" wire:navigate>
+                            {{ __('Error Logs') }}
+                        </flux:navlist.item>
                     </flux:navlist.group>
                 @endrole
 
