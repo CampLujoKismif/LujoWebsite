@@ -13,7 +13,7 @@ class DiscountCodePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermission('manage_rental_discounts');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -21,7 +21,7 @@ class DiscountCodePolicy
      */
     public function view(User $user, DiscountCode $discountCode): bool
     {
-        return $user->hasPermission('manage_rental_discounts');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -29,7 +29,7 @@ class DiscountCodePolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermission('manage_rental_discounts');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -37,7 +37,7 @@ class DiscountCodePolicy
      */
     public function update(User $user, DiscountCode $discountCode): bool
     {
-        return $user->hasPermission('manage_rental_discounts');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -45,7 +45,7 @@ class DiscountCodePolicy
      */
     public function delete(User $user, DiscountCode $discountCode): bool
     {
-        return $user->hasPermission('manage_rental_discounts');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -53,7 +53,7 @@ class DiscountCodePolicy
      */
     public function restore(User $user, DiscountCode $discountCode): bool
     {
-        return $user->hasPermission('manage_rental_discounts');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -61,7 +61,7 @@ class DiscountCodePolicy
      */
     public function forceDelete(User $user, DiscountCode $discountCode): bool
     {
-        return $user->hasPermission('manage_rental_discounts');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -69,6 +69,6 @@ class DiscountCodePolicy
      */
     public function toggle(User $user, DiscountCode $discountCode): bool
     {
-        return $user->hasPermission('manage_rental_discounts');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 }

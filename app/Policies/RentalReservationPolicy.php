@@ -13,7 +13,7 @@ class RentalReservationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermission('view_rentals');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -21,7 +21,7 @@ class RentalReservationPolicy
      */
     public function view(User $user, RentalReservation $rentalReservation): bool
     {
-        return $user->hasPermission('view_rentals');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -29,7 +29,7 @@ class RentalReservationPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermission('create_rentals');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -37,7 +37,7 @@ class RentalReservationPolicy
      */
     public function update(User $user, RentalReservation $rentalReservation): bool
     {
-        return $user->hasPermission('edit_rentals');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -45,7 +45,7 @@ class RentalReservationPolicy
      */
     public function delete(User $user, RentalReservation $rentalReservation): bool
     {
-        return $user->hasPermission('delete_rentals');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -53,7 +53,7 @@ class RentalReservationPolicy
      */
     public function restore(User $user, RentalReservation $rentalReservation): bool
     {
-        return $user->hasPermission('edit_rentals');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -61,7 +61,7 @@ class RentalReservationPolicy
      */
     public function forceDelete(User $user, RentalReservation $rentalReservation): bool
     {
-        return $user->hasPermission('delete_rentals');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -69,7 +69,7 @@ class RentalReservationPolicy
      */
     public function cancel(User $user, RentalReservation $rentalReservation): bool
     {
-        return $user->hasPermission('edit_rentals') && $rentalReservation->canBeCancelled();
+        return $user->hasRole(['system-admin', 'rental-admin']) && $rentalReservation->canBeCancelled();
     }
 
     /**
@@ -77,7 +77,7 @@ class RentalReservationPolicy
      */
     public function refund(User $user, RentalReservation $rentalReservation): bool
     {
-        return $user->hasPermission('process_rental_refunds') && 
+        return $user->hasRole(['system-admin', 'rental-admin']) && 
                $rentalReservation->status === 'confirmed' && 
                $rentalReservation->stripe_payment_intent_id;
     }
@@ -87,7 +87,7 @@ class RentalReservationPolicy
      */
     public function managePricing(User $user): bool
     {
-        return $user->hasPermission('manage_rental_pricing');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -95,7 +95,7 @@ class RentalReservationPolicy
      */
     public function manageDiscounts(User $user): bool
     {
-        return $user->hasPermission('manage_rental_discounts');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -103,6 +103,6 @@ class RentalReservationPolicy
      */
     public function viewAnalytics(User $user): bool
     {
-        return $user->hasPermission('view_rental_analytics');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 }

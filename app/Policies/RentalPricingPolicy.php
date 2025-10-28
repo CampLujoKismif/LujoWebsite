@@ -13,7 +13,7 @@ class RentalPricingPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermission('manage_rental_pricing');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -21,7 +21,7 @@ class RentalPricingPolicy
      */
     public function view(User $user, RentalPricing $rentalPricing): bool
     {
-        return $user->hasPermission('manage_rental_pricing');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -29,7 +29,7 @@ class RentalPricingPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermission('manage_rental_pricing');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -37,7 +37,7 @@ class RentalPricingPolicy
      */
     public function update(User $user, RentalPricing $rentalPricing): bool
     {
-        return $user->hasPermission('manage_rental_pricing');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -45,7 +45,7 @@ class RentalPricingPolicy
      */
     public function delete(User $user, RentalPricing $rentalPricing): bool
     {
-        return $user->hasPermission('manage_rental_pricing');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -53,7 +53,7 @@ class RentalPricingPolicy
      */
     public function restore(User $user, RentalPricing $rentalPricing): bool
     {
-        return $user->hasPermission('manage_rental_pricing');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -61,6 +61,6 @@ class RentalPricingPolicy
      */
     public function forceDelete(User $user, RentalPricing $rentalPricing): bool
     {
-        return $user->hasPermission('manage_rental_pricing');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 }
