@@ -76,7 +76,10 @@ class ChurchCongregationSeeder extends Seeder
         ];
 
         foreach ($congregations as $congregation) {
-            ChurchCongregation::create($congregation);
+            ChurchCongregation::firstOrCreate(
+                ['name' => $congregation['name']],
+                $congregation
+            );
         }
     }
 }

@@ -35,6 +35,7 @@
                     <div class="hidden lg:flex items-center space-x-4">
                         <a href="{{ route('home') }}#about" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">About</a>
                         <a href="{{ route('camp-sessions.index') }}" class="text-blue-600 font-semibold px-3 py-2 rounded-md text-sm font-medium">Camp Sessions</a>
+                        <a href="{{ route('rentals') }}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Rentals</a>
                         <a href="{{ route('home') }}#faq" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">FAQ</a>
                         <a href="{{ route('home') }}#contact" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
                         @auth
@@ -63,6 +64,7 @@
                 <div class="px-2 pt-2 pb-3 space-y-1">
                     <a href="{{ route('home') }}#about" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">About</a>
                     <a href="{{ route('camp-sessions.index') }}" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-blue-600 bg-blue-50 rounded-md">Camp Sessions</a>
+                    <a href="{{ route('rentals') }}" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">Rentals</a>
                     <a href="{{ route('home') }}#faq" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">FAQ</a>
                     <a href="{{ route('home') }}#contact" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">Contact</a>
                     

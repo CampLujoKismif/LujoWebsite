@@ -51,10 +51,13 @@ class UrlForwardSeeder extends Seeder
         ];
 
         foreach ($urlForwards as $urlForward) {
-            UrlForward::create([
-                ...$urlForward,
-                'created_by' => $admin->id,
-            ]);
+            UrlForward::firstOrCreate(
+                ['internal_url' => $urlForward['internal_url']],
+                [
+                    ...$urlForward,
+                    'created_by' => $admin->id,
+                ]
+            );
         }
     }
 }

@@ -19,27 +19,31 @@ class CampInstanceSeeder extends Seeder
         foreach ($camps as $camp) {
             // Create instances for current year and next year
             for ($year = $currentYear; $year <= $currentYear + 1; $year++) {
-                CampInstance::create([
-                    'camp_id' => $camp->id,
-                    'year' => $year,
-                    'name' => $camp->display_name . ' ' . $year,
-                    'description' => $camp->description . ' - ' . $year . ' Session',
-                    'theme_description' => 'Theme for ' . $year . ' - ' . $camp->display_name,
-                    'start_date' => $this->getStartDate($camp->name, $year),
-                    'end_date' => $this->getEndDate($camp->name, $year),
-                    'is_active' => true,
-                    'max_capacity' => $this->getCapacity($camp->name),
-                    'price' => $this->getPrice($camp->name),
-                    'age_from' => $this->getAgeFrom($camp->name),
-                    'age_to' => $this->getAgeTo($camp->name),
-                    'grade_from' => $this->getGradeFrom($camp->name),
-                    'grade_to' => $this->getGradeTo($camp->name),
-                    'registration_open_date' => now()->subMonths(6),
-                    'registration_close_date' => now()->addMonths(2),
-                    'theme_photos' => [],
-                    'schedule_data' => [],
-                    'additional_info' => [],
-                ]);
+                CampInstance::firstOrCreate(
+                    [
+                        'camp_id' => $camp->id,
+                        'year' => $year,
+                    ],
+                    [
+                        'name' => $camp->display_name . ' ' . $year,
+                        'description' => $camp->description . ' - ' . $year . ' Session',
+                        'theme_description' => 'Theme for ' . $year . ' - ' . $camp->display_name,
+                        'start_date' => $this->getStartDate($camp->name, $year),
+                        'end_date' => $this->getEndDate($camp->name, $year),
+                        'is_active' => true,
+                        'max_capacity' => $this->getCapacity($camp->name),
+                        'price' => $this->getPrice($camp->name),
+                        'age_from' => $this->getAgeFrom($camp->name),
+                        'age_to' => $this->getAgeTo($camp->name),
+                        'grade_from' => $this->getGradeFrom($camp->name),
+                        'grade_to' => $this->getGradeTo($camp->name),
+                        'registration_open_date' => now()->subMonths(6),
+                        'registration_close_date' => now()->addMonths(2),
+                        'theme_photos' => [],
+                        'schedule_data' => [],
+                        'additional_info' => [],
+                    ]
+                );
             }
         }
     }

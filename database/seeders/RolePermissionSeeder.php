@@ -64,28 +64,37 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create($permission);
+            Permission::firstOrCreate(
+                ['name' => $permission['name']],
+                $permission
+            );
         }
 
         // Create roles with display names
-        $systemAdmin = Role::create([
-            'name' => 'system-admin',
-            'display_name' => 'System Administrator',
-            'description' => 'Full system access with all permissions',
-            'is_admin' => true
-        ]);
-        $campManager = Role::create([
-            'name' => 'camp-manager',
-            'display_name' => 'Camp Manager',
-            'description' => 'Manages camp operations and staff',
-            'is_admin' => false
-        ]);
-        $parent = Role::create([
-            'name' => 'parent',
-            'display_name' => 'Parent',
-            'description' => 'Parent with access to their children\'s information',
-            'is_admin' => false
-        ]);
+        $systemAdmin = Role::firstOrCreate(
+            ['name' => 'system-admin'],
+            [
+                'display_name' => 'System Administrator',
+                'description' => 'Full system access with all permissions',
+                'is_admin' => true
+            ]
+        );
+        $campManager = Role::firstOrCreate(
+            ['name' => 'camp-manager'],
+            [
+                'display_name' => 'Camp Manager',
+                'description' => 'Manages camp operations and staff',
+                'is_admin' => false
+            ]
+        );
+        $parent = Role::firstOrCreate(
+            ['name' => 'parent'],
+            [
+                'display_name' => 'Parent',
+                'description' => 'Parent with access to their children\'s information',
+                'is_admin' => false
+            ]
+        );
 
         // Assign permissions to system admin (all permissions)
         $systemAdmin->givePermissionTo(Permission::all());

@@ -20,18 +20,16 @@ class TestUsersSeeder extends Seeder
         $this->command->info('Starting TestUsersSeeder...');
 
         // Create a camp manager user
-        $manager = User::where('email', 'manager@lujo.com')->first();
-        if (!$manager) {
-            $manager = User::create([
+        $manager = User::firstOrCreate(
+            ['email' => 'manager@lujo.com'],
+            [
                 'name' => 'Camp Manager',
                 'email' => 'manager@lujo.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-            ]);
-            $this->command->info('Created manager user: manager@lujo.com');
-        } else {
-            $this->command->info('Manager user already exists: manager@lujo.com');
-        }
+            ]
+        );
+        $this->command->info('Manager user: manager@lujo.com');
 
         // Assign camp-manager role
         $managerRole = Role::where('name', 'camp-manager')->first();
@@ -47,18 +45,16 @@ class TestUsersSeeder extends Seeder
         }
 
         // Create a parent user
-        $parent = User::where('email', 'parent@lujo.com')->first();
-        if (!$parent) {
-            $parent = User::create([
+        $parent = User::firstOrCreate(
+            ['email' => 'parent@lujo.com'],
+            [
                 'name' => 'Test Parent',
                 'email' => 'parent@lujo.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-            ]);
-            $this->command->info('Created parent user: parent@lujo.com');
-        } else {
-            $this->command->info('Parent user already exists: parent@lujo.com');
-        }
+            ]
+        );
+        $this->command->info('Parent user: parent@lujo.com');
 
         // Assign parent role
         $parentRole = Role::where('name', 'parent')->first();
@@ -74,21 +70,18 @@ class TestUsersSeeder extends Seeder
         }
 
         // Create a family for the parent
-        $family = Family::where('owner_user_id', $parent->id)->first();
-        if (!$family) {
-            $family = Family::create([
+        $family = Family::firstOrCreate(
+            ['owner_user_id' => $parent->id],
+            [
                 'name' => 'Smith Family',
-                'owner_user_id' => $parent->id,
                 'phone' => '555-123-4567',
                 'address' => '123 Main St',
                 'city' => 'Anytown',
                 'state' => 'TX',
                 'zip_code' => '12345',
-            ]);
-            $this->command->info('Created family for parent user');
-        } else {
-            $this->command->info('Family already exists for parent user');
-        }
+            ]
+        );
+        $this->command->info('Family for parent user');
 
         // Add the parent to their family
         if (!$family->users()->where('user_id', $parent->id)->exists()) {
@@ -101,27 +94,35 @@ class TestUsersSeeder extends Seeder
         // Create some campers for the family
         $existingCampers = Camper::where('family_id', $family->id)->count();
         if ($existingCampers == 0) {
-            Camper::create([
-                'family_id' => $family->id,
-                'first_name' => 'John',
-                'last_name' => 'Smith',
-                'date_of_birth' => now()->subYears(12),
-                'biological_gender' => 'Male',
-                'grade' => 6,
-                'school' => 'Anytown Elementary',
-            ]);
+            Camper::firstOrCreate(
+                [
+                    'family_id' => $family->id,
+                    'first_name' => 'John',
+                    'last_name' => 'Smith',
+                ],
+                [
+                    'date_of_birth' => now()->subYears(12),
+                    'biological_gender' => 'Male',
+                    'grade' => 6,
+                    'school' => 'Anytown Elementary',
+                ]
+            );
 
-            Camper::create([
-                'family_id' => $family->id,
-                'first_name' => 'Jane',
-                'last_name' => 'Smith',
-                'date_of_birth' => now()->subYears(10),
-                'biological_gender' => 'Female',
-                'grade' => 4,
-                'school' => 'Anytown Elementary',
-                'allergies' => json_encode(['Peanuts', 'Shellfish']),
-                'medical_conditions' => json_encode(['Asthma']),
-            ]);
+            Camper::firstOrCreate(
+                [
+                    'family_id' => $family->id,
+                    'first_name' => 'Jane',
+                    'last_name' => 'Smith',
+                ],
+                [
+                    'date_of_birth' => now()->subYears(10),
+                    'biological_gender' => 'Female',
+                    'grade' => 4,
+                    'school' => 'Anytown Elementary',
+                    'allergies' => json_encode(['Peanuts', 'Shellfish']),
+                    'medical_conditions' => json_encode(['Asthma']),
+                ]
+            );
             $this->command->info('Created campers for family');
         } else {
             $this->command->info('Campers already exist for family');

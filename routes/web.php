@@ -32,6 +32,10 @@ Route::get('/camp-sessions', function () {
 
 Route::get('/camp-sessions/{instance}', [App\Http\Controllers\PublicCampController::class, 'showSession'])->name('camp-sessions.show');
 
+Route::get('/rentals', function () {
+    return view('rentals');
+})->name('rentals');
+
 // Dashboard routes with role-based routing
 Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', App\Livewire\Dashboard\Index::class)->name('home');

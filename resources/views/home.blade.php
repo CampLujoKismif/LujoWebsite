@@ -290,6 +290,8 @@
                             </div>
                         </div>
                         
+                        <a href="{{ route('rentals') }}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Rentals</a>
+                        
                         <a href="#faq" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">FAQ</a>
                         <a href="#contact" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
                         @auth
@@ -339,6 +341,8 @@
                             <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Fall Focus (5th-12th Grade)</a>
                         </div>
                     </div>
+                    
+                    <a href="{{ route('rentals') }}" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">Rentals</a>
                     
                     <a href="#faq" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">FAQ</a>
                     <a href="#contact" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">Contact</a>
@@ -507,6 +511,14 @@
                     <div class="card-hover bg-purple-50 p-8 rounded-lg">
                         <div class="text-4xl font-bold text-purple-600 mb-2">550+</div>
                         <div class="text-xl text-gray-700">Baptisms</div>
+                    </div>
+                </div>
+                
+                <!-- Vue Component Test -->
+                <div class="mt-12">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Vue 3 Integration Test</h3>
+                    <div class="max-w-md mx-auto">
+                        <x-vue-component component="VueExample" />
                     </div>
                 </div>
             </div>

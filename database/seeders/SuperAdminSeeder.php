@@ -14,21 +14,16 @@ class SuperAdminSeeder extends Seeder
      */
     public function run(): void
     {
-        // Check if the super admin user already exists
-        $existingUser = User::where('email', 'admin@lujo.com')->first();
-        
-        if ($existingUser) {
-            $this->command->info('Super admin user already exists. Skipping creation.');
-            return;
-        }
-
         // Create the super admin user
-        $superAdmin = User::create([
-            'name' => 'System Administrator',
-            'email' => 'admin@lujo.com',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(), // Mark email as verified
-        ]);
+        $superAdmin = User::firstOrCreate(
+            ['email' => 'admin@lujo.com'],
+            [
+                'name' => 'System Administrator',
+                'email' => 'admin@lujo.com',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(), // Mark email as verified
+            ]
+        );
 
         // Get the system admin role
         $systemAdminRole = Role::where('name', 'system-admin')->first();

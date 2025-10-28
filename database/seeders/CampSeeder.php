@@ -79,7 +79,10 @@ class CampSeeder extends Seeder
         ];
 
         foreach ($camps as $campData) {
-            Camp::create($campData);
+            Camp::firstOrCreate(
+                ['name' => $campData['name']],
+                $campData
+            );
         }
     }
 } 
