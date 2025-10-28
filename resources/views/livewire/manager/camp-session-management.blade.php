@@ -111,7 +111,7 @@
                             </div>
                             <div>
                                 <span class="text-gray-500 dark:text-gray-400">Capacity:</span>
-                                <p class="text-gray-900 dark:text-white">{{ $session->capacity }}</p>
+                                <p class="text-gray-900 dark:text-white">{{ $session->max_capacity ?? 'Not set' }}</p>
                             </div>
                         </div>
                     </div>

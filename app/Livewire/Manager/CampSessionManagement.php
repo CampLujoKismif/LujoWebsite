@@ -81,7 +81,7 @@ class CampSessionManagement extends Component
         $this->sessionName = $this->selectedSession->name;
         $this->sessionStartDate = $this->selectedSession->start_date->format('Y-m-d');
         $this->sessionEndDate = $this->selectedSession->end_date->format('Y-m-d');
-        $this->sessionCapacity = $this->selectedSession->capacity;
+        $this->sessionCapacity = $this->selectedSession->max_capacity;
         $this->sessionPrice = $this->selectedSession->price;
         $this->sessionDescription = $this->selectedSession->description;
         $this->sessionIsActive = $this->selectedSession->is_active;
@@ -124,7 +124,7 @@ class CampSessionManagement extends Component
             'name' => $this->sessionName,
             'start_date' => $this->sessionStartDate,
             'end_date' => $this->sessionEndDate,
-            'capacity' => $this->sessionCapacity,
+            'max_capacity' => $this->sessionCapacity,
             'price' => $this->sessionPrice ?: null,
             'description' => $this->sessionDescription,
             'is_active' => $this->sessionIsActive,
@@ -171,7 +171,7 @@ class CampSessionManagement extends Component
             'name' => $this->sessionName,
             'start_date' => $this->sessionStartDate,
             'end_date' => $this->sessionEndDate,
-            'capacity' => $this->sessionCapacity,
+            'max_capacity' => $this->sessionCapacity,
             'price' => $this->sessionPrice ?: null,
             'description' => $this->sessionDescription,
             'is_active' => $this->sessionIsActive,
