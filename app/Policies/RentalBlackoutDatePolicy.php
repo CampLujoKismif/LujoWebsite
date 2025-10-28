@@ -12,7 +12,7 @@ class RentalBlackoutDatePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('manage rentals') || $user->hasRole('Super Admin');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -20,7 +20,7 @@ class RentalBlackoutDatePolicy
      */
     public function view(User $user, RentalBlackoutDate $blackoutDate): bool
     {
-        return $user->hasPermissionTo('manage rentals') || $user->hasRole('Super Admin');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -28,7 +28,7 @@ class RentalBlackoutDatePolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('manage rentals') || $user->hasRole('Super Admin');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -36,7 +36,7 @@ class RentalBlackoutDatePolicy
      */
     public function update(User $user, RentalBlackoutDate $blackoutDate): bool
     {
-        return $user->hasPermissionTo('manage rentals') || $user->hasRole('Super Admin');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 
     /**
@@ -44,7 +44,7 @@ class RentalBlackoutDatePolicy
      */
     public function delete(User $user, RentalBlackoutDate $blackoutDate): bool
     {
-        return $user->hasPermissionTo('manage rentals') || $user->hasRole('Super Admin');
+        return $user->hasRole(['system-admin', 'rental-admin']);
     }
 }
 
