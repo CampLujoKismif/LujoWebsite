@@ -162,6 +162,33 @@
             </div>
         </div>
 
+        <!-- Rental Management -->
+        <div class="mt-8">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Rental Management</h3>
+            <div class="bg-white dark:bg-zinc-900 shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ $stats['total_rentals'] }}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Total Rentals</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $stats['active_rentals'] }}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Active Rentals</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">${{ number_format($stats['rental_revenue'], 2) }}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Rental Revenue</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ $stats['upcoming_rentals'] }}</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Upcoming Rentals</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Reports & Analytics -->
         <div class="mt-8">
             <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Reports & Analytics</h3>
@@ -186,7 +213,7 @@
             <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
             <div class="bg-white dark:bg-zinc-900 shadow rounded-lg">
                 <div class="px-4 py-5 sm:p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <a href="{{ route('dashboard.admin.url-forwards') }}" class="flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
                             <div class="flex-shrink-0">
                                 <div class="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
@@ -226,6 +253,20 @@
                             <div class="ml-4">
                                 <h4 class="text-sm font-medium text-gray-900 dark:text-white">Camp Management</h4>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Manage camp sessions</p>
+                            </div>
+                        </a>
+                        
+                        <a href="{{ route('dashboard.admin.rentals') }}" class="flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-orange-500 rounded-md flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Rental Management</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Manage facility rentals</p>
                             </div>
                         </a>
                     </div>

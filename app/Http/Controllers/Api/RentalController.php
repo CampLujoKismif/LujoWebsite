@@ -281,6 +281,10 @@ class RentalController extends Controller
 
             // Calculate pricing
             $pricing = RentalPricing::current();
+            if (!$pricing) {
+                return response()->json(['error' => 'No active pricing found. Please contact support.'], 500);
+            }
+            
             $numberOfDays = $startDate->diffInDays($endDate) + 1;
             $baseTotal = $pricing->calculateTotal($request->input('number_of_people'), $numberOfDays);
 

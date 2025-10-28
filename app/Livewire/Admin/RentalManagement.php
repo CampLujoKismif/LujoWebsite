@@ -150,7 +150,12 @@ class RentalManagement extends Component
 
         // Calculate pricing
         $pricing = RentalPricing::current();
-        $baseTotal = $pricing ? $pricing->calculateTotal($this->reservationData['number_of_people'], $numberOfDays) : 0;
+        if (!$pricing) {
+            session()->flash('error', 'No active pricing found. Please set up pricing first.');
+            return;
+        }
+        
+        $baseTotal = $pricing->calculateTotal($this->reservationData['number_of_people'], $numberOfDays);
 
         RentalReservation::create([
             'start_date' => $startDate,
@@ -161,7 +166,7 @@ class RentalManagement extends Component
             'rental_purpose' => $this->reservationData['rental_purpose'],
             'number_of_people' => $this->reservationData['number_of_people'],
             'total_amount' => $baseTotal,
-            'deposit_amount' => $pricing ? $pricing->deposit_amount : null,
+            'deposit_amount' => $pricing->deposit_amount,
             'final_amount' => $baseTotal,
             'status' => 'confirmed',
             'notes' => 'Created by admin: ' . Auth::user()->name,

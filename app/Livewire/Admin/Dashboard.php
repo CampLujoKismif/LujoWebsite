@@ -7,6 +7,7 @@ use App\Models\CampInstance;
 use App\Models\Camper;
 use App\Models\Enrollment;
 use App\Models\User;
+use App\Models\RentalReservation;
 use Livewire\Component;
 
 class Dashboard extends Component
@@ -54,6 +55,12 @@ class Dashboard extends Component
             // Analytics
             'enrollment_rate' => $this->calculateEnrollmentRate(),
             'revenue_growth' => $this->calculateRevenueGrowth(),
+            
+            // Rental statistics
+            'total_rentals' => RentalReservation::count(),
+            'active_rentals' => RentalReservation::whereIn('status', ['pending', 'confirmed'])->count(),
+            'rental_revenue' => RentalReservation::where('status', 'confirmed')->sum('final_amount'),
+            'upcoming_rentals' => RentalReservation::where('status', 'confirmed')->where('start_date', '>', now())->count(),
         ];
     }
 

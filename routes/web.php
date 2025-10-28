@@ -51,10 +51,11 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
         Route::get('/enrollments', App\Livewire\Admin\EnrollmentManagement::class)->name('enrollments');
         Route::get('/url-forwards', App\Livewire\Admin\UrlForwardManagement::class)->name('url-forwards');
         Route::get('/error-logs', App\Livewire\Admin\ErrorLogViewer::class)->name('error-logs');
+        Route::get('/rentals', App\Livewire\Admin\RentalManagement::class)->name('rentals');
     });
     
-    // Rental Admin Dashboard
-    Route::middleware(['role:rental-admin,system-admin'])->prefix('rental-admin')->name('rental-admin.')->group(function () {
+    // Rental Admin Dashboard (for rental-admin role)
+    Route::middleware(['role:rental-admin'])->prefix('rental-admin')->name('rental-admin.')->group(function () {
         Route::get('/', App\Livewire\Admin\RentalManagement::class)->name('index');
     });
     

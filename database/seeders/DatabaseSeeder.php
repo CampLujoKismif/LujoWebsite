@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             SuperAdminSeeder::class,
             TestUsersSeeder::class,
             UrlForwardSeeder::class,
+            RentalPricingSeeder::class,
         ]);
 
         // User::factory(10)->create();

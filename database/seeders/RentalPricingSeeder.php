@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\RentalPricing;
 
 class RentalPricingSeeder extends Seeder
 {
@@ -12,14 +12,14 @@ class RentalPricingSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\RentalPricing::firstOrCreate(
-            ['description' => 'Standard rental pricing - $20 per person per day'],
-            [
-                'price_per_person_per_day' => 20.00,
-                'deposit_amount' => null,
+        // Create default pricing if none exists
+        if (!RentalPricing::current()) {
+            RentalPricing::create([
+                'price_per_person_per_day' => 25.00,
+                'deposit_amount' => 100.00,
+                'description' => 'Default rental pricing',
                 'is_active' => true,
-                'description' => 'Standard rental pricing - $20 per person per day',
-            ]
-        );
+            ]);
+        }
     }
 }
