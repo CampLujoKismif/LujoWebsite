@@ -19,7 +19,7 @@
 
                 <!-- System Admin Section -->
                 @role('system-admin')
-                    <flux:navlist.group :heading="__('System Administration')" class="grid">
+                    <flux:navlist.group :heading="__('System Administration')" expandable="true" expanded="true" class="grid">
                         <flux:navlist.item icon="shield-check" :href="route('dashboard.admin.index')" :current="request()->routeIs('dashboard.admin.index')" wire:navigate>
                             {{ __('Admin Dashboard') }}
                         </flux:navlist.item>
@@ -53,6 +53,9 @@
                         <flux:navlist.item icon="building-office" :href="route('dashboard.admin.rentals')" :current="request()->routeIs('dashboard.admin.rentals')" wire:navigate>
                             {{ __('Rental Management') }}
                         </flux:navlist.item>
+                        <flux:navlist.item icon="arrow-top-right-on-square" :href="route('dashboard.admin.url-forwards')" :current="request()->routeIs('dashboard.admin.url-forwards')" wire:navigate>
+                            {{ __('URL Forwards') }}
+                        </flux:navlist.item>
                     </flux:navlist.group>
 
                     <!-- Back to Public Site -->
@@ -63,7 +66,7 @@
 
                 <!-- Rental Admin Section -->
                 @role('rental-admin')
-                    <flux:navlist.group :heading="__('Rental Management')" class="grid">
+                    <flux:navlist.group :heading="__('Rental Management')" expandable="true" expanded="true" class="grid">
                         <flux:navlist.item icon="building-office" :href="route('dashboard.rental-admin.index')" :current="request()->routeIs('dashboard.rental-admin.*')" wire:navigate>
                             {{ __('Rental Dashboard') }}
                         </flux:navlist.item>
@@ -72,7 +75,7 @@
 
                 <!-- Camp Manager Section -->
                 @role('camp-manager')
-                    <flux:navlist.group :heading="__('Camp Management')" class="grid">
+                    <flux:navlist.group :heading="__('Camp Management')" expandable="true" expanded="true" class="grid">
                         <flux:navlist.item icon="building-storefront" :href="route('dashboard.manager.index')" :current="request()->routeIs('dashboard.manager.index')" wire:navigate>
                             {{ __('Manager Dashboard') }}
                         </flux:navlist.item>
@@ -93,7 +96,7 @@
 
                 <!-- Parent Portal Section -->
                 @role('parent')
-                    <flux:navlist.group :heading="__('Parent Portal')" class="grid">
+                    <flux:navlist.group :heading="__('Parent Portal')" expandable="true" expanded="true" class="grid">
                         <flux:navlist.item icon="home" :href="route('dashboard.parent.index')" :current="request()->routeIs('dashboard.parent.index')" wire:navigate>
                             {{ __('Parent Dashboard') }}
                         </flux:navlist.item>
@@ -114,16 +117,6 @@
                         </flux:navlist.item>
                     </flux:navlist.group>
                 @endrole
-
-                <!-- General Camp Management (for all roles) -->
-                <flux:navlist.group :heading="__('Camp Management')" class="grid">
-                    <flux:navlist.item icon="calendar" :href="route('dashboard.home')" :current="request()->routeIs('dashboard.*')" wire:navigate>
-                        {{ __('Camp Sessions') }}
-                    </flux:navlist.item>
-                    <flux:navlist.item icon="chart-bar" :href="route('dashboard.home')" :current="request()->routeIs('dashboard.*')" wire:navigate>
-                        {{ __('Reports') }}
-                    </flux:navlist.item>
-                </flux:navlist.group>
             </flux:navlist>
 
             <flux:spacer />
