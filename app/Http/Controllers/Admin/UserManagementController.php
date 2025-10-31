@@ -9,6 +9,7 @@ use App\Models\Camp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Auth\Events\Registered;
 
 class UserManagementController extends Controller
 {
@@ -111,6 +112,11 @@ class UserManagementController extends Controller
                     ]);
                 }
             }
+        }
+
+        // Send email verification notification if email is not verified
+        if (!$request->has('email_verified')) {
+            event(new Registered($user));
         }
 
         return redirect()->route('admin.users.index')

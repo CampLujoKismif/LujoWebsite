@@ -11,6 +11,7 @@ use App\Models\UserCampAssignment;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Auth\Events\Registered;
 
 class UserManagement extends Component
 {
@@ -152,6 +153,11 @@ class UserManagement extends Component
 
             // Assign to camps
             $this->assignUserToCamps($user);
+
+            // Send email verification notification if email is not verified
+            if (!$this->emailVerified) {
+                event(new Registered($user));
+            }
 
             $this->showCreateModal = false;
             $this->resetUserForm();

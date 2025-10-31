@@ -93,14 +93,14 @@
                             
                             <!-- Grade/Age Range -->
                             @if($instance->grade_from && $instance->grade_to)
-                                <span class="inline-block bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
+                                <span class="inline-block bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-900">
                                     {{ $instance->grade_from }}{{ $this->getGradeSuffix($instance->grade_from) }} Grade
                                     @if($instance->grade_from != $instance->grade_to)
                                         - {{ $instance->grade_to }}{{ $this->getGradeSuffix($instance->grade_to) }} Grade
                                     @endif
                                 </span>
                             @elseif($instance->age_from && $instance->age_to)
-                                <span class="inline-block bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
+                                <span class="inline-block bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-900">
                                     Ages {{ $instance->age_from }} - {{ $instance->age_to }}
                                 </span>
                             @endif
@@ -182,19 +182,19 @@
                             <div class="flex space-x-3">
                                 @if($instance->theme_description)
                                     <a href="{{ route('camp-sessions.show', $instance) }}" 
-                                       class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center py-2 px-4 rounded-md font-medium transition duration-300">
+                                       class="flex-1 bg-blue-100 hover:bg-blue-200 text-gray-900 text-center py-2 px-4 rounded-md font-medium transition duration-300">
                                         Learn More
                                     </a>
                                 @endif
                                 
                                 @if($instance->isRegistrationOpen())
                                     <a href="{{ route('login') }}" 
-                                       class="flex-1 bg-green-600 hover:bg-green-700 text-white text-center py-2 px-4 rounded-md font-medium transition duration-300">
+                                       class="flex-1 bg-green-100 hover:bg-green-200 text-gray-900 text-center py-2 px-4 rounded-md font-medium transition duration-300">
                                         Register Now
                                     </a>
                                 @else
                                     <button disabled 
-                                            class="flex-1 bg-gray-400 text-white text-center py-2 px-4 rounded-md font-medium cursor-not-allowed">
+                                            class="flex-1 bg-gray-200 text-gray-600 text-center py-2 px-4 rounded-md font-medium cursor-not-allowed">
                                         Registration Closed
                                     </button>
                                 @endif

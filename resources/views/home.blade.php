@@ -486,20 +486,20 @@
                         Learn More
                     </a>
                 </div>
-                
-                <!-- Image Navigation Dots -->
-                <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3" x-show="!loading && images.length > 0">
-                    <template x-for="(image, index) in images" :key="index">
-                        <button @click="currentImage = index" 
-                                class="w-3 h-3 rounded-full carousel-dot"
-                                :class="{ 'bg-white': currentImage === index, 'bg-white/50 hover:bg-white/75': currentImage !== index }">
-                        </button>
-                    </template>
-                </div>
+            </div>
+            
+            <!-- Image Navigation Dots -->
+            <div class="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20" x-show="!loading && images.length > 0">
+                <template x-for="(image, index) in images" :key="index">
+                    <button @click="currentImage = index" 
+                            class="w-3 h-3 rounded-full carousel-dot"
+                            :class="{ 'bg-white': currentImage === index, 'bg-white/50 hover:bg-white/75': currentImage !== index }">
+                    </button>
+                </template>
             </div>
             
             <!-- Scroll Indicator -->
-            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                 </svg>
@@ -618,14 +618,14 @@
                             <!-- Grade/Age Range -->
                             <div class="mb-4">
                                 @if($instance->grade_from && $instance->grade_to)
-                                    <span class="inline-block bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
+                                    <span class="inline-block bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-900">
                                         {{ $instance->grade_from }}{{ $gradeSuffix($instance->grade_from) }} Grade
                                         @if($instance->grade_from != $instance->grade_to)
                                             - {{ $instance->grade_to }}{{ $gradeSuffix($instance->grade_to) }} Grade
                                         @endif
                                     </span>
                                 @elseif($instance->age_from && $instance->age_to)
-                                    <span class="inline-block bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
+                                    <span class="inline-block bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-900">
                                         Ages {{ $instance->age_from }} - {{ $instance->age_to }}
                                     </span>
                                 @endif
@@ -682,11 +682,11 @@
                             <!-- Action Button -->
                             <div class="mt-4">
                                 @if($instance->theme_description)
-                                    <a href="{{ route('camp-sessions.show', $instance) }}" class="inline-block bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-lg font-semibold transition duration-300 transform hover:scale-105">
+                                    <a href="{{ route('camp-sessions.show', $instance) }}" class="inline-block bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-lg font-semibold transition duration-300 transform hover:scale-105">
                                         Learn More & Register
                                     </a>
                                 @else
-                                    <a href="{{ route('login') }}" class="inline-block bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-lg font-semibold transition duration-300 transform hover:scale-105">
+                                    <a href="{{ route('login') }}" class="inline-block bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-lg font-semibold transition duration-300 transform hover:scale-105">
                                         Register Now
                                     </a>
                                 @endif
