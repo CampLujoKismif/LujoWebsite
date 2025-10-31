@@ -197,6 +197,13 @@
             </div>
         </div>
 
+        <!-- Rental Calendar -->
+        <div class="bg-white dark:bg-zinc-900 shadow overflow-hidden sm:rounded-md mb-6">
+            <div class="px-3 py-2 sm:px-4 sm:py-3">
+                <x-vue-component component="RentalCalendar" :props="['adminMode' => true, 'compact' => true]" />
+            </div>
+        </div>
+
         <!-- Filters -->
         <div class="bg-white dark:bg-zinc-900 shadow rounded-lg mb-6">
             <div class="px-4 py-5 sm:p-6">

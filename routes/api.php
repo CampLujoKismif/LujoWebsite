@@ -33,4 +33,5 @@ Route::prefix('rental')->group(function () {
     Route::get('/blackout-dates', [RentalController::class, 'getBlackoutDates']);
     Route::post('/create-payment-intent', [RentalController::class, 'createPaymentIntent']);
     Route::post('/confirm-payment', [RentalController::class, 'confirmPayment']);
+    
 });

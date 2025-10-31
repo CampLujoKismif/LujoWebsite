@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
             componentToMount = VueExample; // Default fallback
         }
         
-        const elementApp = createApp(componentToMount);
+        const elementApp = createApp(componentToMount, props);
         
         // Register all components for this app instance
         elementApp.component('rental-calendar', RentalCalendar);
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Ensure the element is properly in the DOM
             if (element && element.nodeType === Node.ELEMENT_NODE) {
                 elementApp.mount(element);
-                console.log('Successfully mounted component:', componentName);
+                console.log('Successfully mounted component:', componentName, 'with props:', props);
             } else {
                 console.error('Invalid element for mounting:', element);
             }

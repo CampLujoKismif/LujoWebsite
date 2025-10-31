@@ -1,7 +1,7 @@
 <template>
-  <div class="rental-calendar bg-white rounded-lg shadow-lg p-3 sm:p-6">
-    <!-- Step Indicator -->
-    <div class="mb-6 sm:mb-8">
+  <div class="rental-calendar bg-white rounded-lg shadow-lg" :class="adminMode ? 'p-1.5 sm:p-2' : 'p-3 sm:p-6'">
+    <!-- Step Indicator (only show in booking mode) -->
+    <div v-if="!adminMode" class="mb-6 sm:mb-8">
       <div class="flex items-center justify-center space-x-2 sm:space-x-8">
         <!-- Step 1: Date Selection -->
         <div class="flex items-center space-x-1 sm:space-x-3">
@@ -47,8 +47,8 @@
       </div>
     </div>
 
-    <!-- Step Content Container -->
-    <div class="relative overflow-hidden">
+    <!-- Step Content Container (only in booking mode) -->
+    <div v-if="!adminMode" class="relative overflow-hidden">
       <!-- Step 1: Calendar Selection -->
       <div class="transition-all duration-500 ease-in-out"
            :class="currentStep === 1 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full absolute inset-0'">
@@ -96,27 +96,86 @@
           </div>
           
           <!-- Calendar Days -->
-          <div v-if="loading" class="grid grid-cols-7 gap-0.5 sm:gap-1">
-            <div v-for="i in 42" :key="i" class="aspect-square flex items-center justify-center text-xs sm:text-sm font-medium rounded-md sm:rounded-lg bg-gray-100 animate-pulse">
-              <div class="w-3 h-3 sm:w-4 sm:h-4 bg-gray-300 rounded"></div>
+          <div v-if="loading" class="grid grid-cols-7 gap-0.5">
+            <div v-for="i in 42" :key="i" 
+                 :class="adminMode && compact ? 'h-8' : 'aspect-square'"
+                 class="flex items-center justify-center text-[9px] font-medium rounded border bg-gray-100 dark:bg-zinc-800 animate-pulse">
+              <div class="w-2 h-2 bg-gray-300 dark:bg-zinc-600 rounded"></div>
             </div>
           </div>
-          <div v-else class="grid grid-cols-7 gap-0.5 sm:gap-1">
+          <div v-else class="grid grid-cols-7 gap-0.5">
             <div 
               v-for="day in calendarDays" 
               :key="day.date"
-              @click="selectDate(day)"
-              class="aspect-square flex items-center justify-center text-xs sm:text-sm font-medium rounded-md sm:rounded-lg cursor-pointer transition-all duration-200 hover:scale-105"
-              :class="getDayClasses(day)"
-              :disabled="!day.available"
+              @click="!adminMode && selectDate(day)"
+              :class="[
+                adminMode && compact ? 'h-8' : 'aspect-square',
+                !adminMode ? 'cursor-pointer hover:scale-105' : '',
+                'flex items-center justify-center text-[9px] font-medium rounded transition-all duration-200 relative overflow-hidden',
+                getDayClasses(day)
+              ]"
+              :disabled="!adminMode && !day.available"
             >
+              <!-- Day Number -->
+              <div class="absolute top-0 left-0.5 text-[8px] sm:text-[9px] font-medium z-10" :class="getDayNumberClass(day)">
               {{ day.day }}
+            </div>
+              
+              <!-- Admin Mode: Show Reservation Info -->
+              <template v-if="adminMode && day.reservations && day.reservations.length > 0">
+                <!-- Compact view: show abbreviated names inline -->
+                <template v-if="compact">
+                  <div class="absolute inset-0 p-0.5 flex items-center justify-center gap-0.5">
+                    <span v-for="(reservation, index) in day.reservations" :key="reservation.id" 
+                          class="text-[6px] px-0.5 rounded"
+                          :class="getReservationClass(reservation)">
+                      {{ reservation.contact_name.substring(0, 3) }}
+                    </span>
+                    <span v-if="day.reservations.some(r => r.is_paid)" class="text-green-600 dark:text-green-400 text-[7px]">✓</span>
+                    <span v-else class="text-orange-600 dark:text-orange-400 text-[7px]">$</span>
+          </div>
+                </template>
+                <!-- Normal admin view: show full names stacked -->
+                <template v-else>
+                  <div class="absolute inset-0 p-0.5 flex flex-col justify-center items-center text-center">
+                    <div v-for="(reservation, index) in day.reservations" :key="reservation.id" 
+                         class="text-[6px] sm:text-[7px] font-semibold leading-tight mb-0.5 px-0.5 rounded truncate w-full"
+                         :class="getReservationClass(reservation)">
+                      <div class="truncate">{{ reservation.contact_name }}</div>
+                      <div class="flex items-center justify-center">
+                        <span v-if="reservation.is_paid" class="text-green-600 dark:text-green-400 text-[7px]">✓</span>
+                        <span v-else class="text-orange-600 dark:text-orange-400 text-[7px]">$</span>
+        </div>
+                    </div>
+                  </div>
+                </template>
+                
+                <!-- Tooltip on hover -->
+                <div class="absolute inset-0 opacity-0 hover:opacity-100 bg-black bg-opacity-75 text-white text-[8px] p-1 flex flex-col justify-center items-center transition-opacity z-20 rounded">
+                  <div v-for="reservation in day.reservations" :key="reservation.id" class="text-center mb-0.5">
+                    <div class="font-semibold text-[9px]">{{ reservation.contact_name }}</div>
+                    <div class="text-[8px]">
+                      <span :class="reservation.is_paid ? 'text-green-400' : 'text-orange-400'">
+                        {{ getPaymentStatusText(reservation) }}
+                      </span>
+                    </div>
+                    <div class="text-[7px] text-gray-300">
+                      ${{ parseFloat(reservation.amount_paid || 0).toFixed(2) }} / ${{ parseFloat(reservation.final_amount || 0).toFixed(2) }}
+                    </div>
+                  </div>
+                </div>
+              </template>
+              
+              <!-- Booking Mode: Show day number only -->
+              <template v-else>
+                {{ day.day }}
+              </template>
             </div>
           </div>
         </div>
 
-        <!-- Selected Dates Display -->
-        <div v-if="selectedDates.length > 0" class="mb-6 p-4 bg-blue-50 rounded-lg">
+        <!-- Selected Dates Display (only in booking mode) -->
+        <div v-if="!adminMode && selectedDates.length > 0" class="mb-6 p-4 bg-blue-50 rounded-lg">
           <h4 class="font-semibold text-blue-900 mb-2">Selected Dates:</h4>
           <div class="text-blue-800 font-medium">
             {{ formattedSelectedDates }}
@@ -130,8 +189,8 @@
           </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex justify-between">
+        <!-- Action Buttons (only in booking mode) -->
+        <div v-if="!adminMode" class="flex justify-between">
           <button 
             @click="clearSelection"
             v-if="selectedDates.length > 0"
@@ -151,8 +210,8 @@
         </div>
       </div>
 
-      <!-- Step 2: Rental Form -->
-      <div class="transition-all duration-500 ease-in-out"
+      <!-- Step 2: Rental Form (only in booking mode) -->
+      <div v-if="!adminMode" class="transition-all duration-500 ease-in-out"
            :class="currentStep === 2 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full absolute inset-0'">
         <rental-form 
           v-if="pricing"
@@ -169,8 +228,8 @@
         </div>
       </div>
 
-      <!-- Step 3: Payment -->
-      <div class="transition-all duration-500 ease-in-out"
+      <!-- Step 3: Payment (only in booking mode) -->
+      <div v-if="!adminMode" class="transition-all duration-500 ease-in-out"
            :class="currentStep === 3 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full absolute inset-0'">
         <div class="max-w-2xl mx-auto">
           <h3 class="text-2xl font-bold text-gray-900 mb-6">Payment Information</h3>
@@ -310,8 +369,151 @@
       </div>
     </div>
 
-    <!-- Legend -->
-    <div class="mt-6 pt-6 border-t border-gray-200">
+    <!-- Admin Mode Calendar View -->
+    <div v-if="adminMode">
+      <!-- Calendar Header -->
+      <div class="mb-1 sm:mb-2">
+        <div class="mb-1 flex items-center justify-between">
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white inline mr-2">Rental Calendar</h3>
+            <span class="text-[9px] sm:text-[10px] text-gray-600 dark:text-gray-400">View reservations with names and payment status</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button 
+              @click="previousMonth"
+              class="p-1 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors flex-shrink-0"
+              :disabled="loading"
+            >
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+            
+            <h4 class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 px-1">
+              {{ currentMonthName }} {{ currentYear }}
+            </h4>
+            
+            <button 
+              @click="nextMonth"
+              class="p-1 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded transition-colors flex-shrink-0"
+              :disabled="loading"
+            >
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Grid -->
+      <div class="mb-1 sm:mb-2">
+        <!-- Day Headers -->
+        <div class="grid grid-cols-7 gap-0.5 mb-0.5">
+          <div v-for="day in dayHeaders" :key="day" class="text-center text-[9px] sm:text-[10px] font-semibold text-gray-500 dark:text-gray-400 py-0.5">
+            {{ day }}
+          </div>
+        </div>
+        
+        <!-- Calendar Days -->
+        <div v-if="loading" class="grid grid-cols-7 gap-0.5">
+          <div v-for="i in 42" :key="i" 
+               :class="compact ? 'h-5' : 'aspect-square'"
+               class="flex items-center justify-center text-[9px] font-medium rounded border bg-gray-100 dark:bg-zinc-800 animate-pulse">
+            <div class="w-2 h-2 bg-gray-300 dark:bg-zinc-600 rounded"></div>
+          </div>
+        </div>
+        <div v-else class="grid grid-cols-7 gap-0.5">
+          <div 
+            v-for="day in calendarDays" 
+            :key="day.date"
+            :class="[
+              compact ? 'h-16' : 'aspect-square',
+              'rounded border transition-all duration-200 relative overflow-hidden',
+              getDayClasses(day)
+            ]"
+          >
+            <!-- Day Number -->
+            <div class="absolute top-0 left-0.5 text-[8px] sm:text-[9px] font-medium z-10" :class="getDayNumberClass(day)">
+              {{ day.day }}
+            </div>
+            
+            <!-- Reservation Info -->
+            <div v-if="day.reservations && day.reservations.length > 0" class="absolute inset-0 p-0.5 flex flex-col justify-center items-center text-center">
+              <!-- Compact view: show abbreviated names inline -->
+              <template v-if="compact">
+                <div class="flex items-center justify-center gap-0.5">
+                  <span v-for="(reservation, index) in day.reservations" :key="reservation.id" 
+                        class="text-[6px] px-0.5 rounded"
+                        :class="getReservationClass(reservation)">
+                    {{ reservation.contact_name.substring(0, 3) }}
+                  </span>
+                  <span v-if="day.reservations.some(r => r.is_paid)" class="text-green-600 dark:text-green-400 text-[7px]">✓</span>
+                  <span v-else class="text-orange-600 dark:text-orange-400 text-[7px]">$</span>
+                </div>
+              </template>
+              <!-- Normal admin view: show full names stacked -->
+              <template v-else>
+                <div v-for="(reservation, index) in day.reservations" :key="reservation.id" 
+                     class="text-[6px] sm:text-[7px] font-semibold leading-tight mb-0.5 px-0.5 rounded truncate w-full"
+                     :class="getReservationClass(reservation)">
+                  <div class="truncate">{{ reservation.contact_name }}</div>
+                  <div class="flex items-center justify-center">
+                    <span v-if="reservation.is_paid" class="text-green-600 dark:text-green-400 text-[7px]">✓</span>
+                    <span v-else class="text-orange-600 dark:text-orange-400 text-[7px]">$</span>
+                  </div>
+                </div>
+              </template>
+            </div>
+            
+            <!-- Tooltip on hover -->
+            <div v-if="day.reservations && day.reservations.length > 0" 
+                 class="absolute inset-0 opacity-0 hover:opacity-100 bg-black bg-opacity-75 text-white text-[8px] p-1 flex flex-col justify-center items-center transition-opacity z-20 rounded">
+              <div v-for="reservation in day.reservations" :key="reservation.id" class="text-center mb-0.5">
+                <div class="font-semibold text-[9px]">{{ reservation.contact_name }}</div>
+                <div class="text-[8px]">
+                  <span :class="reservation.is_paid ? 'text-green-400' : 'text-orange-400'">
+                    {{ getPaymentStatusText(reservation) }}
+                  </span>
+                </div>
+                <div class="text-[7px] text-gray-300">
+                  ${{ parseFloat(reservation.amount_paid || 0).toFixed(2) }} / ${{ parseFloat(reservation.final_amount || 0).toFixed(2) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Legend -->
+      <div class="mt-1 pt-1 border-t border-gray-200 dark:border-gray-700">
+        <div class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px]">
+          <div class="flex items-center space-x-0.5">
+            <div class="w-2 h-2 bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded"></div>
+            <span class="text-gray-600 dark:text-gray-400">Available</span>
+          </div>
+          <div class="flex items-center space-x-0.5">
+            <div class="w-2 h-2 bg-blue-100 dark:bg-blue-900 border border-blue-300 dark:border-blue-700 rounded"></div>
+            <span class="text-gray-600 dark:text-gray-400">Paid</span>
+          </div>
+          <div class="flex items-center space-x-0.5">
+            <div class="w-2 h-2 bg-orange-100 dark:bg-orange-900 border border-orange-300 dark:border-orange-700 rounded"></div>
+            <span class="text-gray-600 dark:text-gray-400">Unpaid</span>
+          </div>
+          <div class="flex items-center space-x-0.5">
+            <div class="w-2 h-2 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded"></div>
+            <span class="text-gray-600 dark:text-gray-400">Blackout/Camp</span>
+          </div>
+          <div class="flex items-center space-x-0.5">
+            <div class="w-2 h-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded"></div>
+            <span class="text-gray-600 dark:text-gray-400">Past</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend (only show in booking mode) -->
+    <div v-if="!adminMode" class="mt-6 pt-6 border-t border-gray-200">
       <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm">
         <div class="flex items-center space-x-1.5 sm:space-x-2">
           <div class="w-3 h-3 sm:w-4 sm:h-4 bg-green-100 border border-green-300 rounded"></div>
@@ -337,6 +539,16 @@
 <script>
 export default {
   name: 'RentalCalendar',
+  props: {
+    adminMode: {
+      type: Boolean,
+      default: false
+    },
+    compact: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       currentYear: new Date().getFullYear(),
@@ -404,7 +616,11 @@ export default {
         const day = String(date.getDate()).padStart(2, '0')
         const dateString = `${year}-${month}-${day}`
         
-        const dayData = this.availability[dateString] || { available: false, is_past: date < new Date() }
+        const dayData = this.availability[dateString] || { 
+          available: false, 
+          is_past: date < new Date(),
+          reservations: []
+        }
         
         days.push({
           date: dateString,
@@ -413,7 +629,9 @@ export default {
           year: date.getFullYear(),
           available: dayData.available,
           is_past: dayData.is_past,
-          is_current_month: date.getMonth() === this.currentMonth - 1
+          is_current_month: date.getMonth() === this.currentMonth - 1,
+          reservations: this.adminMode ? (dayData.reservations || []) : [],
+          blocked_reason: dayData.blocked_reason || null
         })
       }
       
@@ -424,17 +642,38 @@ export default {
     }
   },
   mounted() {
-    console.log('RentalCalendar mounted, loading availability and pricing...')
-    console.log('Current pricing value:', this.pricing)
+    console.log('RentalCalendar mounted, adminMode:', this.adminMode, 'compact:', this.compact)
     this.loadAvailability()
+    if (!this.adminMode) {
     this.loadPricing()
+    }
   },
   methods: {
     async loadAvailability() {
       this.loading = true
       this.availability = {} // Clear previous data
       try {
-        const response = await fetch(`/api/rental/availability/${this.currentYear}/${this.currentMonth}`)
+        const endpoint = this.adminMode 
+          ? `/admin/api/rental/availability/${this.currentYear}/${this.currentMonth}`
+          : `/api/rental/availability/${this.currentYear}/${this.currentMonth}`
+        
+        const headers = {
+          'Accept': 'application/json'
+        }
+        
+        if (this.adminMode) {
+          headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        }
+        
+        const response = await fetch(endpoint, {
+          headers,
+          credentials: 'same-origin'
+        })
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
         const data = await response.json()
         this.availability = data.availability || {}
       } catch (error) {
@@ -467,7 +706,27 @@ export default {
         const [year, month] = yearMonth.split('-')
         
         try {
-          const response = await fetch(`/api/rental/availability/${year}/${month}`)
+          const endpoint = this.adminMode 
+            ? `/admin/api/rental/availability/${year}/${month}`
+            : `/api/rental/availability/${year}/${month}`
+          
+          const headers = {
+            'Accept': 'application/json'
+          }
+          
+          if (this.adminMode) {
+            headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+          }
+          
+          const response = await fetch(endpoint, {
+            headers,
+            credentials: 'same-origin'
+          })
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+          
           const data = await response.json()
           
           // Collect the availability data
@@ -555,6 +814,29 @@ export default {
     getDayClasses(day) {
       const classes = []
       
+      if (this.adminMode) {
+        // Admin mode styling
+        if (!day.is_current_month) {
+          classes.push('bg-gray-50 dark:bg-zinc-950 border-gray-200 dark:border-zinc-800')
+        } else if (day.is_past) {
+          classes.push('bg-gray-100 dark:bg-zinc-800 border-gray-300 dark:border-zinc-700')
+        } else if (day.reservations && day.reservations.length > 0) {
+          // Check if all reservations are paid
+          const allPaid = day.reservations.every(r => r.is_paid)
+          if (allPaid) {
+            classes.push('bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700')
+          } else {
+            classes.push('bg-orange-100 dark:bg-orange-900 border-orange-300 dark:border-orange-700')
+          }
+        } else if (day.blocked_reason === 'blackout' || day.blocked_reason === 'camp_session') {
+          classes.push('bg-red-100 dark:bg-red-900 border-red-300 dark:border-red-700')
+        } else if (day.available) {
+          classes.push('bg-green-100 dark:bg-green-900 border-green-300 dark:border-green-700')
+        } else {
+          classes.push('bg-gray-100 dark:bg-zinc-800 border-gray-300 dark:border-zinc-700')
+        }
+      } else {
+        // Booking mode styling
       if (!day.is_current_month) {
         classes.push('text-gray-300')
       } else if (day.is_past) {
@@ -565,9 +847,40 @@ export default {
         classes.push('text-green-700 bg-green-100 border border-green-300 hover:bg-green-200')
       } else {
         classes.push('text-red-700 bg-red-100 border border-red-300')
+        }
       }
       
       return classes.join(' ')
+    },
+    getDayNumberClass(day) {
+      if (this.adminMode) {
+        if (!day.is_current_month) {
+          return 'text-gray-400 dark:text-zinc-600'
+        } else if (day.is_past) {
+          return 'text-gray-500 dark:text-zinc-500'
+        } else if (day.reservations && day.reservations.length > 0) {
+          return 'text-gray-900 dark:text-white font-bold'
+        } else {
+          return 'text-gray-700 dark:text-gray-300'
+        }
+      }
+      return ''
+    },
+    getReservationClass(reservation) {
+      if (reservation.is_paid) {
+        return 'bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-100'
+      } else {
+        return 'bg-orange-200 dark:bg-orange-800 text-orange-900 dark:text-orange-100'
+      }
+    },
+    getPaymentStatusText(reservation) {
+      if (reservation.is_paid) {
+        return 'Paid'
+      } else if (reservation.payment_status === 'partial') {
+        return 'Partial Payment'
+      } else {
+        return 'Unpaid'
+      }
     },
     clearSelection() {
       this.selectedDates = []

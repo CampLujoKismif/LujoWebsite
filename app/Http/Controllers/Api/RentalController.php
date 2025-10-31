@@ -139,6 +139,129 @@ class RentalController extends Controller
     }
 
     /**
+     * Get admin availability with reservation details for a specific month.
+     * Returns reservation information including contact name and payment status.
+     */
+    public function getAdminAvailability(Request $request, $year, $month): JsonResponse
+    {
+        $validator = Validator::make(['year' => $year, 'month' => $month], [
+            'year' => 'required|integer|min:2024|max:2030',
+            'month' => 'required|integer|min:1|max:12',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+        
+        // Get the first and last day of the month
+        $startOfMonth = Carbon::create($year, $month, 1)->startOfMonth();
+        $endOfMonth = Carbon::create($year, $month, 1)->endOfMonth();
+        
+        // Get all active reservations that overlap with this month
+        $reservations = RentalReservation::active()
+            ->where(function ($query) use ($startOfMonth, $endOfMonth) {
+                $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
+                      ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth])
+                      ->orWhere(function ($q) use ($startOfMonth, $endOfMonth) {
+                          $q->where('start_date', '<=', $startOfMonth)
+                            ->where('end_date', '>=', $endOfMonth);
+                      });
+            })
+            ->get();
+
+        // Get all active camp sessions that overlap with this month
+        $campSessions = \App\Models\CampInstance::where('is_active', true)
+            ->where(function ($query) use ($startOfMonth, $endOfMonth) {
+                $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
+                      ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth])
+                      ->orWhere(function ($q) use ($startOfMonth, $endOfMonth) {
+                          $q->where('start_date', '<=', $startOfMonth)
+                            ->where('end_date', '>=', $endOfMonth);
+                      });
+            })
+            ->get();
+
+        // Get all active blackout dates that overlap with this month
+        $blackoutDates = RentalBlackoutDate::where('is_active', true)
+            ->where(function ($query) use ($startOfMonth, $endOfMonth) {
+                $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
+                      ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth])
+                      ->orWhere(function ($q) use ($startOfMonth, $endOfMonth) {
+                          $q->where('start_date', '<=', $startOfMonth)
+                            ->where('end_date', '>=', $endOfMonth);
+                      });
+            })
+            ->get();
+
+        // Create availability array for the month with reservation details
+        $availability = [];
+        $currentDate = $startOfMonth->copy();
+        
+        while ($currentDate->lte($endOfMonth)) {
+            $dateString = $currentDate->toDateString();
+            $isAvailable = true;
+            $isPast = $currentDate->isPast();
+            $blockedReason = null;
+            $reservationsForDate = [];
+            
+            // Check reservations for this date
+            foreach ($reservations as $reservation) {
+                if ($currentDate->between($reservation->start_date, $reservation->end_date)) {
+                    $isAvailable = false;
+                    $blockedReason = 'reserved';
+                    $reservationsForDate[] = [
+                        'id' => $reservation->id,
+                        'contact_name' => $reservation->contact_name,
+                        'payment_status' => $reservation->payment_status ?? 'unpaid',
+                        'payment_method' => $reservation->payment_method,
+                        'is_paid' => $reservation->isFullyPaid(),
+                        'final_amount' => $reservation->final_amount,
+                        'amount_paid' => $reservation->amount_paid ?? 0,
+                    ];
+                }
+            }
+            
+            // Check if this date is blocked by any camp session
+            if ($isAvailable) {
+                foreach ($campSessions as $campSession) {
+                    if ($currentDate->between($campSession->start_date, $campSession->end_date)) {
+                        $isAvailable = false;
+                        $blockedReason = 'camp_session';
+                        break;
+                    }
+                }
+            }
+            
+            // Check if this date is blocked by any blackout date
+            if ($isAvailable) {
+                foreach ($blackoutDates as $blackout) {
+                    if ($currentDate->between($blackout->start_date, $blackout->end_date)) {
+                        $isAvailable = false;
+                        $blockedReason = 'blackout';
+                        break;
+                    }
+                }
+            }
+            
+            $availability[$dateString] = [
+                'date' => $dateString,
+                'available' => $isAvailable && !$isPast,
+                'is_past' => $isPast,
+                'blocked_reason' => $blockedReason,
+                'reservations' => $reservationsForDate,
+            ];
+            
+            $currentDate->addDay();
+        }
+
+        return response()->json([
+            'year' => $year,
+            'month' => $month,
+            'availability' => $availability,
+        ]);
+    }
+
+    /**
      * Validate a discount code.
      */
     public function validateDiscountCode(Request $request): JsonResponse

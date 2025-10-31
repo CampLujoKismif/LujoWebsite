@@ -134,6 +134,9 @@ Route::middleware(['auth', 'require.password.change', 'role:system-admin'])->pre
     Route::patch('church-congregations/{id}/restore', [App\Http\Controllers\Admin\ChurchCongregationController::class, 'restore'])->name('church-congregations.restore');
     Route::delete('church-congregations/{id}/force-delete', [App\Http\Controllers\Admin\ChurchCongregationController::class, 'forceDelete'])->name('church-congregations.force-delete');
     Route::get('api/congregations', [App\Http\Controllers\Admin\ChurchCongregationController::class, 'getCongregations'])->name('api.congregations');
+    
+    // Rental admin API routes (route is in admin group, so path is relative to /admin)
+    Route::get('api/rental/availability/{year}/{month}', [App\Http\Controllers\Api\RentalController::class, 'getAdminAvailability'])->name('api.rental.admin.availability');
 });
 
 // Camp dashboard routes (for users with camp access)
