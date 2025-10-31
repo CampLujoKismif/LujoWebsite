@@ -20,12 +20,13 @@ class UserManagement extends Component
     // Search and filters
     public $searchTerm = '';
     public $roleFilter = '';
-    public $statusFilter = '';
+    public $statusFilter = 'all'; // all, active, deleted
 
     // User form properties
     public $showCreateModal = false;
     public $showEditModal = false;
     public $showDeleteModal = false;
+    public $showHardDeleteModal = false;
     public $selectedUser = null;
 
     // User form data
@@ -46,7 +47,7 @@ class UserManagement extends Component
     protected $queryString = [
         'searchTerm' => ['except' => ''],
         'roleFilter' => ['except' => ''],
-        'statusFilter' => ['except' => ''],
+        'statusFilter' => ['except' => 'all'],
     ];
 
     public function mount()
@@ -113,15 +114,32 @@ class UserManagement extends Component
 
     public function createUser()
     {
-        $this->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'selectedRoles' => 'required|array|min:1',
-            'selectedRoles.*' => 'exists:roles,id',
-            'selectedCamps' => 'nullable|array',
-            'selectedCamps.*' => 'exists:camps,id',
-        ]);
+        // Check if a soft-deleted user exists with this email
+        $softDeletedUser = User::onlyTrashed()->where('email', $this->email)->first();
+        
+        if ($softDeletedUser) {
+            // If soft-deleted user exists, validate without unique constraint
+            $this->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255',
+                'password' => ['required', 'confirmed', Rules\Password::defaults()],
+                'selectedRoles' => 'required|array|min:1',
+                'selectedRoles.*' => 'exists:roles,id',
+                'selectedCamps' => 'nullable|array',
+                'selectedCamps.*' => 'exists:camps,id',
+            ]);
+        } else {
+            // Normal validation with unique constraint
+            $this->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => ['required', 'confirmed', Rules\Password::defaults()],
+                'selectedRoles' => 'required|array|min:1',
+                'selectedRoles.*' => 'exists:roles,id',
+                'selectedCamps' => 'nullable|array',
+                'selectedCamps.*' => 'exists:camps,id',
+            ]);
+        }
 
         // Custom validation for camp role assignments
         if (!empty($this->selectedCamps)) {
@@ -139,18 +157,35 @@ class UserManagement extends Component
             }
         }
 
-        DB::transaction(function () {
-            $user = User::create([
-                'name' => $this->name,
-                'email' => $this->email,
-                'password' => Hash::make($this->password),
-                'email_verified_at' => $this->emailVerified ? now() : null,
-            ]);
+        DB::transaction(function () use ($softDeletedUser) {
+            if ($softDeletedUser) {
+                // Restore and update the soft-deleted user
+                $softDeletedUser->restore();
+                $user = $softDeletedUser;
+                $user->update([
+                    'name' => $this->name,
+                    'email' => $this->email,
+                    'password' => Hash::make($this->password),
+                    'email_verified_at' => $this->emailVerified ? now() : null,
+                    'must_change_password' => false,
+                ]);
+            } else {
+                // Create new user
+                $user = User::create([
+                    'name' => $this->name,
+                    'email' => $this->email,
+                    'password' => Hash::make($this->password),
+                    'email_verified_at' => $this->emailVerified ? now() : null,
+                ]);
+            }
 
             // Assign roles - convert IDs to names
             $roleNames = Role::whereIn('id', $this->selectedRoles)->pluck('name')->toArray();
             $user->syncRoles($roleNames);
 
+            // Clear existing camp assignments before assigning new ones
+            $user->campAssignments()->delete();
+            
             // Assign to camps
             $this->assignUserToCamps($user);
 
@@ -161,7 +196,7 @@ class UserManagement extends Component
 
             $this->showCreateModal = false;
             $this->resetUserForm();
-            session()->flash('message', 'User created successfully.');
+            session()->flash('message', $softDeletedUser ? 'User restored and updated successfully.' : 'User created successfully.');
         });
     }
 
@@ -240,6 +275,34 @@ class UserManagement extends Component
         session()->flash('message', 'User deleted successfully.');
     }
 
+    public function openHardDeleteModal($userId)
+    {
+        $this->selectedUser = User::withTrashed()->findOrFail($userId);
+        $this->showHardDeleteModal = true;
+    }
+
+    public function hardDeleteUser()
+    {
+        if ($this->selectedUser->id === auth()->id()) {
+            session()->flash('error', 'You cannot permanently delete your own account.');
+            $this->showHardDeleteModal = false;
+            return;
+        }
+
+        $userName = $this->selectedUser->name;
+        $this->selectedUser->forceDelete();
+        $this->showHardDeleteModal = false;
+        session()->flash('message', "User {$userName} has been permanently deleted.");
+    }
+
+    public function restoreUser($userId)
+    {
+        $user = User::onlyTrashed()->findOrFail($userId);
+        $userName = $user->name;
+        $user->restore();
+        session()->flash('message', "User {$userName} has been restored.");
+    }
+
     private function assignUserToCamps($user)
     {
         foreach ($this->selectedCamps as $campId) {
@@ -273,7 +336,21 @@ class UserManagement extends Component
 
     public function getUsersProperty()
     {
-        $query = User::with(['roles', 'campAssignments.camp']);
+        // Determine if we should include soft-deleted users
+        $includeTrashed = $this->statusFilter === 'deleted' || $this->statusFilter === 'all';
+        
+        if ($includeTrashed) {
+            $query = User::withTrashed()->with(['roles', 'campAssignments.camp']);
+        } else {
+            $query = User::with(['roles', 'campAssignments.camp']);
+        }
+
+        // Filter by soft-deleted status
+        if ($this->statusFilter === 'active') {
+            $query->whereNull('deleted_at');
+        } elseif ($this->statusFilter === 'deleted') {
+            $query->whereNotNull('deleted_at');
+        }
 
         if (!empty($this->searchTerm)) {
             $query->where(function ($q) {
@@ -286,14 +363,6 @@ class UserManagement extends Component
             $query->whereHas('roles', function ($q) {
                 $q->where('name', $this->roleFilter);
             });
-        }
-
-        if (!empty($this->statusFilter)) {
-            if ($this->statusFilter === 'verified') {
-                $query->whereNotNull('email_verified_at');
-            } elseif ($this->statusFilter === 'unverified') {
-                $query->whereNull('email_verified_at');
-            }
         }
 
         return $query->orderBy('name')->paginate(15);

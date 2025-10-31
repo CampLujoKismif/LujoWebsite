@@ -60,16 +60,34 @@ class UserManagementController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'roles' => 'required|array|min:1',
-            'roles.*' => 'exists:roles,id',
-            'camp_assignments' => 'nullable|array',
-            'camp_assignments.*' => 'exists:camps,id',
-            'email_verified' => 'nullable|boolean',
-        ]);
+        // Check if a soft-deleted user exists with this email
+        $softDeletedUser = User::onlyTrashed()->where('email', $request->email)->first();
+        
+        if ($softDeletedUser) {
+            // If soft-deleted user exists, validate without unique constraint
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255',
+                'password' => ['required', 'confirmed', Rules\Password::defaults()],
+                'roles' => 'required|array|min:1',
+                'roles.*' => 'exists:roles,id',
+                'camp_assignments' => 'nullable|array',
+                'camp_assignments.*' => 'exists:camps,id',
+                'email_verified' => 'nullable|boolean',
+            ]);
+        } else {
+            // Normal validation with unique constraint
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => ['required', 'confirmed', Rules\Password::defaults()],
+                'roles' => 'required|array|min:1',
+                'roles.*' => 'exists:roles,id',
+                'camp_assignments' => 'nullable|array',
+                'camp_assignments.*' => 'exists:camps,id',
+                'email_verified' => 'nullable|boolean',
+            ]);
+        }
 
         // Custom validation for camp role assignments
         if (!empty($validated['camp_assignments'])) {
@@ -88,15 +106,32 @@ class UserManagementController extends Controller
             }
         }
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'email_verified_at' => $request->has('email_verified') ? now() : null,
-        ]);
+        if ($softDeletedUser) {
+            // Restore and update the soft-deleted user
+            $softDeletedUser->restore();
+            $user = $softDeletedUser;
+            $user->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'email_verified_at' => $request->has('email_verified') ? now() : null,
+                'must_change_password' => false,
+            ]);
+        } else {
+            // Create new user
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'email_verified_at' => $request->has('email_verified') ? now() : null,
+            ]);
+        }
 
         // Assign roles
         $user->syncRoles($validated['roles']);
+
+        // Clear existing camp assignments before assigning new ones
+        $user->assignedCamps()->detach();
 
         // Assign to camps if specified
         if (!empty($validated['camp_assignments'])) {
@@ -120,7 +155,7 @@ class UserManagementController extends Controller
         }
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'User created successfully.');
+            ->with('success', $softDeletedUser ? 'User restored and updated successfully.' : 'User created successfully.');
     }
 
     /**

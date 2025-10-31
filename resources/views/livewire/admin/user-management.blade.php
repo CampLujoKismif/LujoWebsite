@@ -50,11 +50,11 @@
 
                     <!-- Status Filter -->
                     <div>
-                        <label for="status-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Status</label>
+                        <label for="status-filter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">User Status</label>
                         <select wire:model.live="statusFilter" id="status-filter" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
-                            <option value="">All Users</option>
-                            <option value="verified">Verified</option>
-                            <option value="unverified">Unverified</option>
+                            <option value="all">All Users</option>
+                            <option value="active">Active Users</option>
+                            <option value="deleted">Deleted Users</option>
                         </select>
                     </div>
                 </div>
@@ -120,7 +120,11 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($user->email_verified_at)
+                                    @if($user->trashed())
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+                                            Deleted
+                                        </span>
+                                    @elseif($user->email_verified_at)
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                                             Verified
                                         </span>
@@ -131,9 +135,16 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button wire:click="openEditModal({{ $user->id }})" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</button>
-                                    @if($user->id !== auth()->id())
-                                        <button wire:click="openDeleteModal({{ $user->id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
+                                    @if(!$user->trashed())
+                                        <button wire:click="openEditModal({{ $user->id }})" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</button>
+                                        @if($user->id !== auth()->id())
+                                            <button wire:click="openDeleteModal({{ $user->id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 mr-3">Delete</button>
+                                        @endif
+                                    @else
+                                        @if($user->id !== auth()->id())
+                                            <button wire:click="restoreUser({{ $user->id }})" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 mr-3">Restore</button>
+                                            <button wire:click="openHardDeleteModal({{ $user->id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Permanently Delete</button>
+                                        @endif
                                     @endif
                                 </td>
                             </tr>
@@ -346,7 +357,7 @@
                 <div class="mt-3 text-center">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Delete User</h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                        Are you sure you want to delete <strong>{{ $selectedUser->name ?? '' }}</strong>? This action cannot be undone.
+                        Are you sure you want to soft delete <strong>{{ $selectedUser->name ?? '' }}</strong>? This user will be moved to the deleted users list and can be restored later.
                     </p>
                     
                     <div class="flex justify-center gap-3">
@@ -355,6 +366,29 @@
                         </button>
                         <button wire:click="deleteUser" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
                             Delete User
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Hard Delete User Modal -->
+    @if($showHardDeleteModal)
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-zinc-800">
+                <div class="mt-3 text-center">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Permanently Delete User</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        Are you sure you want to <strong class="text-red-600 dark:text-red-400">permanently delete</strong> <strong>{{ $selectedUser->name ?? '' }}</strong>? This action <strong class="text-red-600 dark:text-red-400">cannot be undone</strong> and all user data will be permanently removed from the system.
+                    </p>
+                    
+                    <div class="flex justify-center gap-3">
+                        <button wire:click="$set('showHardDeleteModal', false)" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700">
+                            Cancel
+                        </button>
+                        <button wire:click="hardDeleteUser" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                            Permanently Delete
                         </button>
                     </div>
                 </div>
