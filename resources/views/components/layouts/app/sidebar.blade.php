@@ -53,6 +53,9 @@
                         <flux:navlist.item icon="building-office" :href="route('dashboard.admin.rentals')" :current="request()->routeIs('dashboard.admin.rentals')" wire:navigate>
                             {{ __('Rental Management') }}
                         </flux:navlist.item>
+                        <flux:navlist.item icon="tag" :href="route('dashboard.admin.discount-codes')" :current="request()->routeIs('dashboard.admin.discount-codes')" wire:navigate>
+                            {{ __('Discount Codes') }}
+                        </flux:navlist.item>
                         <flux:navlist.item icon="arrow-top-right-on-square" :href="route('dashboard.admin.url-forwards')" :current="request()->routeIs('dashboard.admin.url-forwards')" wire:navigate>
                             {{ __('URL Forwards') }}
                         </flux:navlist.item>

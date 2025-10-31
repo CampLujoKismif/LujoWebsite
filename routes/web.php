@@ -53,6 +53,7 @@ Route::middleware(['auth', 'verified', 'require.password.change'])->prefix('dash
         Route::get('/url-forwards', App\Livewire\Admin\UrlForwardManagement::class)->name('url-forwards');
         Route::get('/error-logs', App\Livewire\Admin\ErrorLogViewer::class)->name('error-logs');
         Route::get('/rentals', App\Livewire\Admin\RentalManagement::class)->name('rentals');
+        Route::get('/discount-codes', App\Livewire\Admin\DiscountCodeManagement::class)->name('discount-codes');
         Route::get('/email-templates', App\Livewire\Admin\EmailTemplateManagement::class)->name('email-templates');
     });
     
