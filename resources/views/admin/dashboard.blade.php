@@ -2,8 +2,18 @@
     <div class="flex h-full w-full flex-1 flex-col gap-6 p-6">
         <!-- Admin Header -->
         <div class="bg-gradient-to-r from-purple-600 to-purple-800 rounded-xl p-6 text-white">
-            <h1 class="text-3xl font-bold mb-2">Admin Dashboard</h1>
-            <p class="text-purple-100">System administration and management</p>
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">Admin Dashboard</h1>
+                    <p class="text-purple-100">System administration and management</p>
+                </div>
+                <a href="{{ route('home') }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                    </svg>
+                    Back to Public Site
+                </a>
+            </div>
         </div>
 
         <!-- Quick Stats -->

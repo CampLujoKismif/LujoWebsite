@@ -90,7 +90,7 @@ class CampManagement extends Component
 
     public function openDeleteModal($campId)
     {
-        $this->selectedCamp = Camp::findOrFail($campId);
+        $this->selectedCamp = Camp::with('instances')->findOrFail($campId);
         $this->showDeleteModal = true;
     }
 
@@ -147,16 +147,26 @@ class CampManagement extends Component
 
     public function deleteCamp()
     {
-        // Check if camp has active instances
-        if ($this->selectedCamp->instances()->where('is_active', true)->exists()) {
-            session()->flash('error', 'Cannot delete camp with active sessions.');
-            $this->showDeleteModal = false;
-            return;
-        }
-
-        $this->selectedCamp->delete();
+        $campName = $this->selectedCamp->display_name;
+        
+        // Delete all associated sessions (camp instances)
+        // Using DB transaction to ensure data integrity
+        DB::transaction(function () {
+            // Get all instances associated with this camp
+            $instances = $this->selectedCamp->instances()->get();
+            
+            // Delete all instances (soft delete since both models use SoftDeletes)
+            foreach ($instances as $instance) {
+                $instance->delete();
+            }
+            
+            // Delete the camp (soft delete)
+            $this->selectedCamp->delete();
+        });
+        
         $this->showDeleteModal = false;
-        session()->flash('message', 'Camp deleted successfully.');
+        $this->selectedCamp = null;
+        session()->flash('message', "Camp '{$campName}' and all associated sessions have been deleted successfully.");
     }
 
     public function createSession()

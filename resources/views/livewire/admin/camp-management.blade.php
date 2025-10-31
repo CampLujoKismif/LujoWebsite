@@ -81,9 +81,7 @@
                                 <div class="flex gap-2">
                                     <button wire:click="openEditModal({{ $camp->id }})" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm">Edit</button>
                                     <button wire:click="openSessionModal({{ $camp->id }})" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 text-sm">Add Session</button>
-                                    @if($camp->instances->where('is_active', true)->count() === 0)
-                                        <button wire:click="openDeleteModal({{ $camp->id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm">Delete</button>
-                                    @endif
+                                    <button wire:click="openDeleteModal({{ $camp->id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm">Delete</button>
                                 </div>
                             </div>
                         </div>
@@ -368,7 +366,13 @@
                 <div class="mt-3 text-center">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Delete Camp</h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                        Are you sure you want to delete <strong>{{ $selectedCamp->display_name ?? '' }}</strong>? This action cannot be undone.
+                        Are you sure you want to delete <strong>{{ $selectedCamp->display_name ?? '' }}</strong>? 
+                        @if($selectedCamp && $selectedCamp->instances->count() > 0)
+                            <br><br>
+                            This will also delete <strong>{{ $selectedCamp->instances->count() }} session(s)</strong> associated with this camp.
+                        @endif
+                        <br><br>
+                        This action cannot be undone.
                     </p>
                     
                     <div class="flex justify-center gap-3">

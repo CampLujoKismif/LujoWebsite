@@ -54,6 +54,11 @@
                             {{ __('Rental Management') }}
                         </flux:navlist.item>
                     </flux:navlist.group>
+
+                    <!-- Back to Public Site -->
+                    <flux:navlist.item icon="globe-alt" :href="route('home')" class="mt-4" target="_blank">
+                        {{ __('Back to Public Site') }}
+                    </flux:navlist.item>
                 @endrole
 
                 <!-- Rental Admin Section -->
