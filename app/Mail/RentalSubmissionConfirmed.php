@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\RentalReservation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -10,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class RentalAdminNotification extends Mailable implements ShouldQueue
+class RentalSubmissionConfirmed extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -18,7 +17,7 @@ class RentalAdminNotification extends Mailable implements ShouldQueue
      * Create a new message instance.
      */
     public function __construct(
-        public RentalReservation $reservation
+        public array $submission
     ) {
         //
     }
@@ -28,8 +27,9 @@ class RentalAdminNotification extends Mailable implements ShouldQueue
      */
     public function envelope(): Envelope
     {
+        $subjectName = $this->submission['contact_name'] ?? 'Rental Submission';
         return new Envelope(
-            subject: 'New Rental Reservation - ' . $this->reservation->contact_name,
+            subject: 'Rental Reservation Submitted - Camp LUJO-KISMIF',
         );
     }
 
@@ -39,7 +39,7 @@ class RentalAdminNotification extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            view: 'emails.rentals.admin-notification',
+            view: 'emails.rentals.submission-confirmed',
         );
     }
 
@@ -53,3 +53,4 @@ class RentalAdminNotification extends Mailable implements ShouldQueue
         return [];
     }
 }
+

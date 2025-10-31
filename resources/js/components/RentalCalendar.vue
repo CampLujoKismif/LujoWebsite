@@ -627,8 +627,10 @@ export default {
         this.loading = false
       }
     },
-    goBackToCalendar() {
+    async goBackToCalendar() {
       this.currentStep = 1
+      // Reload availability when going back to calendar to ensure data is fresh
+      await this.loadAvailability()
     },
     proceedToPayment() {
       this.currentStep = 3
@@ -696,13 +698,19 @@ export default {
         console.log('Reservation created successfully:', result)
         
         if (this.selectedPaymentMethod === 'mail_check') {
+          // For mail_check, reservation is created immediately - reload availability
+          await this.reloadAvailabilityForReservedDates()
           alert('Reservation completed! Please mail your check as instructed. You will receive a confirmation email shortly.')
           this.resetForm()
         } else if (this.selectedPaymentMethod === 'credit_card') {
-          // For credit card, show Stripe payment form
+          // For credit_card, reservation is NOT created yet - it will be created after payment
+          // Just show Stripe payment form
           this.reservationCreated = true
-          this.createdReservationId = result.reservation.id
-          console.log('Showing Stripe payment form for reservation ID:', this.createdReservationId)
+          // Note: result.reservation might not exist for credit_card - check if it exists
+          if (result.reservation && result.reservation.id) {
+            this.createdReservationId = result.reservation.id
+          }
+          console.log('Showing Stripe payment form - reservation will be created after payment')
         }
         
       } catch (error) {
@@ -736,6 +744,9 @@ export default {
         const result = await response.json()
         console.log('Payment confirmed:', result)
         
+        // Reload availability to reflect the confirmed reservation
+        await this.reloadAvailabilityForReservedDates()
+        
         alert('Payment successful! Your reservation is confirmed. You will receive a confirmation email shortly.')
         
         // Reset form and return to calendar
@@ -746,8 +757,23 @@ export default {
         alert('Payment was processed but there was an error confirming your reservation. Please contact support with your confirmation number.')
       }
     },
-    resetForm() {
+    async reloadAvailabilityForReservedDates() {
+      // Reload availability for the dates that were reserved
+      if (this.selectedDates.length > 0) {
+        const startDate = this.parseDateString(this.selectedDates[0])
+        const endDate = this.parseDateString(this.selectedDates[this.selectedDates.length - 1])
+        await this.loadAvailabilityForRange(startDate, endDate)
+      }
+      
+      // Also reload current month view
+      await this.loadAvailability()
+    },
+    async resetForm() {
       this.currentStep = 1
+      
+      // Store the selected dates before clearing (for availability reload)
+      const datesWereSelected = this.selectedDates.length > 0
+      
       this.selectedDates = []
       this.formData = {
         number_of_people: 0,
@@ -758,10 +784,19 @@ export default {
       this.reservationCreated = false
       this.createdReservationId = null
       this.processingReservation = false
+      
+      // Reload availability if dates were selected (after reservation)
+      if (datesWereSelected) {
+        await this.loadAvailability()
+      }
     },
-    handleReservationCreated(reservation) {
+    async handleReservationCreated(reservation) {
       // Handle successful reservation creation
       console.log('Reservation created:', reservation)
+      
+      // Reload availability to reflect the new reservation
+      await this.reloadAvailabilityForReservedDates()
+      
       // You can redirect to a success page or show a success message
       alert('Reservation created successfully! You will receive a confirmation email shortly.')
     }

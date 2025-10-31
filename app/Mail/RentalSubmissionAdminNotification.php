@@ -39,7 +39,7 @@ class RentalSubmissionAdminNotification extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.rentals.submission-admin-notification',
+            view: 'emails.rentals.submission-admin-notification',
         );
     }
 

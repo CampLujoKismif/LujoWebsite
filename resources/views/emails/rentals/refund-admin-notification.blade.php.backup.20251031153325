@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rental Refund Notification</title>
+    <title>Rental Refund Processed</title>
     <style>
         body {
             margin: 0;
@@ -20,7 +20,7 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
         .email-header {
-            background: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #fb923c 100%);
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%);
             padding: 30px 40px;
             text-align: center;
         }
@@ -76,6 +76,15 @@
             color: #111827;
             flex-grow: 1;
         }
+        .refund-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            background: #fef3c7;
+            color: #92400e;
+        }
         .status-badge {
             display: inline-block;
             padding: 6px 12px;
@@ -85,58 +94,31 @@
             background: #d1fae5;
             color: #065f46;
         }
-        .refund-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            background: #fef3c7;
-            color: #92400e;
-        }
-        .payment-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        .pricing-box {
-            background: #f0fdf4;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px 0;
-            border: 2px solid #d1fae5;
-        }
         .refund-box {
             background: #fffbeb;
             border-radius: 8px;
-            padding: 20px;
+            padding: 25px;
             margin: 15px 0;
-            border: 2px solid #fef3c7;
-        }
-        .total-amount {
-            font-size: 24px;
-            font-weight: bold;
-            color: #059669;
+            border: 3px solid #fcd34d;
             text-align: center;
-            padding: 10px 0;
         }
         .refund-amount {
-            font-size: 28px;
+            font-size: 36px;
             font-weight: bold;
-            color: #f59e0b;
-            text-align: center;
-            padding: 10px 0;
+            color: #d97706;
+            margin: 10px 0;
         }
-        .balance-amount {
-            font-size: 18px;
+        .refund-type {
+            font-size: 16px;
+            color: #92400e;
             font-weight: 600;
-            color: #dc2626;
-            text-align: center;
-            padding: 5px 0;
+        }
+        .processing-info {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
         }
         .button-container {
             text-align: center;
@@ -169,13 +151,6 @@
             color: #6b7280;
             margin: 0;
         }
-        .discount-box {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 15px;
-            border-radius: 6px;
-            margin: 15px 0;
-        }
         .notes-box {
             background: #fff7ed;
             border-left: 4px solid #f97316;
@@ -194,15 +169,23 @@
     <div class="email-container">
         <div class="email-header">
             <div class="logo-container">
-                <div style="font-size: 32px; font-weight: bold; color: #f97316;">
-                    💰
+                <div style="font-size: 32px; font-weight: bold; color: #10b981;">
+                    🌲
                 </div>
             </div>
-            <h1 class="email-title">Rental Refund Processed</h1>
+            <h1 class="email-title">Refund Processed</h1>
             <p class="email-subtitle">Camp LUJO-KISMIF</p>
         </div>
 
         <div class="email-body">
+            <div class="section">
+                <div class="refund-box">
+                    <div class="refund-type">{{ $isFullRefund ? 'Full Refund' : 'Partial Refund' }}</div>
+                    <div class="refund-amount">${{ number_format($refundAmount, 2) }}</div>
+                    <div style="color: #6b7280; font-size: 14px;">Original Amount: ${{ number_format($reservation->final_amount, 2) }}</div>
+                </div>
+            </div>
+
             <div class="section">
                 <div class="section-title">Reservation Information</div>
                 <div class="info-row">
@@ -254,109 +237,54 @@
             </div>
 
             <div class="section">
-                <div class="section-title">Refund Information</div>
-                <div class="info-row">
-                    <span class="info-label">Refund Status:</span>
-                    <span class="info-value">
-                        <span class="refund-badge">{{ ucfirst($reservation->refund_status ?? 'Processed') }}</span>
-                    </span>
-                </div>
-                @if(isset($reservation->refund_date))
-                <div class="info-row">
-                    <span class="info-label">Refund Date:</span>
-                    <span class="info-value">{{ $reservation->refund_date->format('F j, Y g:i A') }}</span>
-                </div>
-                @else
-                <div class="info-row">
-                    <span class="info-label">Refund Date:</span>
-                    <span class="info-value">{{ now()->format('F j, Y g:i A') }}</span>
-                </div>
-                @endif
-                @if(isset($reservation->refund_method))
-                <div class="info-row">
-                    <span class="info-label">Refund Method:</span>
-                    <span class="info-value">{{ ucfirst(str_replace('_', ' ', $reservation->refund_method)) }}</span>
-                </div>
-                @endif
-                @if(isset($reservation->refund_reason))
-                <div class="info-row">
-                    <span class="info-label">Refund Reason:</span>
-                    <span class="info-value">{{ $reservation->refund_reason }}</span>
-                </div>
-                @endif
-                @if($reservation->stripe_refund_id ?? $reservation->stripe_payment_intent_id)
-                <div class="info-row">
-                    <span class="info-label">Stripe Refund ID:</span>
-                    <span class="info-value" style="font-family: monospace; font-size: 12px;">{{ $reservation->stripe_refund_id ?? 'N/A' }}</span>
-                </div>
-                @endif
-                @if($reservation->stripe_payment_intent_id)
-                <div class="info-row">
-                    <span class="info-label">Original Payment Intent:</span>
-                    <span class="info-value" style="font-family: monospace; font-size: 12px;">{{ $reservation->stripe_payment_intent_id }}</span>
-                </div>
-                @endif
-
-                <div class="refund-box">
+                <div class="section-title">Refund Details</div>
+                <div class="processing-info">
                     <div class="info-row">
-                        <span class="info-label">Original Amount:</span>
-                        <span class="info-value">${{ number_format($reservation->final_amount, 2) }}</span>
+                        <span class="info-label">Processed By:</span>
+                        <span class="info-value">{{ $processedBy }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Amount Refunded:</span>
+                        <span class="info-label">Processed At:</span>
+                        <span class="info-value">{{ now()->format('F j, Y g:i A') }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">New Status:</span>
                         <span class="info-value">
-                            <div class="refund-amount">
-                                ${{ number_format($reservation->refund_amount ?? $reservation->amount_paid, 2) }}
-                            </div>
+                            <span class="refund-badge">{{ ucfirst($reservation->payment_status) }}</span>
                         </span>
                     </div>
-                    @if(($reservation->refund_amount ?? $reservation->amount_paid) < $reservation->amount_paid)
                     <div class="info-row">
-                        <span class="info-label">Partial Refund:</span>
-                        <span class="info-value">${{ number_format($reservation->amount_paid - ($reservation->refund_amount ?? $reservation->amount_paid), 2) }} retained</span>
+                        <span class="info-label">Payment Method:</span>
+                        <span class="info-value">{{ ucfirst(str_replace('_', ' ', $reservation->payment_method)) }}</span>
+                    </div>
+                    @if($reservation->payment_date)
+                    <div class="info-row">
+                        <span class="info-label">Original Payment:</span>
+                        <span class="info-value">{{ $reservation->payment_date->format('F j, Y g:i A') }}</span>
+                    </div>
+                    @endif
+                    @if($reservation->stripe_payment_intent_id)
+                    <div class="info-row">
+                        <span class="info-label">Stripe Intent:</span>
+                        <span class="info-value" style="font-family: monospace; font-size: 12px;">{{ $reservation->stripe_payment_intent_id }}</span>
                     </div>
                     @endif
                 </div>
             </div>
 
-            <div class="section">
-                <div class="section-title">Original Payment Information</div>
-                <div class="info-row">
-                    <span class="info-label">Payment Status:</span>
-                    <span class="info-value">
-                        <span class="payment-badge">{{ ucfirst($reservation->payment_status) }}</span>
-                    </span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Payment Method:</span>
-                    <span class="info-value">{{ ucfirst(str_replace('_', ' ', $reservation->payment_method)) }}</span>
-                </div>
-                @if($reservation->payment_date)
-                <div class="info-row">
-                    <span class="info-label">Original Payment Date:</span>
-                    <span class="info-value">{{ $reservation->payment_date->format('F j, Y g:i A') }}</span>
-                </div>
-                @endif
-                <div class="pricing-box">
-                    <div class="info-row">
-                        <span class="info-label">Total Amount Paid:</span>
-                        <span class="info-value">${{ number_format($reservation->amount_paid, 2) }}</span>
-                    </div>
-                </div>
-            </div>
-
             @if($reservation->discount_code_id)
             <div class="section">
-                <div class="section-title">Discount Applied</div>
-                <div class="discount-box">
-                    <strong>Discount Code:</strong> {{ $reservation->discountCode->code ?? 'N/A' }}
+                <div class="section-title">Discount Information</div>
+                <div class="info-row">
+                    <span class="info-label">Discount Code:</span>
+                    <span class="info-value">{{ $reservation->discountCode->code ?? 'N/A' }}</span>
                 </div>
             </div>
             @endif
 
             @if($reservation->notes)
             <div class="section">
-                <div class="section-title">Special Notes</div>
+                <div class="section-title">Notes</div>
                 <div class="notes-box">
                     {{ $reservation->notes }}
                 </div>

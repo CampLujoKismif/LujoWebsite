@@ -92,6 +92,12 @@ class ErrorLogViewer extends Component
         ]);
     }
 
+    public function refreshLogs()
+    {
+        $this->loadLogEntries();
+        session()->flash('message', 'Log file refreshed successfully.');
+    }
+
     public function loadLogEntries()
     {
         $logPath = storage_path('logs/' . $this->logFile);
@@ -130,7 +136,13 @@ class ErrorLogViewer extends Component
             });
         }
 
+        // Reset array keys after filtering
+        $lines = array_values($lines);
+
         $this->totalLines = count($lines);
+        
+        // Reverse the array to show newest first
+        $lines = array_reverse($lines);
         
         // Paginate the results
         $offset = ($this->currentPage - 1) * $this->linesPerPage;

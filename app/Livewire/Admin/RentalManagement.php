@@ -672,6 +672,13 @@ class RentalManagement extends Component
     {
         // Send refund confirmation email to customer
         try {
+            Log::info('Attempting to send rental refund email to customer', [
+                'reservation_id' => $reservation->id,
+                'email' => $reservation->contact_email,
+                'refund_amount' => $refundAmount,
+                'processed_by' => $processedBy,
+            ]);
+            
             Mail::to($reservation->contact_email)
                 ->send(new RentalRefunded($reservation, $refundAmount, $isFullRefund));
             
@@ -685,12 +692,21 @@ class RentalManagement extends Component
             Log::error('Failed to send rental refund email to customer', [
                 'reservation_id' => $reservation->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
 
         // Send notification emails to rental admins
         try {
             $rentalAdmins = User::role(['rental-admin', 'system-admin'])->get();
+            
+            Log::info('Attempting to send rental refund notification emails to admins', [
+                'reservation_id' => $reservation->id,
+                'admin_count' => $rentalAdmins->count(),
+                'admin_emails' => $rentalAdmins->pluck('email')->toArray(),
+                'refund_amount' => $refundAmount,
+                'processed_by' => $processedBy,
+            ]);
             
             foreach ($rentalAdmins as $admin) {
                 Mail::to($admin->email)
@@ -707,6 +723,7 @@ class RentalManagement extends Component
             Log::error('Failed to send rental refund notification emails to admins', [
                 'reservation_id' => $reservation->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }

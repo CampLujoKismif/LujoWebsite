@@ -7,19 +7,22 @@
     },
     "dependencies": {
         "@vitejs/plugin-vue": "^6.0.1",
+        "@vueup/vue-quill": "^1.2.0",
         "axios": "^1.7.4",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^1.0",
+        "quill": "^2.0.3",
         "vite": "^6.0",
-        "vue": "^3.5.22"
+        "vue": "^3.5.22",
+        "vue-quill-editor": "^3.0.6"
     },
     "optionalDependencies": {
-        "@rollup/rollup-linux-x64-gnu": "4.9.5",
         "@rollup/rollup-linux-arm64-gnu": "4.9.5",
-        "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
+        "@rollup/rollup-linux-x64-gnu": "4.9.5",
         "@tailwindcss/oxide-linux-arm64-gnu": "^4.0.1",
-        "lightningcss-linux-x64-gnu": "^1.29.1",
-        "lightningcss-linux-arm64-gnu": "^1.29.1"
+        "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
+        "lightningcss-linux-arm64-gnu": "^1.29.1",
+        "lightningcss-linux-x64-gnu": "^1.29.1"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.21",

@@ -21,6 +21,7 @@ use Stripe\PaymentMethod;
 use App\Mail\RentalConfirmed;
 use App\Mail\RentalAdminNotification;
 use App\Mail\RentalSubmissionAdminNotification;
+use App\Mail\RentalSubmissionConfirmed;
 use App\Models\User;
 
 class RentalController extends Controller
@@ -378,31 +379,62 @@ class RentalController extends Controller
 
                 DB::commit();
 
+                // Prepare submission data
+                $submission = [
+                    'start_date' => $startDate->toDateString(),
+                    'end_date' => $endDate->toDateString(),
+                    'contact_name' => $reservation->contact_name,
+                    'contact_email' => $reservation->contact_email,
+                    'contact_phone' => $reservation->contact_phone,
+                    'rental_purpose' => $reservation->rental_purpose,
+                    'number_of_people' => $reservation->number_of_people,
+                    'total_amount' => $baseTotal,
+                    'discount_amount' => $discountAmount,
+                    'final_amount' => $finalAmount,
+                    'deposit_amount' => $pricing->deposit_amount,
+                    'payment_method' => 'mail_check',
+                    'notes' => $request->input('notes'),
+                ];
+
+                // Send confirmation email to customer
+                try {
+                    Mail::to($reservation->contact_email)
+                        ->sendNow(new RentalSubmissionConfirmed($submission));
+                    
+                    Log::info('Rental submission confirmation email sent to customer', [
+                        'reservation_id' => $reservation->id,
+                        'email' => $reservation->contact_email,
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send rental submission confirmation email to customer', [
+                        'reservation_id' => $reservation->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
                 // Notify admins of submission (pending check)
                 try {
-                    $admins = User::role(['rental-admin', 'system-admin', 'super_admin'])->get();
-                    $submission = [
-                        'start_date' => $startDate->toDateString(),
-                        'end_date' => $endDate->toDateString(),
-                        'contact_name' => $reservation->contact_name,
-                        'contact_email' => $reservation->contact_email,
-                        'contact_phone' => $reservation->contact_phone,
-                        'rental_purpose' => $reservation->rental_purpose,
-                        'number_of_people' => $reservation->number_of_people,
-                        'total_amount' => $baseTotal,
-                        'discount_amount' => $discountAmount,
-                        'final_amount' => $finalAmount,
-                        'deposit_amount' => $pricing->deposit_amount,
-                        'payment_method' => 'mail_check',
-                        'notes' => $request->input('notes'),
-                    ];
+                    $admins = User::role(['rental-admin', 'system-admin'])->get();
+                    
+                    Log::info('Attempting to send rental submission admin notification emails', [
+                        'reservation_id' => $reservation->id,
+                        'admin_count' => $admins->count(),
+                        'admin_emails' => $admins->pluck('email')->toArray(),
+                    ]);
+                    
                     foreach ($admins as $admin) {
-                        Mail::to($admin->email)->send(new RentalSubmissionAdminNotification($submission));
+                        Mail::to($admin->email)->sendNow(new RentalSubmissionAdminNotification($submission));
                     }
+                    
+                    Log::info('Rental submission admin notification emails sent', [
+                        'reservation_id' => $reservation->id,
+                        'admin_count' => $admins->count(),
+                    ]);
                 } catch (\Exception $e) {
                     Log::error('Failed to send rental submission emails to admins', [
                         'reservation_id' => $reservation->id,
                         'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
                     ]);
                 }
 
@@ -424,30 +456,58 @@ class RentalController extends Controller
             // For credit cards: do NOT create reservation yet
             DB::commit();
 
+            // Prepare submission data
+            $submission = [
+                'start_date' => $startDate->toDateString(),
+                'end_date' => $endDate->toDateString(),
+                'contact_name' => $request->input('contact_name'),
+                'contact_email' => $request->input('contact_email'),
+                'contact_phone' => $request->input('contact_phone'),
+                'rental_purpose' => $request->input('rental_purpose'),
+                'number_of_people' => $request->input('number_of_people'),
+                'total_amount' => $baseTotal,
+                'discount_amount' => $discountAmount,
+                'final_amount' => $finalAmount,
+                'deposit_amount' => $pricing->deposit_amount,
+                'payment_method' => 'credit_card',
+                'notes' => $request->input('notes'),
+            ];
+
+            // Send confirmation email to customer
+            try {
+                Mail::to($request->input('contact_email'))
+                    ->sendNow(new RentalSubmissionConfirmed($submission));
+                
+                Log::info('Rental submission confirmation email sent to customer (card)', [
+                    'email' => $request->input('contact_email'),
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send rental submission confirmation email to customer (card)', [
+                    'email' => $request->input('contact_email'),
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             // Notify admins of submission (awaiting online payment)
             try {
-                $admins = User::role(['rental-admin', 'system-admin', 'super_admin'])->get();
-                $submission = [
-                    'start_date' => $startDate->toDateString(),
-                    'end_date' => $endDate->toDateString(),
-                    'contact_name' => $request->input('contact_name'),
-                    'contact_email' => $request->input('contact_email'),
-                    'contact_phone' => $request->input('contact_phone'),
-                    'rental_purpose' => $request->input('rental_purpose'),
-                    'number_of_people' => $request->input('number_of_people'),
-                    'total_amount' => $baseTotal,
-                    'discount_amount' => $discountAmount,
-                    'final_amount' => $finalAmount,
-                    'deposit_amount' => $pricing->deposit_amount,
-                    'payment_method' => 'credit_card',
-                    'notes' => $request->input('notes'),
-                ];
+                $admins = User::role(['rental-admin', 'system-admin'])->get();
+                
+                Log::info('Attempting to send rental submission admin notification emails (card)', [
+                    'admin_count' => $admins->count(),
+                    'admin_emails' => $admins->pluck('email')->toArray(),
+                ]);
+                
                 foreach ($admins as $admin) {
-                    Mail::to($admin->email)->send(new RentalSubmissionAdminNotification($submission));
+                    Mail::to($admin->email)->sendNow(new RentalSubmissionAdminNotification($submission));
                 }
+                
+                Log::info('Rental submission admin notification emails sent (card)', [
+                    'admin_count' => $admins->count(),
+                ]);
             } catch (\Exception $e) {
                 Log::error('Failed to send rental submission emails to admins (card)', [
                     'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
                 ]);
             }
 
@@ -690,8 +750,13 @@ class RentalController extends Controller
 
                     // Send confirmation email to customer
                     try {
+                        Log::info('Attempting to send rental confirmation email to customer', [
+                            'reservation_id' => $reservation->id,
+                            'email' => $reservation->contact_email,
+                        ]);
+                        
                         Mail::to($reservation->contact_email)
-                            ->send(new RentalConfirmed($reservation));
+                            ->sendNow(new RentalConfirmed($reservation));
                         
                         Log::info('Rental confirmation email sent to customer', [
                             'reservation_id' => $reservation->id,
@@ -701,16 +766,23 @@ class RentalController extends Controller
                         Log::error('Failed to send rental confirmation email to customer', [
                             'reservation_id' => $reservation->id,
                             'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString(),
                         ]);
                     }
 
                     // Send notification emails to rental admins
                     try {
-                        $rentalAdmins = User::role(['rental-admin', 'system-admin', 'super_admin'])->get();
+                        $rentalAdmins = User::role(['rental-admin', 'system-admin'])->get();
+                        
+                        Log::info('Attempting to send rental notification emails to admins', [
+                            'reservation_id' => $reservation->id,
+                            'admin_count' => $rentalAdmins->count(),
+                            'admin_emails' => $rentalAdmins->pluck('email')->toArray(),
+                        ]);
                         
                         foreach ($rentalAdmins as $admin) {
                             Mail::to($admin->email)
-                                ->send(new RentalAdminNotification($reservation));
+                                ->sendNow(new RentalAdminNotification($reservation));
                         }
                         
                         Log::info('Rental notification emails sent to admins', [
@@ -721,6 +793,7 @@ class RentalController extends Controller
                         Log::error('Failed to send rental notification emails to admins', [
                             'reservation_id' => $reservation->id,
                             'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString(),
                         ]);
                     }
 

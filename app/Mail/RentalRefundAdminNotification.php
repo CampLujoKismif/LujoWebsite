@@ -42,7 +42,7 @@ class RentalRefundAdminNotification extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.rentals.refund-admin-notification',
+            view: 'emails.rentals.refund-admin-notification',
         );
     }
 

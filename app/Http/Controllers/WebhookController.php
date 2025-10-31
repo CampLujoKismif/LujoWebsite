@@ -150,25 +150,49 @@ class WebhookController extends Controller
         
         // Send confirmation email to customer
         try {
+            Log::info('Attempting to send rental confirmation email to customer (webhook)', [
+                'reservation_id' => $reservation->id,
+                'email' => $reservation->contact_email,
+            ]);
+            
             Mail::to($reservation->contact_email)
-                ->send(new RentalConfirmed($reservation));
+                ->sendNow(new RentalConfirmed($reservation));
+            
+            Log::info('Rental confirmation email sent to customer (webhook)', [
+                'reservation_id' => $reservation->id,
+                'email' => $reservation->contact_email,
+            ]);
         } catch (\Exception $e) {
             Log::error('Failed to send rental confirmation email to customer (webhook)', [
                 'reservation_id' => $reservation->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
 
         // Send notification emails to admins
         try {
-            $admins = User::role(['rental-admin', 'system-admin', 'super_admin'])->get();
+            $admins = User::role(['rental-admin', 'system-admin'])->get();
+            
+            Log::info('Attempting to send rental notification emails to admins (webhook)', [
+                'reservation_id' => $reservation->id,
+                'admin_count' => $admins->count(),
+                'admin_emails' => $admins->pluck('email')->toArray(),
+            ]);
+            
             foreach ($admins as $admin) {
-                Mail::to($admin->email)->send(new RentalAdminNotification($reservation));
+                Mail::to($admin->email)->sendNow(new RentalAdminNotification($reservation));
             }
+            
+            Log::info('Rental notification emails sent to admins (webhook)', [
+                'reservation_id' => $reservation->id,
+                'admin_count' => $admins->count(),
+            ]);
         } catch (\Exception $e) {
             Log::error('Failed to send rental admin notification (webhook)', [
                 'reservation_id' => $reservation->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
@@ -274,8 +298,14 @@ class WebhookController extends Controller
 
         // Send refund confirmation email to customer
         try {
+            Log::info('Attempting to send rental refund email to customer', [
+                'reservation_id' => $reservation->id,
+                'email' => $reservation->contact_email,
+                'refund_amount' => $refundAmount,
+            ]);
+            
             Mail::to($reservation->contact_email)
-                ->send(new RentalRefunded($reservation, $refundAmount, $isFullRefund));
+                ->sendNow(new RentalRefunded($reservation, $refundAmount, $isFullRefund));
             
             Log::info('Rental refund email sent to customer', [
                 'reservation_id' => $reservation->id,
@@ -286,16 +316,24 @@ class WebhookController extends Controller
             Log::error('Failed to send rental refund email to customer', [
                 'reservation_id' => $reservation->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
 
         // Send notification emails to rental admins
         try {
-            $rentalAdmins = User::role(['rental-admin', 'system-admin', 'super_admin'])->get();
+            $rentalAdmins = User::role(['rental-admin', 'system-admin'])->get();
+            
+            Log::info('Attempting to send rental refund notification emails to admins', [
+                'reservation_id' => $reservation->id,
+                'admin_count' => $rentalAdmins->count(),
+                'admin_emails' => $rentalAdmins->pluck('email')->toArray(),
+                'refund_amount' => $refundAmount,
+            ]);
             
             foreach ($rentalAdmins as $admin) {
                 Mail::to($admin->email)
-                    ->send(new RentalRefundAdminNotification($reservation, $refundAmount, $isFullRefund, 'Stripe Webhook'));
+                    ->sendNow(new RentalRefundAdminNotification($reservation, $refundAmount, $isFullRefund, 'Stripe Webhook'));
             }
             
             Log::info('Rental refund notification emails sent to admins', [
@@ -307,6 +345,7 @@ class WebhookController extends Controller
             Log::error('Failed to send rental refund notification emails to admins', [
                 'reservation_id' => $reservation->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
