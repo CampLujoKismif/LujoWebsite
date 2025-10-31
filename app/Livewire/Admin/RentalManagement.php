@@ -443,15 +443,21 @@ class RentalManagement extends Component
             'discountData.description' => 'nullable|string|max:255',
         ]);
 
+        // Normalize empty strings to null for nullable fields to avoid SQL strict errors
+        $maxUses = $this->discountData['max_uses'] === '' ? null : $this->discountData['max_uses'];
+        $validFrom = $this->discountData['valid_from'] === '' ? null : $this->discountData['valid_from'];
+        $validUntil = $this->discountData['valid_until'] === '' ? null : $this->discountData['valid_until'];
+        $description = $this->discountData['description'] === '' ? null : $this->discountData['description'];
+
         DiscountCode::create([
             'code' => strtoupper($this->discountData['code']),
             'type' => $this->discountData['type'],
             'discount_type' => $this->discountData['discount_type'],
             'discount_value' => $this->discountData['discount_value'],
-            'max_uses' => $this->discountData['max_uses'],
-            'valid_from' => $this->discountData['valid_from'],
-            'valid_until' => $this->discountData['valid_until'],
-            'description' => $this->discountData['description'],
+            'max_uses' => $maxUses,
+            'valid_from' => $validFrom,
+            'valid_until' => $validUntil,
+            'description' => $description,
             'is_active' => true,
         ]);
 

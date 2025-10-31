@@ -13,6 +13,8 @@ use Stripe\Webhook;
 use Stripe\Exception\SignatureVerificationException;
 use App\Mail\RentalRefunded;
 use App\Mail\RentalRefundAdminNotification;
+use App\Mail\RentalConfirmed;
+use App\Mail\RentalAdminNotification;
 
 class WebhookController extends Controller
 {
@@ -145,9 +147,30 @@ class WebhookController extends Controller
             'payment_intent_id' => $paymentIntent->id,
             'amount' => $paymentIntent->amount / 100,
         ]);
+        
+        // Send confirmation email to customer
+        try {
+            Mail::to($reservation->contact_email)
+                ->send(new RentalConfirmed($reservation));
+        } catch (\Exception $e) {
+            Log::error('Failed to send rental confirmation email to customer (webhook)', [
+                'reservation_id' => $reservation->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
-        // TODO: Send confirmation email to customer
-        // TODO: Send notification to admin
+        // Send notification emails to admins
+        try {
+            $admins = User::role(['rental-admin', 'system-admin', 'super_admin'])->get();
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new RentalAdminNotification($reservation));
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to send rental admin notification (webhook)', [
+                'reservation_id' => $reservation->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -268,7 +291,7 @@ class WebhookController extends Controller
 
         // Send notification emails to rental admins
         try {
-            $rentalAdmins = User::role(['rental-admin', 'system-admin'])->get();
+            $rentalAdmins = User::role(['rental-admin', 'system-admin', 'super_admin'])->get();
             
             foreach ($rentalAdmins as $admin) {
                 Mail::to($admin->email)

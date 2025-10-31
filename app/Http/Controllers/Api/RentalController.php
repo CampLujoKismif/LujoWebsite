@@ -20,6 +20,7 @@ use Stripe\Customer;
 use Stripe\PaymentMethod;
 use App\Mail\RentalConfirmed;
 use App\Mail\RentalAdminNotification;
+use App\Mail\RentalSubmissionAdminNotification;
 use App\Models\User;
 
 class RentalController extends Controller
@@ -349,47 +350,117 @@ class RentalController extends Controller
 
             $finalAmount = $baseTotal - $discountAmount;
 
-            // Determine status based on payment method
+            // Determine flow based on payment method
             $paymentMethod = $request->input('payment_method');
-            $status = $paymentMethod === 'mail_check' ? 'pending' : 'confirmed';
-            
-            // Create reservation
-            $reservation = RentalReservation::create([
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'contact_name' => $request->input('contact_name'),
-                'contact_email' => $request->input('contact_email'),
-                'contact_phone' => $request->input('contact_phone'),
-                'rental_purpose' => $request->input('rental_purpose'),
-                'number_of_people' => $request->input('number_of_people'),
-                'total_amount' => $baseTotal,
-                'deposit_amount' => $pricing->deposit_amount,
-                'discount_code_id' => $request->input('discount_code_id'),
-                'final_amount' => $finalAmount,
-                'status' => $status,
-                'notes' => $request->input('notes', 'Payment method: ' . $paymentMethod),
-            ]);
 
-            // Increment discount code usage if used
-            if ($request->input('discount_code_id')) {
-                $discountCode->incrementUsage();
+            if ($paymentMethod === 'mail_check') {
+                // Create reservation immediately for check payments
+                $reservation = RentalReservation::create([
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                    'contact_name' => $request->input('contact_name'),
+                    'contact_email' => $request->input('contact_email'),
+                    'contact_phone' => $request->input('contact_phone'),
+                    'rental_purpose' => $request->input('rental_purpose'),
+                    'number_of_people' => $request->input('number_of_people'),
+                    'total_amount' => $baseTotal,
+                    'deposit_amount' => $pricing->deposit_amount,
+                    'discount_code_id' => $request->input('discount_code_id'),
+                    'final_amount' => $finalAmount,
+                    'status' => 'pending',
+                    'notes' => $request->input('notes', 'Payment method: mail_check'),
+                ]);
+
+                // Increment discount code usage if used
+                if ($request->input('discount_code_id')) {
+                    $discountCode->incrementUsage();
+                }
+
+                DB::commit();
+
+                // Notify admins of submission (pending check)
+                try {
+                    $admins = User::role(['rental-admin', 'system-admin', 'super_admin'])->get();
+                    $submission = [
+                        'start_date' => $startDate->toDateString(),
+                        'end_date' => $endDate->toDateString(),
+                        'contact_name' => $reservation->contact_name,
+                        'contact_email' => $reservation->contact_email,
+                        'contact_phone' => $reservation->contact_phone,
+                        'rental_purpose' => $reservation->rental_purpose,
+                        'number_of_people' => $reservation->number_of_people,
+                        'total_amount' => $baseTotal,
+                        'discount_amount' => $discountAmount,
+                        'final_amount' => $finalAmount,
+                        'deposit_amount' => $pricing->deposit_amount,
+                        'payment_method' => 'mail_check',
+                        'notes' => $request->input('notes'),
+                    ];
+                    foreach ($admins as $admin) {
+                        Mail::to($admin->email)->send(new RentalSubmissionAdminNotification($submission));
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to send rental submission emails to admins', [
+                        'reservation_id' => $reservation->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'reservation' => [
+                        'id' => $reservation->id,
+                        'start_date' => $reservation->start_date->toDateString(),
+                        'end_date' => $reservation->end_date->toDateString(),
+                        'contact_name' => $reservation->contact_name,
+                        'contact_email' => $reservation->contact_email,
+                        'number_of_people' => $reservation->number_of_people,
+                        'final_amount' => $reservation->final_amount,
+                        'status' => $reservation->status,
+                    ],
+                ], 201);
             }
 
+            // For credit cards: do NOT create reservation yet
             DB::commit();
+
+            // Notify admins of submission (awaiting online payment)
+            try {
+                $admins = User::role(['rental-admin', 'system-admin', 'super_admin'])->get();
+                $submission = [
+                    'start_date' => $startDate->toDateString(),
+                    'end_date' => $endDate->toDateString(),
+                    'contact_name' => $request->input('contact_name'),
+                    'contact_email' => $request->input('contact_email'),
+                    'contact_phone' => $request->input('contact_phone'),
+                    'rental_purpose' => $request->input('rental_purpose'),
+                    'number_of_people' => $request->input('number_of_people'),
+                    'total_amount' => $baseTotal,
+                    'discount_amount' => $discountAmount,
+                    'final_amount' => $finalAmount,
+                    'deposit_amount' => $pricing->deposit_amount,
+                    'payment_method' => 'credit_card',
+                    'notes' => $request->input('notes'),
+                ];
+                foreach ($admins as $admin) {
+                    Mail::to($admin->email)->send(new RentalSubmissionAdminNotification($submission));
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to send rental submission emails to admins (card)', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
-                'reservation' => [
-                    'id' => $reservation->id,
-                    'start_date' => $reservation->start_date->toDateString(),
-                    'end_date' => $reservation->end_date->toDateString(),
-                    'contact_name' => $reservation->contact_name,
-                    'contact_email' => $reservation->contact_email,
-                    'number_of_people' => $reservation->number_of_people,
-                    'final_amount' => $reservation->final_amount,
-                    'status' => $reservation->status,
+                'message' => 'Submission received. Proceed to payment to finalize your reservation.',
+                'pricing' => [
+                    'total_amount' => $baseTotal,
+                    'discount_amount' => $discountAmount,
+                    'final_amount' => $finalAmount,
+                    'deposit_amount' => $pricing->deposit_amount,
                 ],
-            ], 201);
+            ], 202);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -635,7 +706,7 @@ class RentalController extends Controller
 
                     // Send notification emails to rental admins
                     try {
-                        $rentalAdmins = User::role(['rental-admin', 'system-admin'])->get();
+                        $rentalAdmins = User::role(['rental-admin', 'system-admin', 'super_admin'])->get();
                         
                         foreach ($rentalAdmins as $admin) {
                             Mail::to($admin->email)
