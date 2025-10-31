@@ -29,6 +29,9 @@ Route::middleware('auth')->group(function () {
 
     Volt::route('confirm-password', 'auth.confirm-password')
         ->name('password.confirm');
+    
+    Volt::route('force-change-password', 'auth.force-change-password')
+        ->name('password.force-change');
 });
 
 Route::post('logout', App\Livewire\Actions\Logout::class)

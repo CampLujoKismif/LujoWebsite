@@ -191,8 +191,10 @@ class UserManagementController extends Controller
         // Handle email verification
         if ($request->has('email_verified') && !$user->email_verified_at) {
             $updateData['email_verified_at'] = now();
+            $updateData['must_change_password'] = true;
         } elseif (!$request->has('email_verified') && $user->email_verified_at) {
             $updateData['email_verified_at'] = null;
+            $updateData['must_change_password'] = false;
         }
 
         $user->update($updateData);

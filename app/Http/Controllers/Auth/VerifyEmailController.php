@@ -30,9 +30,11 @@ class VerifyEmailController extends Controller
 
         // Mark email as verified
         if ($user->markEmailAsVerified()) {
+            // Set flag to force password change
+            $user->update(['must_change_password' => true]);
             event(new Verified($user));
         }
 
-        return redirect()->intended(route('dashboard.home', absolute: false).'?verified=1');
+        return redirect()->route('password.force-change');
     }
 }

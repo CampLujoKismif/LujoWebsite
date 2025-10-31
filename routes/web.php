@@ -37,7 +37,7 @@ Route::get('/rentals', function () {
 })->name('rentals');
 
 // Dashboard routes with role-based routing
-Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')->group(function () {
+Route::middleware(['auth', 'verified', 'require.password.change'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', App\Livewire\Dashboard\Index::class)->name('home');
     
     // Admin Dashboard
@@ -83,7 +83,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
             });
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'require.password.change'])->group(function () {
     Route::redirect('settings', 'settings/profile');
 
     Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
@@ -92,7 +92,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Admin routes (system admin only)
-Route::middleware(['auth', 'role:system-admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'require.password.change', 'role:system-admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\AdminDashboardController::class, 'index'])->name('dashboard');
     
     // Camp management
@@ -135,7 +135,7 @@ Route::middleware(['auth', 'role:system-admin'])->prefix('admin')->name('admin.'
 });
 
 // Camp dashboard routes (for users with camp access)
-Route::middleware(['auth'])->prefix('camps')->name('camps.')->group(function () {
+Route::middleware(['auth', 'require.password.change'])->prefix('camps')->name('camps.')->group(function () {
     Route::get('{camp}/dashboard', [App\Http\Controllers\CampController::class, 'dashboard'])->name('dashboard');
     Route::get('{camp}/staff', [App\Http\Controllers\CampController::class, 'staff'])->name('staff');
     Route::get('{camp}/activities', [App\Http\Controllers\CampController::class, 'activities'])->name('activities');

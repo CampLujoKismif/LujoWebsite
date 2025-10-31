@@ -205,8 +205,10 @@ class UserManagement extends Component
 
             if ($this->emailVerified && !$this->selectedUser->email_verified_at) {
                 $updateData['email_verified_at'] = now();
+                $updateData['must_change_password'] = true;
             } elseif (!$this->emailVerified && $this->selectedUser->email_verified_at) {
                 $updateData['email_verified_at'] = null;
+                $updateData['must_change_password'] = false;
             }
 
             $this->selectedUser->update($updateData);
