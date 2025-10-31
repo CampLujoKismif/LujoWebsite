@@ -26,6 +26,9 @@
                         <flux:navlist.item icon="users" :href="route('dashboard.admin.users')" :current="request()->routeIs('dashboard.admin.users')" wire:navigate>
                             {{ __('User Management') }}
                         </flux:navlist.item>
+                        <flux:navlist.item icon="user-group" :href="route('dashboard.admin.roles')" :current="request()->routeIs('dashboard.admin.roles')" wire:navigate>
+                            {{ __('Role Management') }}
+                        </flux:navlist.item>
                         <flux:navlist.item icon="building-storefront" :href="route('dashboard.admin.camps')" :current="request()->routeIs('dashboard.admin.camps')" wire:navigate>
                             {{ __('Camp Management') }}
                         </flux:navlist.item>
@@ -46,6 +49,15 @@
                         </flux:navlist.item>
                         <flux:navlist.item icon="building-office" :href="route('dashboard.admin.rentals')" :current="request()->routeIs('dashboard.admin.rentals')" wire:navigate>
                             {{ __('Rental Management') }}
+                        </flux:navlist.item>
+                    </flux:navlist.group>
+                @endrole
+
+                <!-- Rental Admin Section -->
+                @role('rental-admin')
+                    <flux:navlist.group :heading="__('Rental Management')" class="grid">
+                        <flux:navlist.item icon="building-office" :href="route('dashboard.rental-admin.index')" :current="request()->routeIs('dashboard.rental-admin.*')" wire:navigate>
+                            {{ __('Rental Dashboard') }}
                         </flux:navlist.item>
                     </flux:navlist.group>
                 @endrole

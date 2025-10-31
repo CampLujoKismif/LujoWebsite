@@ -107,15 +107,18 @@
                                     <div class="text-sm text-gray-900 dark:text-white">
                                         @if($user->campAssignments->count() > 0)
                                             @foreach($user->campAssignments as $assignment)
-                                                <div class="flex items-center gap-2">
-                                                    <span class="text-sm">{{ $assignment->camp->name }}</span>
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <span class="text-xs font-medium">{{ $assignment->camp->display_name }}</span>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">
+                                                        {{ $assignment->role->display_name ?? 'No Role' }}
+                                                    </span>
                                                     @if($assignment->is_primary)
-                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Primary</span>
+                                                        <span class="inline-flex items-center px-1 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Primary</span>
                                                     @endif
                                                 </div>
                                             @endforeach
                                         @else
-                                            <span class="text-gray-400 dark:text-gray-500">No assignments</span>
+                                            <span class="text-gray-400 dark:text-gray-500 text-xs">No assignments</span>
                                         @endif
                                     </div>
                                 </td>
@@ -221,26 +224,28 @@
 
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Camp Assignments</label>
-                            @foreach($camps as $camp)
-                                <div class="flex items-center gap-2 mb-2">
-                                    <input type="checkbox" wire:model="selectedCamps" value="{{ $camp->id }}" class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:bg-zinc-800 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ $camp->name }}</span>
-                                    
-                                    @if(in_array($camp->id, $selectedCamps))
-                                        <select wire:model="campRoles.{{ $camp->id }}" class="ml-2 text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                                            <option value="">Select Role</option>
-                                            @foreach($roles as $role)
-                                                <option value="{{ $role->id }}">{{ ucfirst($role->name) }}</option>
-                                            @endforeach
-                                        </select>
+                            <div class="max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-2">
+                                @foreach($camps as $camp)
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <input type="checkbox" wire:model.live="selectedCamps" value="{{ $camp->id }}" class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:bg-zinc-800 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300 w-32">{{ $camp->display_name }}</span>
                                         
-                                        <label class="flex items-center ml-2">
-                                            <input type="checkbox" wire:model="primaryCamps" value="{{ $camp->id }}" class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:bg-zinc-800 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                            <span class="ml-1 text-xs text-gray-600 dark:text-gray-400">Primary</span>
-                                        </label>
-                                    @endif
-                                </div>
-                            @endforeach
+                                        @if(in_array($camp->id, $selectedCamps))
+                                            <select wire:model="campRoles.{{ $camp->id }}" class="ml-2 text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white flex-1">
+                                                <option value="">Select Role</option>
+                                                @foreach($availableCampRoles as $role)
+                                                    <option value="{{ $role->id }}">{{ $role->display_name }}</option>
+                                                @endforeach
+                                            </select>
+                                            
+                                            <label class="flex items-center ml-2">
+                                                <input type="checkbox" wire:model="primaryCamps" value="{{ $camp->id }}" class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:bg-zinc-800 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                <span class="ml-1 text-xs text-gray-600 dark:text-gray-400">Primary</span>
+                                            </label>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
                             @error('campRoles') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
@@ -313,26 +318,28 @@
 
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Camp Assignments</label>
-                            @foreach($camps as $camp)
-                                <div class="flex items-center gap-2 mb-2">
-                                    <input type="checkbox" wire:model="selectedCamps" value="{{ $camp->id }}" class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:bg-zinc-800 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ $camp->name }}</span>
-                                    
-                                    @if(in_array($camp->id, $selectedCamps))
-                                        <select wire:model="campRoles.{{ $camp->id }}" class="ml-2 text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                                            <option value="">Select Role</option>
-                                            @foreach($roles as $role)
-                                                <option value="{{ $role->id }}">{{ ucfirst($role->name) }}</option>
-                                            @endforeach
-                                        </select>
+                            <div class="max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-2">
+                                @foreach($camps as $camp)
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <input type="checkbox" wire:model.live="selectedCamps" value="{{ $camp->id }}" class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:bg-zinc-800 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300 w-32">{{ $camp->display_name }}</span>
                                         
-                                        <label class="flex items-center ml-2">
-                                            <input type="checkbox" wire:model="primaryCamps" value="{{ $camp->id }}" class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:bg-zinc-800 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                            <span class="ml-1 text-xs text-gray-600 dark:text-gray-400">Primary</span>
-                                        </label>
-                                    @endif
-                                </div>
-                            @endforeach
+                                        @if(in_array($camp->id, $selectedCamps))
+                                            <select wire:model="campRoles.{{ $camp->id }}" class="ml-2 text-sm border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white flex-1">
+                                                <option value="">Select Role</option>
+                                                @foreach($availableCampRoles as $role)
+                                                    <option value="{{ $role->id }}">{{ $role->display_name }}</option>
+                                                @endforeach
+                                            </select>
+                                            
+                                            <label class="flex items-center ml-2">
+                                                <input type="checkbox" wire:model="primaryCamps" value="{{ $camp->id }}" class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 dark:bg-zinc-800 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                                <span class="ml-1 text-xs text-gray-600 dark:text-gray-400">Primary</span>
+                                            </label>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
                             @error('campRoles') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 

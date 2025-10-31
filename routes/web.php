@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified', 'require.password.change'])->prefix('dash
     Route::middleware(['role:system-admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', App\Livewire\Admin\Dashboard::class)->name('index');
         Route::get('/users', App\Livewire\Admin\UserManagement::class)->name('users');
+        Route::get('/roles', App\Livewire\Admin\RoleManagement::class)->name('roles');
         Route::get('/camps', App\Livewire\Admin\CampManagement::class)->name('camps');
         Route::get('/church-congregations', App\Livewire\Admin\ChurchCongregationManagement::class)->name('church-congregations');
         Route::get('/form-templates', App\Livewire\Admin\FormTemplateManagement::class)->name('form-templates');

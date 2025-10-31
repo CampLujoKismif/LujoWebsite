@@ -78,6 +78,13 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <!-- Session Status -->
     <x-auth-session-status class="text-center" :status="session('status')" />
+    
+    <!-- Success Message -->
+    @if (session('message'))
+        <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded text-center">
+            {{ session('message') }}
+        </div>
+    @endif
 
     <form wire:submit="login" class="flex flex-col gap-6">
         <!-- Email Address -->

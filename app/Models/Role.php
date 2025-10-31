@@ -16,11 +16,53 @@ class Role extends Model
         'display_name',
         'description',
         'is_admin',
+        'type',
     ];
 
     protected $casts = [
         'is_admin' => 'boolean',
     ];
+
+    /**
+     * Role type constants
+     */
+    const TYPE_WEB_ACCESS = 'web_access';
+    const TYPE_CAMP_SESSION = 'camp_session';
+
+    /**
+     * Get all role types
+     */
+    public static function getTypes(): array
+    {
+        return [
+            self::TYPE_WEB_ACCESS => 'Web Access Role',
+            self::TYPE_CAMP_SESSION => 'Camp Session Role',
+        ];
+    }
+
+    /**
+     * Scope a query to only include roles of a specific type.
+     */
+    public function scopeOfType($query, string $type)
+    {
+        return $query->where('type', $type);
+    }
+
+    /**
+     * Scope a query to only include web access roles.
+     */
+    public function scopeWebAccess($query)
+    {
+        return $query->where('type', self::TYPE_WEB_ACCESS);
+    }
+
+    /**
+     * Scope a query to only include camp session roles.
+     */
+    public function scopeCampSession($query)
+    {
+        return $query->where('type', self::TYPE_CAMP_SESSION);
+    }
 
     /**
      * Get the permissions for this role.
@@ -35,7 +77,8 @@ class Role extends Model
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'user_roles');
+        return $this->belongsToMany(User::class, 'user_roles', 'role_id', 'model_id')
+            ->where('user_roles.model_type', User::class);
     }
 
     /**

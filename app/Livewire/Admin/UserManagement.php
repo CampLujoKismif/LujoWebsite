@@ -20,7 +20,7 @@ class UserManagement extends Component
     // Search and filters
     public $searchTerm = '';
     public $roleFilter = '';
-    public $statusFilter = 'all'; // all, active, deleted
+    public $statusFilter = 'active'; // all, active, deleted
 
     // User form properties
     public $showCreateModal = false;
@@ -42,12 +42,13 @@ class UserManagement extends Component
 
     // Available data
     public $roles = [];
+    public $availableCampRoles = [];
     public $camps = [];
 
     protected $queryString = [
         'searchTerm' => ['except' => ''],
         'roleFilter' => ['except' => ''],
-        'statusFilter' => ['except' => 'all'],
+        'statusFilter' => ['except' => 'active'],
     ];
 
     public function mount()
@@ -58,7 +59,8 @@ class UserManagement extends Component
     public function loadData()
     {
         $this->roles = Role::orderBy('name')->get();
-        $this->camps = Camp::where('is_active', true)->orderBy('name')->get();
+        $this->availableCampRoles = Role::where('type', 'camp_session')->orderBy('name')->get();
+        $this->camps = Camp::where('is_active', true)->orderBy('display_name')->get();
     }
 
     public function updatedSearchTerm()
@@ -84,7 +86,11 @@ class UserManagement extends Component
 
     public function openEditModal($userId)
     {
-        $this->selectedUser = User::with(['roles', 'campAssignments.camp', 'campAssignments.role'])->findOrFail($userId);
+        $this->selectedUser = User::with([
+            'roles', 
+            'campAssignments.camp', 
+            'campAssignments.role'
+        ])->findOrFail($userId);
         
         $this->name = $this->selectedUser->name;
         $this->email = $this->selectedUser->email;
@@ -336,36 +342,56 @@ class UserManagement extends Component
 
     public function getUsersProperty()
     {
-        // Determine if we should include soft-deleted users
-        $includeTrashed = $this->statusFilter === 'deleted' || $this->statusFilter === 'all';
-        
-        if ($includeTrashed) {
-            $query = User::withTrashed()->with(['roles', 'campAssignments.camp']);
-        } else {
-            $query = User::with(['roles', 'campAssignments.camp']);
-        }
+        \Log::info("UserManagement: Starting getUsersProperty", [
+            'statusFilter' => $this->statusFilter,
+            'searchTerm' => $this->searchTerm,
+            'roleFilter' => $this->roleFilter
+        ]);
 
-        // Filter by soft-deleted status
-        if ($this->statusFilter === 'active') {
-            $query->whereNull('deleted_at');
-        } elseif ($this->statusFilter === 'deleted') {
-            $query->whereNotNull('deleted_at');
-        }
+        try {
+            // Handle soft-deleted users based on filter
+            $query = null;
+            if ($this->statusFilter === 'deleted') {
+                $query = User::onlyTrashed();
+                \Log::info("UserManagement: Using onlyTrashed()");
+            } elseif ($this->statusFilter === 'all') {
+                $query = User::withTrashed();
+                \Log::info("UserManagement: Using withTrashed()");
+            } else {
+                $query = User::query();
+                \Log::info("UserManagement: Using query() - active users only");
+            }
 
-        if (!empty($this->searchTerm)) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', '%' . $this->searchTerm . '%')
-                  ->orWhere('email', 'like', '%' . $this->searchTerm . '%');
-            });
-        }
+            if (!empty($this->searchTerm)) {
+                $query->where(function ($q) {
+                    $q->where('name', 'like', '%' . $this->searchTerm . '%')
+                      ->orWhere('email', 'like', '%' . $this->searchTerm . '%');
+                });
+                \Log::info("UserManagement: Added search filter");
+            }
 
-        if (!empty($this->roleFilter)) {
-            $query->whereHas('roles', function ($q) {
-                $q->where('name', $this->roleFilter);
-            });
-        }
+            if (!empty($this->roleFilter)) {
+                $query->whereHas('roles', function ($q) {
+                    $q->where('name', $this->roleFilter);
+                });
+                \Log::info("UserManagement: Added role filter");
+            }
 
-        return $query->orderBy('name')->paginate(15);
+            // Eager load relationships
+            $query->with(['roles', 'campAssignments.camp', 'campAssignments.role']);
+            \Log::info("UserManagement: Added eager loading");
+
+            $result = $query->orderBy('name')->paginate(15);
+            \Log::info("UserManagement: Query successful", ['count' => $result->count()]);
+            
+            return $result;
+        } catch (\Exception $e) {
+            \Log::error("UserManagement: Error in getUsersProperty", [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
     }
 
     public function render()

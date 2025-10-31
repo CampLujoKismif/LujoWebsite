@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -122,6 +123,24 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get the camp instance assignments for this user.
+     */
+    public function campInstanceAssignments(): HasMany
+    {
+        return $this->hasMany(UserCampInstanceAssignment::class);
+    }
+
+    /**
+     * Get the camp instances (sessions) this user is assigned to.
+     */
+    public function assignedCampInstances(): BelongsToMany
+    {
+        return $this->belongsToMany(CampInstance::class, 'user_camp_instance_assignments')
+            ->withPivot(['role_id', 'position', 'notes', 'is_primary'])
+            ->withTimestamps();
+    }
+
+    /**
      * Get the primary camp assignment for this user.
      */
     public function primaryCampAssignment()
@@ -221,6 +240,63 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Check if the user is assigned to a specific camp instance/session.
+     */
+    public function isAssignedToCampInstance($campInstanceId): bool
+    {
+        return $this->campInstanceAssignments()->where('camp_instance_id', $campInstanceId)->exists();
+    }
+
+    /**
+     * Check if the user has a specific role in a specific camp instance/session.
+     */
+    public function hasRoleInCampInstance(string $roleName, $campInstanceId): bool
+    {
+        return $this->campInstanceAssignments()
+            ->where('camp_instance_id', $campInstanceId)
+            ->whereHas('role', function ($query) use ($roleName) {
+                $query->where('name', $roleName);
+            })
+            ->exists();
+    }
+
+    /**
+     * Assign a user to a camp instance/session with a specific role.
+     */
+    public function assignToCampInstance(CampInstance $campInstance, Role $role, array $attributes = []): UserCampInstanceAssignment
+    {
+        $defaults = [
+            'position' => null,
+            'notes' => null,
+            'is_primary' => false,
+        ];
+
+        $attributes = array_merge($defaults, $attributes);
+
+        return $this->campInstanceAssignments()->create([
+            'camp_instance_id' => $campInstance->id,
+            'role_id' => $role->id,
+            'position' => $attributes['position'],
+            'notes' => $attributes['notes'],
+            'is_primary' => $attributes['is_primary'],
+        ]);
+    }
+
+    /**
+     * Remove a user from a camp instance/session assignment.
+     */
+    public function removeFromCampInstance($campInstanceId, $roleId = null): void
+    {
+        $query = $this->campInstanceAssignments()->where('camp_instance_id', $campInstanceId);
+        
+        if ($roleId) {
+            $query->where('role_id', $roleId);
+        }
+        
+        $query->delete();
+    }
+
+    /**
      * Check if the user can access camp-specific data.
      * This is a helper method for camp-scoped permissions.
      */
@@ -246,34 +322,11 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get all users including soft deleted ones (for admin purposes).
+     * Send the email verification notification.
      */
-    public static function withTrashed()
+    public function sendEmailVerificationNotification()
     {
-        return parent::withTrashed();
+        $this->notify(new VerifyEmailNotification());
     }
 
-    /**
-     * Get only soft deleted users.
-     */
-    public static function onlyTrashed()
-    {
-        return parent::onlyTrashed();
-    }
-
-    /**
-     * Restore a soft deleted user.
-     */
-    public function restore(): bool
-    {
-        return parent::restore();
-    }
-
-    /**
-     * Force delete a user (permanently remove).
-     */
-    public function forceDelete(): bool
-    {
-        return parent::forceDelete();
-    }
 }
