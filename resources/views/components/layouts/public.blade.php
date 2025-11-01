@@ -1,9 +1,12 @@
+@props(['title' => 'Camp Sessions'])
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Camp Sessions - Camp LUJO-KISMIF</title>
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <title>{{ $title }} - Camp LUJO-KISMIF</title>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -14,7 +17,7 @@
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
 
         <!-- Styles -->
-        @vite('resources/css/app.css')
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
         
         <!-- Force light mode on public pages -->
         <script>
@@ -28,10 +31,12 @@
         
         <!-- Alpine.js -->
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        
+        @stack('head')
     </head>
     <body class="bg-gray-50">
         <!-- Navigation -->
-        <nav class="bg-white shadow-lg fixed w-full z-50" x-data="{ mobileMenuOpen: false }">
+        <nav class="bg-white shadow-lg fixed w-full z-50" x-data="{ mobileMenuOpen: false, sessionsDropdownOpen: false }">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <!-- Logo -->
@@ -44,7 +49,32 @@
                     <!-- Desktop Navigation -->
                     <div class="hidden lg:flex items-center space-x-4">
                         <a href="{{ route('home') }}#about" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">About</a>
-                        <a href="{{ route('camp-sessions.index') }}" class="text-blue-600 font-semibold px-3 py-2 rounded-md text-sm font-medium">Camp Sessions</a>
+                        
+                        <!-- Sessions Dropdown -->
+                        <div class="relative" @mouseenter="sessionsDropdownOpen = true" @mouseleave="sessionsDropdownOpen = false">
+                            <button class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+                                Sessions
+                                <svg class="ml-1 h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': sessionsDropdownOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div x-show="sessionsDropdownOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="absolute left-0 mt-2 min-w-max bg-white rounded-md shadow-lg z-50">
+                                <div class="py-2">
+                                    <a href="{{ route('camp-sessions.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">All Sessions</a>
+                                    <div class="border-t border-gray-100 my-1"></div>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Spark Week (1st-4th Grade)</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Jump Week (9th Grade & Up)</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Reunion Week (4th-12th Grade)</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Day Camp (1st-4th Grade)</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Super Week (4th-6th Grade)</a>
+                                    <a href="{{ route('strive-week') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Strive Week (5th Grade & Up)</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Connect Week (6th Grade & Up)</a>
+                                    <a href="{{ route('elevate-week') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Elevate Week (7th-10th Girls)</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Fall Focus (5th-12th Grade)</a>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <a href="{{ route('rentals') }}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Rentals</a>
                         <a href="{{ route('home') }}#faq" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">FAQ</a>
                         <a href="{{ route('home') }}#contact" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
@@ -74,7 +104,29 @@
             <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform -translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 transform translate-y-0" x-transition:leave-end="opacity-0 transform -translate-y-2" class="lg:hidden bg-white border-t border-gray-200">
                 <div class="px-2 pt-2 pb-3 space-y-1">
                     <a href="{{ route('home') }}#about" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">About</a>
-                    <a href="{{ route('camp-sessions.index') }}" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-blue-600 bg-blue-50 rounded-md">Camp Sessions</a>
+                    
+                    <!-- Mobile Sessions Dropdown -->
+                    <div x-data="{ mobileSessionsOpen: false }">
+                        <button @click="mobileSessionsOpen = !mobileSessionsOpen" class="w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md flex justify-between items-center">
+                            <span>Sessions</span>
+                            <svg class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': mobileSessionsOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div x-show="mobileSessionsOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform -translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 transform translate-y-0" x-transition:leave-end="opacity-0 transform -translate-y-2" class="pl-4 space-y-1">
+                            <a href="{{ route('camp-sessions.index') }}" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">All Sessions</a>
+                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Spark Week (1st-4th Grade)</a>
+                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Jump Week (9th Grade & Up)</a>
+                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Reunion Week (4th-12th Grade)</a>
+                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Day Camp (1st-4th Grade)</a>
+                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Super Week (4th-6th Grade)</a>
+                            <a href="{{ route('strive-week') }}" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Strive Week (5th Grade & Up)</a>
+                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Connect Week (6th Grade & Up)</a>
+                            <a href="{{ route('elevate-week') }}" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Elevate Week (7th-10th Girls)</a>
+                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Fall Focus (5th-12th Grade)</a>
+                        </div>
+                    </div>
+                    
                     <a href="{{ route('rentals') }}" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">Rentals</a>
                     <a href="{{ route('home') }}#faq" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">FAQ</a>
                     <a href="{{ route('home') }}#contact" @click="mobileMenuOpen = false" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">Contact</a>
@@ -138,6 +190,6 @@
             </div>
         </footer>
         
-        @vite('resources/js/app.js')
+        @stack('scripts')
     </body>
 </html> 
