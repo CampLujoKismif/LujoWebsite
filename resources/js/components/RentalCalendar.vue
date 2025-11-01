@@ -1,46 +1,46 @@
 <template>
-  <div class="rental-calendar bg-white rounded-lg shadow-lg" :class="adminMode ? 'p-1.5 sm:p-2' : 'p-3 sm:p-6'">
+  <div class="rental-calendar bg-white dark:bg-zinc-900 rounded-lg shadow-lg" :class="adminMode ? 'p-1.5 sm:p-2' : 'p-3 sm:p-6'">
     <!-- Step Indicator (only show in booking mode) -->
     <div v-if="!adminMode" class="mb-6 sm:mb-8">
       <div class="flex items-center justify-center space-x-2 sm:space-x-8">
         <!-- Step 1: Date Selection -->
         <div class="flex items-center space-x-1 sm:space-x-3">
           <div class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-all duration-300"
-               :class="currentStep >= 1 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-500'">
+               :class="currentStep >= 1 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-100 dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-500 dark:text-gray-400'">
             <span class="text-xs sm:text-sm font-semibold">1</span>
           </div>
           <span class="text-xs sm:text-sm font-medium transition-colors duration-300 hidden sm:inline"
-                :class="currentStep >= 1 ? 'text-blue-600' : 'text-gray-500'">
+                :class="currentStep >= 1 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'">
             Select Dates
           </span>
         </div>
         
         <!-- Arrow -->
-        <div class="w-4 sm:w-8 h-0.5 bg-gray-300"></div>
+        <div class="w-4 sm:w-8 h-0.5 bg-gray-300 dark:bg-zinc-600"></div>
         
         <!-- Step 2: Form Info -->
         <div class="flex items-center space-x-1 sm:space-x-3">
           <div class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-all duration-300"
-               :class="currentStep >= 2 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-500'">
+               :class="currentStep >= 2 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-100 dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-500 dark:text-gray-400'">
             <span class="text-xs sm:text-sm font-semibold">2</span>
           </div>
           <span class="text-xs sm:text-sm font-medium transition-colors duration-300 hidden sm:inline"
-                :class="currentStep >= 2 ? 'text-blue-600' : 'text-gray-500'">
+                :class="currentStep >= 2 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'">
             Reservation Info
           </span>
         </div>
         
         <!-- Arrow -->
-        <div class="w-4 sm:w-8 h-0.5 bg-gray-300"></div>
+        <div class="w-4 sm:w-8 h-0.5 bg-gray-300 dark:bg-zinc-600"></div>
         
         <!-- Step 3: Payment -->
         <div class="flex items-center space-x-1 sm:space-x-3">
           <div class="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-all duration-300"
-               :class="currentStep >= 3 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-500'">
+               :class="currentStep >= 3 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-100 dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-500 dark:text-gray-400'">
             <span class="text-xs sm:text-sm font-semibold">3</span>
           </div>
           <span class="text-xs sm:text-sm font-medium transition-colors duration-300 hidden sm:inline"
-                :class="currentStep >= 3 ? 'text-blue-600' : 'text-gray-500'">
+                :class="currentStep >= 3 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'">
             Payment
           </span>
         </div>
@@ -56,13 +56,13 @@
         <!-- Calendar Header -->
         <div class="mb-4">
           <div class="mb-3">
-            <h3 class="text-xl sm:text-2xl font-bold text-gray-900">Select Your Dates</h3>
-            <p class="text-xs sm:text-sm text-gray-600 mt-1">Click two dates to select a range</p>
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Select Your Dates</h3>
+            <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Click two dates to select a range</p>
           </div>
           <div class="flex items-center justify-between">
             <button 
               @click="previousMonth"
-              class="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors flex-shrink-0 text-gray-700 dark:text-gray-300"
               :disabled="loading"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,13 +70,13 @@
               </svg>
             </button>
             
-            <h4 class="text-base sm:text-lg font-semibold text-gray-700 text-center px-2">
+            <h4 class="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-300 text-center px-2">
               {{ currentMonthName }} {{ currentYear }}
             </h4>
             
             <button 
               @click="nextMonth"
-              class="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors flex-shrink-0 text-gray-700 dark:text-gray-300"
               :disabled="loading"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +90,7 @@
         <div class="mb-6">
           <!-- Day Headers -->
           <div class="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2">
-            <div v-for="day in dayHeaders" :key="day" class="text-center text-xs sm:text-sm font-semibold text-gray-500 py-1 sm:py-2">
+            <div v-for="day in dayHeaders" :key="day" class="text-center text-xs sm:text-sm font-semibold text-gray-500 dark:text-gray-400 py-1 sm:py-2">
               {{ day }}
             </div>
           </div>
@@ -175,16 +175,16 @@
         </div>
 
         <!-- Selected Dates Display (only in booking mode) -->
-        <div v-if="!adminMode && selectedDates.length > 0" class="mb-6 p-4 bg-blue-50 rounded-lg">
-          <h4 class="font-semibold text-blue-900 mb-2">Selected Dates:</h4>
-          <div class="text-blue-800 font-medium">
+        <div v-if="!adminMode && selectedDates.length > 0" class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          <h4 class="font-semibold text-blue-900 dark:text-blue-200 mb-2">Selected Dates:</h4>
+          <div class="text-blue-800 dark:text-blue-300 font-medium">
             {{ formattedSelectedDates }}
           </div>
-          <div class="mt-2 text-sm text-blue-700">
+          <div class="mt-2 text-sm text-blue-700 dark:text-blue-400">
             {{ selectedDates.length }} day{{ selectedDates.length > 1 ? 's' : '' }} selected
             <span v-if="selectedDates.length > 1"> (consecutive)</span>
           </div>
-          <div v-if="selectedDates.length === 1" class="mt-1 text-xs text-blue-600">
+          <div v-if="selectedDates.length === 1" class="mt-1 text-xs text-blue-600 dark:text-blue-400">
             Click another date to create a range
           </div>
         </div>
@@ -194,7 +194,7 @@
           <button 
             @click="clearSelection"
             v-if="selectedDates.length > 0"
-            class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+            class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
           >
             Clear Selection
           </button>
@@ -203,7 +203,7 @@
             @click="proceedToForm"
             v-if="selectedDates.length > 0"
             :disabled="loading"
-            class="ml-auto bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+            class="ml-auto bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-zinc-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
           >
             {{ loading ? 'Loading...' : 'Continue to Reservation' }}
           </button>
@@ -223,8 +223,8 @@
           @form-data-updated="updateFormData"
         />
         <div v-else class="text-center py-12">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p class="text-gray-600">Loading pricing information...</p>
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
+          <p class="text-gray-600 dark:text-gray-400">Loading pricing information...</p>
         </div>
       </div>
 
@@ -232,44 +232,44 @@
       <div v-if="!adminMode" class="transition-all duration-500 ease-in-out"
            :class="currentStep === 3 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full absolute inset-0'">
         <div class="max-w-2xl mx-auto">
-          <h3 class="text-2xl font-bold text-gray-900 mb-6">Payment Information</h3>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Payment Information</h3>
           
           <!-- Selected Dates Summary -->
-          <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-            <h4 class="font-semibold text-blue-900 mb-2">Reservation Summary:</h4>
-            <div class="text-blue-800 font-medium">
+          <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <h4 class="font-semibold text-blue-900 dark:text-blue-200 mb-2">Reservation Summary:</h4>
+            <div class="text-blue-800 dark:text-blue-300 font-medium">
               {{ formattedSelectedDates }}
             </div>
-            <div class="mt-2 text-sm text-blue-700">
+            <div class="mt-2 text-sm text-blue-700 dark:text-blue-400">
               {{ selectedDates.length }} day{{ selectedDates.length > 1 ? 's' : '' }} selected
             </div>
           </div>
 
           <!-- Pricing Summary -->
-          <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-            <h4 class="font-semibold text-gray-900 mb-3">Pricing Summary</h4>
-            <div v-if="!pricing" class="text-gray-500 text-center py-4">
+          <div class="mb-6 p-4 bg-gray-50 dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-zinc-700">
+            <h4 class="font-semibold text-gray-900 dark:text-white mb-3">Pricing Summary</h4>
+            <div v-if="!pricing" class="text-gray-500 dark:text-gray-400 text-center py-4">
               Loading pricing information...
             </div>
             <div v-else class="space-y-2">
-              <div class="flex justify-between">
+              <div class="flex justify-between text-gray-700 dark:text-gray-300">
                 <span>{{ formData.number_of_people || 0 }} people × {{ selectedDates.length }} days</span>
                 <span>${{ parseFloat(pricing.price_per_person_per_day).toFixed(2) }} per person per day</span>
               </div>
-              <div class="flex justify-between font-semibold">
+              <div class="flex justify-between font-semibold text-gray-900 dark:text-white">
                 <span>Subtotal:</span>
                 <span>${{ calculateSubtotal().toFixed(2) }}</span>
               </div>
-              <div v-if="discountAmount > 0" class="flex justify-between text-green-600">
+              <div v-if="discountAmount > 0" class="flex justify-between text-green-600 dark:text-green-400">
                 <span>Discount:</span>
                 <span>-${{ discountAmount.toFixed(2) }}</span>
               </div>
-              <div v-if="pricing.deposit_amount" class="flex justify-between">
+              <div v-if="pricing.deposit_amount" class="flex justify-between text-gray-700 dark:text-gray-300">
                 <span>Deposit Required:</span>
                 <span>${{ parseFloat(pricing.deposit_amount).toFixed(2) }}</span>
               </div>
-              <hr class="border-gray-300">
-              <div class="flex justify-between text-lg font-bold">
+              <hr class="border-gray-300 dark:border-zinc-600">
+              <div class="flex justify-between text-lg font-bold text-gray-900 dark:text-white">
                 <span>Total Amount:</span>
                 <span>${{ calculateFinalAmount().toFixed(2) }}</span>
               </div>
@@ -278,44 +278,44 @@
 
           <!-- Payment Options -->
           <div class="mb-6">
-            <h4 class="font-semibold text-gray-900 mb-4">Choose Payment Method:</h4>
+            <h4 class="font-semibold text-gray-900 dark:text-white mb-4">Choose Payment Method:</h4>
             <div class="space-y-3">
               <!-- Credit Card Option -->
-              <label class="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                     :class="selectedPaymentMethod === 'credit_card' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'">
+              <label class="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
+                     :class="selectedPaymentMethod === 'credit_card' ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30' : 'border-gray-300 dark:border-zinc-600'">
                 <input 
                   type="radio" 
                   v-model="selectedPaymentMethod" 
                   value="credit_card"
-                  class="mr-3 text-blue-600 focus:ring-blue-500"
+                  class="mr-3 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                 />
                 <div class="flex items-center space-x-3">
-                  <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-8 h-8 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
                   </svg>
                   <div>
-                    <div class="font-medium text-gray-900">Credit/Debit Card</div>
-                    <div class="text-sm text-gray-600">Pay securely online with Stripe</div>
+                    <div class="font-medium text-gray-900 dark:text-white">Credit/Debit Card</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Pay securely online with Stripe</div>
                   </div>
                 </div>
               </label>
 
               <!-- Mail Check Option -->
-              <label class="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                     :class="selectedPaymentMethod === 'mail_check' ? 'border-blue-600 bg-blue-50' : 'border-gray-300'">
+              <label class="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
+                     :class="selectedPaymentMethod === 'mail_check' ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/30' : 'border-gray-300 dark:border-zinc-600'">
                 <input 
                   type="radio" 
                   v-model="selectedPaymentMethod" 
                   value="mail_check"
-                  class="mr-3 text-blue-600 focus:ring-blue-500"
+                  class="mr-3 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400"
                 />
                 <div class="flex items-center space-x-3">
-                  <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-8 h-8 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                   </svg>
                   <div>
-                    <div class="font-medium text-gray-900">Mail a Check</div>
-                    <div class="text-sm text-gray-600">Send payment by mail (instructions will be provided)</div>
+                    <div class="font-medium text-gray-900 dark:text-white">Mail a Check</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Send payment by mail (instructions will be provided)</div>
                   </div>
                 </div>
               </label>
@@ -335,9 +335,9 @@
           </div>
 
           <!-- Payment Instructions for Mail Check -->
-          <div v-if="selectedPaymentMethod === 'mail_check'" class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h5 class="font-semibold text-yellow-800 mb-2">Payment Instructions:</h5>
-            <div class="text-sm text-yellow-700 space-y-1">
+          <div v-if="selectedPaymentMethod === 'mail_check'" class="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <h5 class="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Payment Instructions:</h5>
+            <div class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
               <p>• Make check payable to: <strong>Camp LUJO-KISMIF</strong></p>
               <p>• Amount: <strong>${{ calculateFinalAmount().toFixed(2) }}</strong></p>
               <p>• Mail to: <strong>Camp LUJO-KISMIF, [Address Here]</strong></p>
@@ -350,14 +350,14 @@
           <div v-if="!reservationCreated" class="flex justify-between">
             <button 
               @click="goBackToForm"
-              class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+              class="bg-gray-600 hover:bg-gray-700 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
             >
               ← Back to Form
             </button>
             <button 
               @click="completeReservation"
               :disabled="!selectedPaymentMethod || processingReservation"
-              class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+              class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 dark:disabled:bg-zinc-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
             >
               <span v-if="!processingReservation">
                 {{ selectedPaymentMethod === 'mail_check' ? 'Complete Reservation' : 'Continue to Payment' }}
@@ -513,23 +513,23 @@
     </div>
 
     <!-- Legend (only show in booking mode) -->
-    <div v-if="!adminMode" class="mt-6 pt-6 border-t border-gray-200">
+    <div v-if="!adminMode" class="mt-6 pt-6 border-t border-gray-200 dark:border-zinc-700">
       <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs sm:text-sm">
         <div class="flex items-center space-x-1.5 sm:space-x-2">
-          <div class="w-3 h-3 sm:w-4 sm:h-4 bg-green-100 border border-green-300 rounded"></div>
-          <span class="text-gray-600">Available</span>
+          <div class="w-3 h-3 sm:w-4 sm:h-4 bg-green-100 dark:bg-green-900 border border-green-300 dark:border-green-700 rounded"></div>
+          <span class="text-gray-600 dark:text-gray-400">Available</span>
         </div>
         <div class="flex items-center space-x-1.5 sm:space-x-2">
-          <div class="w-3 h-3 sm:w-4 sm:h-4 bg-red-100 border border-red-300 rounded"></div>
-          <span class="text-gray-600">Unavailable</span>
+          <div class="w-3 h-3 sm:w-4 sm:h-4 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded"></div>
+          <span class="text-gray-600 dark:text-gray-400">Unavailable</span>
         </div>
         <div class="flex items-center space-x-1.5 sm:space-x-2">
-          <div class="w-3 h-3 sm:w-4 sm:h-4 bg-gray-100 border border-gray-300 rounded"></div>
-          <span class="text-gray-600">Past Date</span>
+          <div class="w-3 h-3 sm:w-4 sm:h-4 bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded"></div>
+          <span class="text-gray-600 dark:text-gray-400">Past Date</span>
         </div>
         <div class="flex items-center space-x-1.5 sm:space-x-2">
-          <div class="w-3 h-3 sm:w-4 sm:h-4 bg-blue-100 border border-blue-300 rounded"></div>
-          <span class="text-gray-600">Selected</span>
+          <div class="w-3 h-3 sm:w-4 sm:h-4 bg-blue-100 dark:bg-blue-900 border border-blue-300 dark:border-blue-700 rounded"></div>
+          <span class="text-gray-600 dark:text-gray-400">Selected</span>
         </div>
       </div>
     </div>
