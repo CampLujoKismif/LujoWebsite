@@ -86,12 +86,6 @@ new #[Layout('components.layouts.auth')] class extends Component {
         </div>
     @endif
 
-    <!-- Verification Link Sent Message -->
-    @if (session('status') == 'verification-link-sent' || session('status') == 'A new verification link has been sent to your email address.')
-        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded text-center">
-            {{ session('status') == 'verification-link-sent' ? 'A new verification link has been sent to your email address.' : session('status') }}
-        </div>
-    @endif
 
     <form wire:submit="login" class="flex flex-col gap-6">
         <!-- Email Address -->
@@ -163,20 +157,6 @@ new #[Layout('components.layouts.auth')] class extends Component {
                     {{ __('Forgot your password?') }}
                 </a>
             @endif
-        </div>
-
-        <!-- Resend Verification Email -->
-        <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-600 dark:text-gray-400">
-                {{ __('Didn\'t receive verification email?') }}
-            </span>
-            <form method="POST" action="{{ route('verification.resend') }}" class="inline" onsubmit="const emailInput = this.querySelector('input[name=email]'); const emailField = document.querySelector('input[wire\\:model=email]'); emailInput.value = emailField ? emailField.value : ''; return true;">
-                @csrf
-                <input type="hidden" name="email" value="">
-                <button type="submit" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors font-medium">
-                    {{ __('Resend') }}
-                </button>
-            </form>
         </div>
 
         <!-- Login Button -->

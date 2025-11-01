@@ -327,4 +327,21 @@ class UserManagementController extends Controller
         return redirect()->route('admin.users.trashed')
             ->with('success', 'User permanently deleted.');
     }
+
+    /**
+     * Resend email verification notification.
+     */
+    public function resendVerification(User $user)
+    {
+        // Only resend if email is not already verified
+        if (!$user->hasVerifiedEmail()) {
+            $user->sendEmailVerificationNotification();
+            
+            return redirect()->route('admin.users.index')
+                ->with('success', 'Verification email sent to ' . $user->email . '.');
+        }
+
+        return redirect()->route('admin.users.index')
+            ->with('info', 'User email is already verified.');
+    }
 } 

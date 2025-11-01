@@ -140,6 +140,9 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     @if(!$user->trashed())
                                         <button wire:click="openEditModal({{ $user->id }})" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</button>
+                                        @if(!$user->email_verified_at)
+                                            <button wire:click="resendVerification({{ $user->id }})" class="text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 mr-3" title="Resend verification email">Resend Email</button>
+                                        @endif
                                         @if($user->id !== auth()->id())
                                             <button wire:click="openDeleteModal({{ $user->id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 mr-3">Delete</button>
                                         @endif

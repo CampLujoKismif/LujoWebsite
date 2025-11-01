@@ -11,6 +11,25 @@
             </a>
         </div>
 
+        <!-- Success/Info Messages -->
+        @if (session('success'))
+            <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('info'))
+            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg">
+                {{ session('info') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <!-- Search and Filters -->
         <div class="bg-white dark:bg-zinc-900 rounded-xl border border-neutral-200 dark:border-neutral-700">
             <div class="p-6">
@@ -114,6 +133,12 @@
                                     <div class="flex space-x-2">
                                         <a href="{{ route('admin.users.show', $user) }}" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">View</a>
                                         <a href="{{ route('admin.users.edit', $user) }}" class="text-green-600 dark:text-green-400 hover:underline text-sm">Edit</a>
+                                        @if(!$user->email_verified_at)
+                                            <form action="{{ route('admin.users.resend-verification', $user) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" class="text-purple-600 dark:text-purple-400 hover:underline text-sm" title="Resend verification email">Resend Email</button>
+                                            </form>
+                                        @endif
                                         @if($user->id !== auth()->id())
                                             <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this user?')">
                                                 @csrf

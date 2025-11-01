@@ -109,6 +109,7 @@ Route::middleware(['auth', 'require.password.change', 'role:system-admin'])->pre
     Route::get('users/trashed', [App\Http\Controllers\Admin\UserManagementController::class, 'trashed'])->name('users.trashed');
     Route::patch('users/{id}/restore', [App\Http\Controllers\Admin\UserManagementController::class, 'restore'])->name('users.restore');
     Route::delete('users/{id}/force-delete', [App\Http\Controllers\Admin\UserManagementController::class, 'forceDelete'])->name('users.force-delete');
+    Route::post('users/{user}/resend-verification', [App\Http\Controllers\Admin\UserManagementController::class, 'resendVerification'])->name('users.resend-verification');
     
     // Role management
     Route::resource('roles', App\Http\Controllers\Admin\RoleManagementController::class);

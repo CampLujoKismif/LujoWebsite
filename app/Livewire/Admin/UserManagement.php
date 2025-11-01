@@ -309,6 +309,19 @@ class UserManagement extends Component
         session()->flash('message', "User {$userName} has been restored.");
     }
 
+    public function resendVerification($userId)
+    {
+        $user = User::findOrFail($userId);
+        
+        // Only resend if email is not already verified
+        if (!$user->hasVerifiedEmail()) {
+            $user->sendEmailVerificationNotification();
+            session()->flash('message', 'Verification email sent to ' . $user->email . '.');
+        } else {
+            session()->flash('info', 'User email is already verified.');
+        }
+    }
+
     private function assignUserToCamps($user)
     {
         foreach ($this->selectedCamps as $campId) {
