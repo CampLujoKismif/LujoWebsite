@@ -566,7 +566,8 @@ export default {
       formData: {
         number_of_people: 0,
         discount_code: '',
-        discount_amount: 0
+        discount_amount: 0,
+        discount_code_id: null
       }
     }
   },
@@ -1091,7 +1092,8 @@ export default {
       this.formData = {
         number_of_people: 0,
         discount_code: '',
-        discount_amount: 0
+        discount_amount: 0,
+        discount_code_id: null
       }
       this.selectedPaymentMethod = null
       this.reservationCreated = false

@@ -143,7 +143,7 @@
 
             <div class="email-message" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
                 <p style="font-size: 14px; color: #9ca3af;">
-                    This verification link will expire in 60 minutes. If you did not create an account with Camp LUJO-KISMIF, please ignore this email.
+                    This verification link does not expire. If you did not create an account with Camp LUJO-KISMIF, please ignore this email.
                 </p>
             </div>
         </div>

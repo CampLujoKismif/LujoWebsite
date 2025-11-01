@@ -277,6 +277,7 @@ export default {
           },
           body: JSON.stringify({
             code: this.form.discount_code,
+            type: 'rental',
             total: this.subtotal
           })
         })
