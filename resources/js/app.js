@@ -6,6 +6,21 @@ import 'tinymce/skins/ui/oxide/skin.min.css'
 import 'tinymce/skins/ui/oxide/content.min.css'
 import 'tinymce/skins/content/default/content.min.css'
 
+// Suppress TinyMCE passive event listener warnings (performance warnings, not errors)
+// These are harmless warnings from TinyMCE's internal event handling
+if (typeof console !== 'undefined' && console.warn) {
+    const originalWarn = console.warn
+    console.warn = function(...args) {
+        const message = args[0]?.toString() || ''
+        // Filter out TinyMCE passive event listener warnings
+        if (message.includes('non-passive event listener') && 
+            (message.includes('touchstart') || message.includes('touchmove') || message.includes('theme.min.js'))) {
+            return // Suppress this warning
+        }
+        originalWarn.apply(console, args)
+    }
+}
+
 // NOW import components
 import VueExample from './components/VueExample.vue'
 import RentalCalendar from './components/RentalCalendar.vue'
