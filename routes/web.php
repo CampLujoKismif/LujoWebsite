@@ -104,6 +104,11 @@ Route::middleware(['auth', 'require.password.change', 'role:system-admin'])->pre
     Route::patch('camps/{id}/restore', [App\Http\Controllers\Admin\CampManagementController::class, 'restore'])->name('camps.restore');
     Route::delete('camps/{id}/force-delete', [App\Http\Controllers\Admin\CampManagementController::class, 'forceDelete'])->name('camps.force-delete');
     
+    // Camp session template management
+    Route::get('session-templates', [App\Http\Controllers\Admin\CampSessionTemplateController::class, 'index'])->name('session-templates.index');
+    Route::get('camps/{camp}/session-template', [App\Http\Controllers\Admin\CampSessionTemplateController::class, 'show'])->name('camps.session-template');
+    Route::put('camps/{camp}/session-template', [App\Http\Controllers\Admin\CampSessionTemplateController::class, 'update'])->name('camps.session-template.update');
+    
     // User management
     Route::resource('users', App\Http\Controllers\Admin\UserManagementController::class);
     Route::get('users/trashed', [App\Http\Controllers\Admin\UserManagementController::class, 'trashed'])->name('users.trashed');
@@ -139,6 +144,11 @@ Route::middleware(['auth', 'require.password.change', 'role:system-admin'])->pre
     
     // Rental admin API routes (route is in admin group, so path is relative to /admin)
     Route::get('api/rental/availability/{year}/{month}', [App\Http\Controllers\Api\RentalController::class, 'getAdminAvailability'])->name('api.rental.admin.availability');
+});
+
+// Image upload for session templates and session details (accessible to admins and camp managers)
+Route::middleware(['auth', 'require.password.change', 'role:system-admin,camp-manager'])->group(function () {
+    Route::post('admin/session-templates/upload-image', [App\Http\Controllers\Admin\CampSessionTemplateController::class, 'uploadImage'])->name('session-templates.upload-image');
 });
 
 // Camp dashboard routes (for users with camp access)

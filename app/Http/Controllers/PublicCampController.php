@@ -12,6 +12,9 @@ class PublicCampController extends Controller
      */
     public function showSession(CampInstance $instance)
     {
+        // Refresh the instance to ensure we have the latest data
+        $instance->refresh();
+        
         // Load the camp relationship
         $instance->load('camp');
         

@@ -86,13 +86,18 @@
                     </div>
 
                     <!-- Submit Button -->
-                    <div class="mt-8 flex justify-end space-x-4">
-                        <a href="{{ route('admin.camps.index') }}" class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800">
-                            Cancel
+                    <div class="mt-8 flex justify-between items-center">
+                        <a href="{{ route('admin.camps.session-template', $camp) }}" class="text-purple-600 dark:text-purple-400 hover:underline text-sm font-medium">
+                            Manage Session Detail Template →
                         </a>
-                        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">
-                            Update Camp
-                        </button>
+                        <div class="flex space-x-4">
+                            <a href="{{ route('admin.camps.index') }}" class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800">
+                                Cancel
+                            </a>
+                            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">
+                                Update Camp
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

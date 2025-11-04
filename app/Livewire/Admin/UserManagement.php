@@ -189,8 +189,8 @@ class UserManagement extends Component
             $roleNames = Role::whereIn('id', $this->selectedRoles)->pluck('name')->toArray();
             $user->syncRoles($roleNames);
 
-            // Clear existing camp assignments before assigning new ones
-            $user->campAssignments()->delete();
+            // Clear existing camp assignments before assigning new ones (force delete to avoid unique constraint issues)
+            UserCampAssignment::where('user_id', $user->id)->forceDelete();
             
             // Assign to camps
             $this->assignUserToCamps($user);
@@ -258,8 +258,8 @@ class UserManagement extends Component
             $roleNames = Role::whereIn('id', $this->selectedRoles)->pluck('name')->toArray();
             $this->selectedUser->syncRoles($roleNames);
 
-            // Update camp assignments
-            $this->selectedUser->campAssignments()->delete();
+            // Update camp assignments - force delete to avoid unique constraint issues
+            UserCampAssignment::where('user_id', $this->selectedUser->id)->forceDelete();
             $this->assignUserToCamps($this->selectedUser);
 
             $this->showEditModal = false;
@@ -327,13 +327,44 @@ class UserManagement extends Component
         foreach ($this->selectedCamps as $campId) {
             if (isset($this->campRoles[$campId]) && !empty($this->campRoles[$campId])) {
                 try {
+                    $roleId = $this->campRoles[$campId];
+                    $isPrimary = in_array($campId, $this->primaryCamps);
+                    
+                    // Check if camp and role exist
+                    $camp = Camp::find($campId);
+                    $role = Role::find($roleId);
+                    
+                    if (!$camp) {
+                        throw new \Exception("Camp with ID {$campId} not found.");
+                    }
+                    
+                    if (!$role) {
+                        throw new \Exception("Role with ID {$roleId} not found.");
+                    }
+                    
+                    // Create new assignment (old ones were force-deleted, so this is safe)
                     $user->campAssignments()->create([
                         'camp_id' => $campId,
-                        'role_id' => $this->campRoles[$campId],
-                        'is_primary' => in_array($campId, $this->primaryCamps),
+                        'role_id' => $roleId,
+                        'is_primary' => $isPrimary,
                     ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    // Log the actual database error for debugging
+                    \Log::error('Failed to assign user to camp', [
+                        'user_id' => $user->id,
+                        'camp_id' => $campId,
+                        'role_id' => $this->campRoles[$campId] ?? null,
+                        'error' => $e->getMessage(),
+                    ]);
+                    throw new \Exception('Failed to assign user to camp: ' . $e->getMessage());
                 } catch (\Exception $e) {
-                    throw new \Exception('Failed to assign user to camp. Please try again.');
+                    // Log other errors
+                    \Log::error('Error assigning user to camp', [
+                        'user_id' => $user->id,
+                        'camp_id' => $campId,
+                        'error' => $e->getMessage(),
+                    ]);
+                    throw $e;
                 }
             }
         }

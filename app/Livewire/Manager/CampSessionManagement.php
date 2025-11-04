@@ -19,8 +19,8 @@ class CampSessionManagement extends Component
 
     // Session form properties
     public $showCreateModal = false;
-    public $showEditModal = false;
     public $showDeleteModal = false;
+    public $showDetailsModal = false;
     public $selectedCamp = null;
     public $selectedSession = null;
 
@@ -33,9 +33,15 @@ class CampSessionManagement extends Component
     public $sessionIsActive = true;
     public $sessionDescription = '';
 
+    // Session detail form data
+    public $themeDescription = '';
+    public $additionalInfo = '';
+    public $scheduleData = [];
+    public $themePhoto = '';
+
     protected $queryString = [
         'searchTerm' => ['except' => ''],
-        'statusFilter' => ['except' => ''],
+        'statusFilter' => ['except' => 'active'], // Default to 'active'
         'campFilter' => ['except' => ''],
     ];
 
@@ -44,6 +50,11 @@ class CampSessionManagement extends Component
         // Set default camp filter to first assigned camp if available
         if ($this->assignedCamps->isNotEmpty() && empty($this->campFilter)) {
             $this->campFilter = $this->assignedCamps->first()->id;
+        }
+        
+        // Set default status filter to 'active' if not set
+        if (empty($this->statusFilter)) {
+            $this->statusFilter = 'active';
         }
     }
 
@@ -68,26 +79,7 @@ class CampSessionManagement extends Component
         $this->showCreateModal = true;
     }
 
-    public function openEditModal($sessionId)
-    {
-        $this->selectedSession = CampInstance::findOrFail($sessionId);
-        
-        // Check if user has access to this session's camp
-        if (!Auth::user()->canAccessCampData($this->selectedSession->camp_id)) {
-            session()->flash('error', 'You do not have permission to edit this session.');
-            return;
-        }
-        
-        $this->sessionName = $this->selectedSession->name;
-        $this->sessionStartDate = $this->selectedSession->start_date->format('Y-m-d');
-        $this->sessionEndDate = $this->selectedSession->end_date->format('Y-m-d');
-        $this->sessionCapacity = $this->selectedSession->max_capacity;
-        $this->sessionPrice = $this->selectedSession->price;
-        $this->sessionDescription = $this->selectedSession->description;
-        $this->sessionIsActive = $this->selectedSession->is_active;
-        
-        $this->showEditModal = true;
-    }
+
 
     public function openDeleteModal($sessionId)
     {
@@ -100,6 +92,171 @@ class CampSessionManagement extends Component
         }
         
         $this->showDeleteModal = true;
+    }
+
+    public function openDetailsModal($sessionId)
+    {
+        $this->selectedSession = CampInstance::findOrFail($sessionId);
+        
+        // Check if user has access to this session's camp
+        if (!Auth::user()->canAccessCampData($this->selectedSession->camp_id)) {
+            session()->flash('error', 'You do not have permission to edit this session.');
+            return;
+        }
+        
+        // Load session fields
+        $this->sessionName = $this->selectedSession->name;
+        $this->sessionStartDate = $this->selectedSession->start_date->format('Y-m-d');
+        $this->sessionEndDate = $this->selectedSession->end_date->format('Y-m-d');
+        $this->sessionCapacity = $this->selectedSession->max_capacity;
+        $this->sessionPrice = $this->selectedSession->price;
+        $this->sessionDescription = $this->selectedSession->description;
+        $this->sessionIsActive = $this->selectedSession->is_active;
+        
+        // Load detail fields
+        $this->themeDescription = $this->selectedSession->theme_description ?? '';
+        
+        // Handle additional_info - it can be stored as array or string
+        if ($this->selectedSession->additional_info) {
+            if (is_array($this->selectedSession->additional_info)) {
+                // If it's an array, try to get the 'content' key, otherwise convert to string
+                $this->additionalInfo = $this->selectedSession->additional_info['content'] ?? 
+                    (is_string($this->selectedSession->additional_info) ? $this->selectedSession->additional_info : '');
+            } else {
+                $this->additionalInfo = $this->selectedSession->additional_info;
+            }
+        } else {
+            $this->additionalInfo = '';
+        }
+        
+        // Load schedule_data - convert from key-value pairs to array format
+        $this->scheduleData = [];
+        if ($this->selectedSession->schedule_data && is_array($this->selectedSession->schedule_data)) {
+            foreach ($this->selectedSession->schedule_data as $time => $activity) {
+                $this->scheduleData[] = ['time' => $time, 'activity' => $activity];
+            }
+        }
+        
+        // Load theme_photo (single photo)
+        $themePhotos = $this->selectedSession->theme_photos ?? null;
+        if (is_array($themePhotos) && count($themePhotos) > 0) {
+            // If stored as array, take the first one
+            $this->themePhoto = $themePhotos[0];
+        } elseif (is_string($themePhotos)) {
+            // If stored as string, use it directly
+            $this->themePhoto = $themePhotos;
+        } else {
+            $this->themePhoto = '';
+        }
+        
+        $this->showDetailsModal = true;
+    }
+
+    public function addScheduleItem()
+    {
+        $this->scheduleData[] = ['time' => '', 'activity' => ''];
+    }
+
+    public function removeScheduleItem($index)
+    {
+        unset($this->scheduleData[$index]);
+        $this->scheduleData = array_values($this->scheduleData); // Re-index array
+    }
+
+    public function addPhotoUrl($url)
+    {
+        if (!empty($url)) {
+            $this->themePhoto = $url;
+        }
+    }
+
+    public function removePhotoUrl()
+    {
+        $this->themePhoto = '';
+    }
+
+    public function updateSessionDetails()
+    {
+        $this->validate([
+            'sessionName' => 'required|string|max:255',
+            'sessionStartDate' => 'required|date',
+            'sessionEndDate' => 'required|date|after:sessionStartDate',
+            'sessionCapacity' => 'required|integer|min:1',
+            'sessionPrice' => 'nullable|numeric|min:0',
+            'sessionDescription' => 'nullable|string',
+            'themeDescription' => 'nullable|string',
+            'additionalInfo' => 'nullable|string',
+            'scheduleData' => 'nullable|array',
+            'scheduleData.*.time' => 'required_with:scheduleData|string',
+            'scheduleData.*.activity' => 'required_with:scheduleData|string',
+            'themePhoto' => 'nullable|string',
+        ]);
+
+        // Process schedule_data - convert from array format to key-value pairs
+        $scheduleData = null;
+        if (!empty($this->scheduleData)) {
+            $scheduleArray = [];
+            foreach ($this->scheduleData as $item) {
+                if (!empty($item['time']) && !empty($item['activity'])) {
+                    $scheduleArray[$item['time']] = $item['activity'];
+                }
+            }
+            $scheduleData = !empty($scheduleArray) ? $scheduleArray : null;
+        }
+
+        // Process theme_photo - store as single photo (array with one element for backward compatibility)
+        $themePhotos = null;
+        if (!empty($this->themePhoto)) {
+            $themePhotos = [$this->themePhoto];
+        }
+
+        // Handle additional_info - store as array format for consistency
+        $additionalInfo = null;
+        if (!empty($this->additionalInfo)) {
+            $additionalInfo = ['content' => $this->additionalInfo];
+        }
+
+        // Update the session with all fields
+        $this->selectedSession->update([
+            'name' => $this->sessionName,
+            'start_date' => $this->sessionStartDate,
+            'end_date' => $this->sessionEndDate,
+            'max_capacity' => $this->sessionCapacity,
+            'price' => $this->sessionPrice ?: null,
+            'description' => $this->sessionDescription,
+            'is_active' => $this->sessionIsActive,
+            'theme_description' => $this->themeDescription ?: null,
+            'additional_info' => $additionalInfo,
+            'schedule_data' => $scheduleData,
+            'theme_photos' => $themePhotos,
+        ]);
+
+        // Refresh the instance to ensure fresh data
+        $this->selectedSession->refresh();
+
+        $this->showDetailsModal = false;
+        $this->resetDetailsForm();
+        
+        // Reset pagination to refresh the sessions list
+        $this->resetPage();
+        
+        session()->flash('message', 'Session updated successfully.');
+    }
+
+    public function resetDetailsForm()
+    {
+        $this->sessionName = '';
+        $this->sessionStartDate = '';
+        $this->sessionEndDate = '';
+        $this->sessionCapacity = '';
+        $this->sessionPrice = '';
+        $this->sessionDescription = '';
+        $this->sessionIsActive = true;
+        $this->themeDescription = '';
+        $this->additionalInfo = '';
+        $this->scheduleData = [];
+        $this->themePhoto = '';
+        $this->selectedSession = null;
     }
 
     public function createSession()
@@ -156,32 +313,7 @@ class CampSessionManagement extends Component
         }
     }
 
-    public function updateSession()
-    {
-        $this->validate([
-            'sessionName' => 'required|string|max:255',
-            'sessionStartDate' => 'required|date',
-            'sessionEndDate' => 'required|date|after:sessionStartDate',
-            'sessionCapacity' => 'required|integer|min:1',
-            'sessionPrice' => 'nullable|numeric|min:0',
-            'sessionDescription' => 'nullable|string',
-        ]);
 
-        $this->selectedSession->update([
-            'name' => $this->sessionName,
-            'start_date' => $this->sessionStartDate,
-            'end_date' => $this->sessionEndDate,
-            'max_capacity' => $this->sessionCapacity,
-            'price' => $this->sessionPrice ?: null,
-            'description' => $this->sessionDescription,
-            'is_active' => $this->sessionIsActive,
-        ]);
-
-        $this->showEditModal = false;
-        $this->resetSessionForm();
-        $this->selectedSession = null;
-        session()->flash('message', 'Session updated successfully.');
-    }
 
     public function deleteSession()
     {

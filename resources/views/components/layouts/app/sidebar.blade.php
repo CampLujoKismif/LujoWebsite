@@ -32,6 +32,9 @@
                         <flux:navlist.item icon="building-storefront" :href="route('dashboard.admin.camps')" :current="request()->routeIs('dashboard.admin.camps')" wire:navigate>
                             {{ __('Camp Management') }}
                         </flux:navlist.item>
+                        <flux:navlist.item icon="document-duplicate" :href="route('admin.session-templates.index')" :current="request()->routeIs('admin.session-templates.*') || request()->routeIs('admin.camps.session-template*')" wire:navigate>
+                            {{ __('Session Templates') }}
+                        </flux:navlist.item>
                         <flux:navlist.item icon="clipboard-document-list" :href="route('dashboard.admin.form-templates')" :current="request()->routeIs('dashboard.admin.form-templates')" wire:navigate>
                             {{ __('Form Templates') }}
                         </flux:navlist.item>
@@ -318,6 +321,8 @@
 
         @vite('resources/js/app.js')
         @fluxScripts
+        
+        @stack('scripts')
         
         <!-- Ensure theme is applied after all scripts load AND on Livewire navigation -->
         <script>

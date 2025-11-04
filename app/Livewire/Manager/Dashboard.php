@@ -2,13 +2,16 @@
 
 namespace App\Livewire\Manager;
 
+use App\Models\Camp;
 use App\Models\CampInstance;
 use App\Models\Enrollment;
 use Livewire\Component;
 
 class Dashboard extends Component
 {
+    public $selectedCampId;
     public $selectedSessionId;
+    public $selectedCamp;
     public $campInstances;
     public $selectedSession;
     public $stats = [];
@@ -17,14 +20,49 @@ class Dashboard extends Component
     {
         $user = auth()->user();
         
-        // Get available sessions for the manager's camps
-        $this->campInstances = CampInstance::whereHas('camp', function ($query) use ($user) {
-            $query->whereIn('id', $user->assignedCamps()->pluck('camps.id'));
-        })
-        ->with('camp')
-        ->orderBy('year', 'desc')
-        ->orderBy('start_date', 'desc')
-        ->get();
+        // Get assigned camps
+        $assignedCamps = $this->assignedCamps;
+        
+        if ($assignedCamps->isEmpty()) {
+            return;
+        }
+        
+        // Set default camp (primary or first)
+        $primaryCamp = $assignedCamps->firstWhere('pivot.is_primary', true);
+        $this->selectedCampId = $primaryCamp ? $primaryCamp->id : $assignedCamps->first()->id;
+        $this->selectedCamp = Camp::find($this->selectedCampId);
+        
+        $this->loadCampSessions();
+    }
+
+    public function updatedSelectedCampId()
+    {
+        $this->selectedCamp = Camp::find($this->selectedCampId);
+        $this->selectedSessionId = null;
+        $this->selectedSession = null;
+        $this->stats = [];
+        $this->loadCampSessions();
+    }
+
+    public function updatedSelectedSessionId()
+    {
+        $this->selectedSession = $this->campInstances->find($this->selectedSessionId);
+        $this->loadStats();
+    }
+
+    public function loadCampSessions()
+    {
+        if (!$this->selectedCamp) {
+            $this->campInstances = collect();
+            return;
+        }
+
+        // Get available sessions for the selected camp
+        $this->campInstances = CampInstance::where('camp_id', $this->selectedCamp->id)
+            ->with('camp')
+            ->orderBy('year', 'desc')
+            ->orderBy('start_date', 'desc')
+            ->get();
 
         // Set default to the most recent upcoming session
         $this->selectedSession = $this->campInstances
@@ -35,12 +73,6 @@ class Dashboard extends Component
             $this->selectedSessionId = $this->selectedSession->id;
             $this->loadStats();
         }
-    }
-
-    public function updatedSelectedSessionId()
-    {
-        $this->selectedSession = $this->campInstances->find($this->selectedSessionId);
-        $this->loadStats();
     }
 
     public function loadStats()
@@ -60,6 +92,21 @@ class Dashboard extends Component
         ];
     }
 
+    public function getAssignedCampsProperty()
+    {
+        $user = auth()->user();
+        
+        if ($user->hasRole('system-admin')) {
+            return Camp::orderBy('display_name')->get();
+        }
+        
+        if ($user->hasRole('camp-manager')) {
+            return $user->assignedCamps()->orderBy('display_name')->get();
+        }
+        
+        return collect();
+    }
+
     public function getRecentEnrollmentsProperty()
     {
         if (!$this->selectedSession) {
@@ -75,6 +122,8 @@ class Dashboard extends Component
 
     public function render()
     {
-        return view('livewire.manager.dashboard')->layout('components.layouts.app');
+        return view('livewire.manager.dashboard', [
+            'assignedCamps' => $this->assignedCamps,
+        ])->layout('components.layouts.app');
     }
 }

@@ -13,6 +13,8 @@
 
 @vite('resources/css/app.css')
 
+@stack('head')
+
 <!-- Set default to 'light' if no preference (but allow system if explicitly chosen) -->
 <script>
     const fluxTheme = localStorage.getItem('flux.appearance');

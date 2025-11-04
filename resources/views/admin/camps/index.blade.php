@@ -55,9 +55,12 @@
                                     @endif
                                 </td>
                                 <td class="py-4 px-4">
-                                    <div class="flex space-x-2">
+                                    <div class="flex flex-wrap gap-2">
                                         <a href="{{ route('admin.camps.show', $camp) }}" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">View</a>
                                         <a href="{{ route('admin.camps.edit', $camp) }}" class="text-green-600 dark:text-green-400 hover:underline text-sm">Edit</a>
+                                        <a href="{{ route('admin.camps.session-template', $camp) }}" class="text-purple-600 dark:text-purple-400 hover:underline text-sm" title="Manage Session Detail Template">
+                                            Template
+                                        </a>
                                         <form action="{{ route('admin.camps.destroy', $camp) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this camp?')">
                                             @csrf
                                             @method('DELETE')

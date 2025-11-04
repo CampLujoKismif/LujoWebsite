@@ -6,29 +6,104 @@
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Manage your assigned camp sessions</p>
         </div>
 
-        @if($campInstances->isEmpty())
+        @if($assignedCamps->isEmpty())
             <div class="mt-6 text-center">
                 <div class="mx-auto h-12 w-12 text-gray-400">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                     </svg>
                 </div>
-                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No camp sessions assigned</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">You don't have any camp sessions assigned to manage.</p>
+                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No camps assigned</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">You don't have any camps assigned to manage.</p>
             </div>
         @else
-            <!-- Session Selector -->
-            <div class="mt-6">
-                <label for="sessionSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Camp Session</label>
-                <select wire:model.live="selectedSessionId" id="sessionSelect" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
-                    <option value="">Choose a session...</option>
-                    @foreach($campInstances as $instance)
-                        <option value="{{ $instance->id }}">{{ $instance->camp->display_name }} - {{ $instance->name }}</option>
-                    @endforeach
-                </select>
+            <!-- Camp Selector Banner -->
+            <div class="mb-8">
+                @if($assignedCamps->count() > 1)
+                    <!-- Multiple Camps - Large Switcher -->
+                    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg shadow-lg p-6 mb-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-medium text-white mb-1">Switch Camp</h2>
+                                <p class="text-blue-100 text-sm">Select which camp you'd like to manage</p>
+                            </div>
+                            <div class="flex-1 max-w-md ml-6">
+                                <select wire:model.live="selectedCampId" class="block w-full px-4 py-3 text-base font-semibold border-0 rounded-lg shadow-sm bg-white text-gray-900 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600">
+                                    @foreach($assignedCamps as $camp)
+                                        <option value="{{ $camp->id }}">{{ $camp->display_name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Current Camp Display -->
+                @if($selectedCamp)
+                    <div class="bg-white dark:bg-zinc-900 border-2 border-blue-500 rounded-lg shadow-lg p-6 mb-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="flex-shrink-0">
+                                    <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                                        <svg class="w-10 h-10 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Currently Managing</span>
+                                        @if($assignedCamps->count() > 1)
+                                            <span class="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full">{{ $assignedCamps->count() }} Camps</span>
+                                        @endif
+                                    </div>
+                                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $selectedCamp->display_name }}</h2>
+                                    @if($selectedCamp->description)
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $selectedCamp->description }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                @if($assignedCamps->count() > 1)
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ $assignedCamps->count() }} camps assigned</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
-            @if($selectedSession)
+            @if($campInstances->isEmpty())
+                <div class="mt-6 text-center bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+                    <div class="mx-auto h-12 w-12 text-yellow-400">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="mt-2 text-sm font-medium text-yellow-800 dark:text-yellow-200">No camp sessions found</h3>
+                    <p class="mt-1 text-sm text-yellow-700 dark:text-yellow-300">There are no sessions for <strong>{{ $selectedCamp->display_name ?? 'this camp' }}</strong> yet.</p>
+                </div>
+            @else
+                <!-- Session Selector -->
+                <div class="mb-6">
+                    <label for="sessionSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Camp Session</label>
+                    <select wire:model.live="selectedSessionId" id="sessionSelect" class="block w-full pl-3 pr-10 py-3 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm rounded-lg shadow-sm">
+                        <option value="">Choose a session...</option>
+                        @foreach($campInstances as $instance)
+                            <option value="{{ $instance->id }}">
+                                {{ $instance->name }} 
+                                @if($instance->start_date)
+                                    ({{ $instance->start_date->format('M j, Y') }})
+                                @endif
+                                @if($instance->is_active)
+                                    <span class="text-green-600">● Active</span>
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                @if($selectedSession)
                 <!-- Session Statistics -->
                 <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div class="bg-white dark:bg-zinc-900 overflow-hidden shadow rounded-lg">
@@ -201,6 +276,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
             @endif
         @endif
     </div>

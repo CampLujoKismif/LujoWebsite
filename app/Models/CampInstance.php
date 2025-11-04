@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CampInstance extends Model
 {
@@ -287,6 +288,25 @@ class CampInstance extends Model
     }
 
     /**
+     * Get additional info content as a string.
+     * Handles both array format (['content' => '...']) and string format for backward compatibility.
+     */
+    public function getAdditionalInfoContentAttribute(): string
+    {
+        if (!$this->additional_info) {
+            return '';
+        }
+        
+        if (is_array($this->additional_info)) {
+            // If it's an array, extract the content
+            return $this->additional_info['content'] ?? '';
+        }
+        
+        // If it's somehow a string, return it directly (backward compatibility)
+        return is_string($this->additional_info) ? $this->additional_info : '';
+    }
+
+    /**
      * Get grade range as a formatted string.
      */
     public function getGradeRangeAttribute(): string
@@ -399,6 +419,45 @@ class CampInstance extends Model
     }
 
     /**
+     * Populate details from the last active session for this camp.
+     * Uses the service for consistency.
+     *
+     * @return bool True if populated, false otherwise
+     */
+    public function populateFromLastActiveSession(): bool
+    {
+        return app(\App\Services\CampSessionDetailService::class)
+            ->populateFromLastActiveSession($this);
+    }
+
+    /**
+     * Populate details from the master template for this camp.
+     * Uses the service for consistency.
+     *
+     * @return bool True if populated, false otherwise
+     */
+    public function populateFromMasterTemplate(): bool
+    {
+        return app(\App\Services\CampSessionDetailService::class)
+            ->populateFromMasterTemplate($this);
+    }
+
+    /**
+     * Auto-populate session details using priority logic:
+     * 1. Try to copy from last active session
+     * 2. If no active session, copy from master template
+     * 3. If no template, leave fields as-is
+     * Uses the service for consistency.
+     *
+     * @return bool True if details were populated, false otherwise
+     */
+    public function autoPopulateDetails(): bool
+    {
+        return app(\App\Services\CampSessionDetailService::class)
+            ->populateSessionDetails($this);
+    }
+
+    /**
      * Boot the model and add event listeners.
      */
     protected static function boot()
@@ -412,6 +471,24 @@ class CampInstance extends Model
                 static::where('camp_id', $campInstance->camp_id)
                     ->where('is_active', true)
                     ->update(['is_active' => false]);
+            }
+        });
+
+        // Auto-populate details after creation if they're empty
+        static::created(function ($campInstance) {
+            try {
+                $wasPopulated = $campInstance->autoPopulateDetails();
+                // Save if any fields were populated
+                if ($wasPopulated && $campInstance->isDirty(['theme_description', 'schedule_data', 'additional_info', 'theme_photos'])) {
+                    $campInstance->save();
+                }
+            } catch (\Exception $e) {
+                // Log error but don't fail creation
+                Log::error('Failed to auto-populate camp session details', [
+                    'camp_instance_id' => $campInstance->id,
+                    'camp_id' => $campInstance->camp_id,
+                    'error' => $e->getMessage(),
+                ]);
             }
         });
 

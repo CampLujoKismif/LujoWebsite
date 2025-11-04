@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Camp extends Model
@@ -88,6 +89,14 @@ class Camp extends Model
     {
         return $this->hasMany(Note::class, 'notable_id')
             ->where('notable_type', Camp::class);
+    }
+
+    /**
+     * Get the session detail template for this camp.
+     */
+    public function sessionDetailTemplate(): HasOne
+    {
+        return $this->hasOne(CampSessionDetailTemplate::class);
     }
 
     /**
