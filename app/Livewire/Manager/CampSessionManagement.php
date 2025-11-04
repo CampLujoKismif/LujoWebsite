@@ -150,6 +150,9 @@ class CampSessionManagement extends Component
         }
         
         $this->showDetailsModal = true;
+        
+        // Dispatch event to trigger Vue component mounting after modal is rendered
+        $this->dispatch('modal-opened');
     }
 
     public function addScheduleItem()

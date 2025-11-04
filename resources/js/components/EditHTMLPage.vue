@@ -200,19 +200,52 @@ export default {
             // Wait for next tick to ensure DOM is ready
             await nextTick()
             
-            // Set initial content
-            if (props.modelValue) {
-                htmlContent.value = props.modelValue
-                updateHiddenInput()
-            }
-
-            // Ensure hidden input is updated before form submission
-            const form = document.getElementById(props.inputId)?.closest('form')
-            if (form) {
-                form.addEventListener('submit', () => {
+            // Additional wait for modals - ensure the element is visible before initializing TinyMCE
+            // This is especially important for Livewire modals that render dynamically
+            const maxAttempts = 10
+            let attempts = 0
+            
+            const initEditor = async () => {
+                attempts++
+                
+                // Check if the editor container is in the DOM and visible
+                const editorContainer = document.getElementById(props.editorId)?.closest('.tinymce-wrapper')
+                if (!editorContainer) {
+                    if (attempts < maxAttempts) {
+                        await new Promise(resolve => setTimeout(resolve, 100))
+                        return initEditor()
+                    } else {
+                        console.warn('TinyMCE editor container not found after multiple attempts')
+                        return
+                    }
+                }
+                
+                // Check if element is visible (important for modals)
+                const isVisible = editorContainer.offsetParent !== null || 
+                                 window.getComputedStyle(editorContainer).display !== 'none'
+                
+                if (!isVisible && attempts < maxAttempts) {
+                    // Wait a bit more if element exists but isn't visible yet (modal opening)
+                    await new Promise(resolve => setTimeout(resolve, 150))
+                    return initEditor()
+                }
+                
+                // Set initial content
+                if (props.modelValue) {
+                    htmlContent.value = props.modelValue
                     updateHiddenInput()
-                }, true)
+                }
+
+                // Ensure hidden input is updated before form submission
+                const form = document.getElementById(props.inputId)?.closest('form')
+                if (form) {
+                    form.addEventListener('submit', () => {
+                        updateHiddenInput()
+                    }, true)
+                }
             }
+            
+            await initEditor()
         })
 
         onBeforeUnmount(() => {

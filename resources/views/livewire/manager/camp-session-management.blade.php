@@ -242,7 +242,22 @@
 
     <!-- Edit Details Modal -->
     @if($showDetailsModal)
-        <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div 
+            class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+            x-data="{ open: true }"
+            x-init="
+                $nextTick(() => {
+                    setTimeout(() => {
+                        // Trigger Vue component mounting after modal is fully rendered
+                        if (typeof mountVueComponents === 'function') {
+                            mountVueComponents();
+                        }
+                        // Also dispatch custom event
+                        window.dispatchEvent(new Event('modal-rendered'));
+                    }, 300);
+                });
+            "
+        >
             <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white dark:bg-zinc-900 max-h-[90vh] overflow-y-auto">
                 <div class="mt-3">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Edit Session: {{ $selectedSession->name ?? '' }}</h3>
@@ -460,10 +475,12 @@
                                 <div 
                                     wire:ignore
                                     wire:key="theme-description-editor-{{ $selectedSession->id ?? 'new' }}"
+                                    x-data="{ mounted: false }"
+                                    x-init="setTimeout(() => { mounted = true; }, 100)"
                                     data-vue-component="EditHTMLPage"
                                     data-props="{{ json_encode([
                                         'modelValue' => $themeDescription ?? '',
-                                        'editorId' => 'manager_theme_description_editor',
+                                        'editorId' => 'manager_theme_description_editor_' . ($selectedSession->id ?? 'new'),
                                         'inputName' => 'themeDescription',
                                         'inputId' => 'manager_theme_description_input',
                                         'placeholder' => 'Enter the theme description for this camp session...'

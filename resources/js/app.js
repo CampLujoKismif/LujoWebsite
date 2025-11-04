@@ -72,6 +72,7 @@ function mountVueComponents() {
     cleanupRemovedComponents();
     
     // Find all Vue component elements that haven't been mounted yet
+    // Include elements that are hidden (for modals) but exist in DOM
     const vueElements = document.querySelectorAll('[data-vue-component]');
     console.log('Found Vue elements:', vueElements.length);
     
@@ -91,6 +92,13 @@ function mountVueComponents() {
         if (element.hasAttribute('data-vue-mounted')) {
             console.log('Removing stale mounted marker from element:', element);
             element.removeAttribute('data-vue-mounted');
+        }
+        
+        // For elements in modals or hidden containers, check if they're actually in the DOM
+        // even if not visible yet - we'll let the component handle visibility checks
+        if (!document.contains(element)) {
+            console.log('Element not in DOM yet, skipping:', element);
+            return;
         }
         
         const componentName = element.dataset.vueComponent;
@@ -164,20 +172,54 @@ document.addEventListener('DOMContentLoaded', function() {
 // Mount when Livewire navigates (SPA navigation)
 document.addEventListener('livewire:navigated', function() {
     console.log('Livewire navigated, mounting Vue components...');
-    setTimeout(mountVueComponents, 150);
+    setTimeout(mountVueComponents, 200);
 });
 
-// Mount when Livewire updates DOM
+// Mount when Livewire updates DOM (important for modals and dynamic content)
 document.addEventListener('livewire:update', function() {
     console.log('Livewire updated, mounting Vue components...');
-    setTimeout(mountVueComponents, 150);
+    setTimeout(mountVueComponents, 200);
 });
 
 // Mount when Livewire component loads
 document.addEventListener('livewire:load', function() {
     console.log('Livewire component loaded, mounting Vue components...');
+    setTimeout(mountVueComponents, 200);
+});
+
+// Mount when Livewire finishes a request (important for modals that open after wire:click)
+document.addEventListener('livewire:init', function() {
+    console.log('Livewire initialized, mounting Vue components...');
+    setTimeout(mountVueComponents, 100);
+});
+
+// Also listen for Alpine.js initialization (Alpine is used by Livewire)
+document.addEventListener('alpine:init', function() {
+    console.log('Alpine initialized, mounting Vue components...');
     setTimeout(mountVueComponents, 150);
 });
+
+// Listen for custom modal-rendered event (dispatched by modals)
+document.addEventListener('modal-rendered', function() {
+    console.log('Modal rendered, mounting Vue components...');
+    setTimeout(mountVueComponents, 200);
+});
+
+// Listen for Livewire modal events (check if Livewire is available)
+if (typeof Livewire !== 'undefined' && Livewire.on) {
+    Livewire.on('modal-opened', function() {
+        console.log('Livewire modal opened, mounting Vue components...');
+        setTimeout(mountVueComponents, 300);
+    });
+} else if (typeof window.Livewire !== 'undefined' && window.Livewire.on) {
+    window.Livewire.on('modal-opened', function() {
+        console.log('Livewire modal opened, mounting Vue components...');
+        setTimeout(mountVueComponents, 300);
+    });
+}
+
+// Make mountVueComponents available globally for Alpine.js to call
+window.mountVueComponents = mountVueComponents;
 
 // Use MutationObserver as a fallback to catch any DOM updates
 if (typeof MutationObserver !== 'undefined') {
