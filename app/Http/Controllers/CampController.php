@@ -137,13 +137,34 @@ class CampController extends Controller
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'role_id' => 'required|exists:roles,id',
+            'role_id' => 'nullable|exists:roles,id',
             'position' => 'nullable|string|max:255',
             'is_primary' => 'boolean',
         ]);
 
         $targetUser = User::findOrFail($request->user_id);
-        $role = \App\Models\Role::findOrFail($request->role_id);
+        
+        // Get role - use provided role or default to Admin
+        $role = null;
+        if ($request->role_id) {
+            $role = \App\Models\Role::findOrFail($request->role_id);
+        } else {
+            // Get default Admin role for camp assignments
+            $role = \App\Models\Role::where('type', 'camp_session')
+                ->where('name', 'admin')
+                ->first();
+            
+            if (!$role) {
+                // Create default Admin role if it doesn't exist
+                $role = \App\Models\Role::create([
+                    'name' => 'admin',
+                    'display_name' => 'Admin',
+                    'description' => 'Default admin role for camp assignments',
+                    'type' => 'camp_session',
+                    'is_admin' => false,
+                ]);
+            }
+        }
 
         $targetUser->assignToCamp($camp, $role, [
             'position' => $request->position,

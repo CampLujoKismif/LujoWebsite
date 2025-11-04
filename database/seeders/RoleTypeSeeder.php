@@ -77,6 +77,22 @@ class RoleTypeSeeder extends Seeder
             }
         }
         
+        // Create default Admin role for camp assignments (camp_session type)
+        $defaultAdminRole = Role::firstOrCreate(
+            ['name' => 'admin'],
+            [
+                'display_name' => 'Admin',
+                'description' => 'Default admin role for camp assignments',
+                'type' => 'camp_session',
+                'is_admin' => false,
+            ]
+        );
+        
+        // Update existing admin role if it didn't have the correct type
+        if ($defaultAdminRole->type !== 'camp_session') {
+            $defaultAdminRole->update(['type' => 'camp_session']);
+        }
+        
         echo "Role types initialized successfully.\n";
     }
 }

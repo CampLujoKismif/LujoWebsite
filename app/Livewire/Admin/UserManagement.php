@@ -147,18 +147,16 @@ class UserManagement extends Component
             ]);
         }
 
-        // Custom validation for camp role assignments
+        // Custom validation for camp role assignments (role defaults to Admin if not provided)
         if (!empty($this->selectedCamps)) {
             foreach ($this->selectedCamps as $campId) {
-                if (!isset($this->campRoles[$campId]) || empty($this->campRoles[$campId])) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'campRoles' => 'A role must be selected for each camp assignment.'
-                    ]);
-                }
-                if (!Role::find($this->campRoles[$campId])) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'campRoles' => 'The selected role is invalid.'
-                    ]);
+                // If a role is provided, validate it exists
+                if (isset($this->campRoles[$campId]) && !empty($this->campRoles[$campId])) {
+                    if (!Role::find($this->campRoles[$campId])) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'campRoles' => 'The selected role is invalid.'
+                        ]);
+                    }
                 }
             }
         }
@@ -218,18 +216,16 @@ class UserManagement extends Component
             'selectedCamps.*' => 'exists:camps,id',
         ]);
 
-        // Custom validation for camp role assignments
+        // Custom validation for camp role assignments (role defaults to Admin if not provided)
         if (!empty($this->selectedCamps)) {
             foreach ($this->selectedCamps as $campId) {
-                if (!isset($this->campRoles[$campId]) || empty($this->campRoles[$campId])) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'campRoles' => 'A role must be selected for each camp assignment.'
-                    ]);
-                }
-                if (!Role::find($this->campRoles[$campId])) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'campRoles' => 'The selected role is invalid.'
-                    ]);
+                // If a role is provided, validate it exists
+                if (isset($this->campRoles[$campId]) && !empty($this->campRoles[$campId])) {
+                    if (!Role::find($this->campRoles[$campId])) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'campRoles' => 'The selected role is invalid.'
+                        ]);
+                    }
                 }
             }
         }
@@ -324,48 +320,68 @@ class UserManagement extends Component
 
     private function assignUserToCamps($user)
     {
+        // Get default Admin role for camp assignments
+        $defaultRole = Role::where('type', 'camp_session')
+            ->where('name', 'admin')
+            ->first();
+        
+        if (!$defaultRole) {
+            // Create default Admin role if it doesn't exist
+            $defaultRole = Role::create([
+                'name' => 'admin',
+                'display_name' => 'Admin',
+                'description' => 'Default admin role for camp assignments',
+                'type' => 'camp_session',
+                'is_admin' => false,
+            ]);
+        }
+        
         foreach ($this->selectedCamps as $campId) {
-            if (isset($this->campRoles[$campId]) && !empty($this->campRoles[$campId])) {
-                try {
-                    $roleId = $this->campRoles[$campId];
-                    $isPrimary = in_array($campId, $this->primaryCamps);
-                    
-                    // Check if camp and role exist
-                    $camp = Camp::find($campId);
-                    $role = Role::find($roleId);
-                    
-                    if (!$camp) {
-                        throw new \Exception("Camp with ID {$campId} not found.");
-                    }
+            try {
+                $isPrimary = in_array($campId, $this->primaryCamps);
+                
+                // Check if camp exists
+                $camp = Camp::find($campId);
+                
+                if (!$camp) {
+                    throw new \Exception("Camp with ID {$campId} not found.");
+                }
+                
+                // Get role ID - use provided role or default to Admin
+                $roleId = $defaultRole->id;
+                if (isset($this->campRoles[$campId]) && !empty($this->campRoles[$campId])) {
+                    $role = Role::find($this->campRoles[$campId]);
                     
                     if (!$role) {
-                        throw new \Exception("Role with ID {$roleId} not found.");
+                        throw new \Exception("Role with ID {$this->campRoles[$campId]} not found.");
                     }
                     
-                    // Create new assignment (old ones were force-deleted, so this is safe)
-                    $user->campAssignments()->create([
-                        'camp_id' => $campId,
-                        'role_id' => $roleId,
-                        'is_primary' => $isPrimary,
-                    ]);
-                } catch (\Illuminate\Database\QueryException $e) {
-                    // Log the actual database error for debugging
-                    \Log::error('Failed to assign user to camp', [
-                        'user_id' => $user->id,
-                        'camp_id' => $campId,
-                        'role_id' => $this->campRoles[$campId] ?? null,
-                        'error' => $e->getMessage(),
-                    ]);
-                    throw new \Exception('Failed to assign user to camp: ' . $e->getMessage());
-                } catch (\Exception $e) {
-                    // Log other errors
-                    \Log::error('Error assigning user to camp', [
-                        'user_id' => $user->id,
-                        'camp_id' => $campId,
-                        'error' => $e->getMessage(),
-                    ]);
-                    throw $e;
+                    $roleId = $role->id;
                 }
+                
+                // Create new assignment (old ones were force-deleted, so this is safe)
+                $user->campAssignments()->create([
+                    'camp_id' => $campId,
+                    'role_id' => $roleId,
+                    'is_primary' => $isPrimary,
+                ]);
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Log the actual database error for debugging
+                \Log::error('Failed to assign user to camp', [
+                    'user_id' => $user->id,
+                    'camp_id' => $campId,
+                    'role_id' => $this->campRoles[$campId] ?? null,
+                    'error' => $e->getMessage(),
+                ]);
+                throw new \Exception('Failed to assign user to camp: ' . $e->getMessage());
+            } catch (\Exception $e) {
+                // Log other errors
+                \Log::error('Error assigning user to camp', [
+                    'user_id' => $user->id,
+                    'camp_id' => $campId,
+                    'error' => $e->getMessage(),
+                ]);
+                throw $e;
             }
         }
     }

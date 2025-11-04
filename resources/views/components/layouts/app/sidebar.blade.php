@@ -80,7 +80,7 @@
                 @endrole
 
                 <!-- Camp Manager Section -->
-                @role('camp-manager')
+                @if(auth()->user()->hasRole('camp-manager') || (auth()->user()->hasRole('system-admin') && auth()->user()->campAssignments->count() > 0))
                     <flux:navlist.group :heading="__('Camp Management')" expandable="true" expanded="true" class="grid">
                         <flux:navlist.item icon="building-storefront" :href="route('dashboard.manager.index')" :current="request()->routeIs('dashboard.manager.index')" wire:navigate>
                             {{ __('Manager Dashboard') }}
@@ -98,7 +98,7 @@
                             {{ __('Form Responses') }}
                         </flux:navlist.item>
                     </flux:navlist.group>
-                @endrole
+                @endif
 
                 <!-- Parent Portal Section -->
                 @role('parent')

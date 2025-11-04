@@ -204,10 +204,28 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Assign a user to a camp with a specific role.
+     * Assign a user to a camp with a specific role (defaults to Admin if not provided).
      */
-    public function assignToCamp(Camp $camp, Role $role, array $attributes = []): UserCampAssignment
+    public function assignToCamp(Camp $camp, ?Role $role = null, array $attributes = []): UserCampAssignment
     {
+        // If no role provided, use default Admin role
+        if (!$role) {
+            $role = Role::where('type', 'camp_session')
+                ->where('name', 'admin')
+                ->first();
+            
+            if (!$role) {
+                // Create default Admin role if it doesn't exist
+                $role = Role::create([
+                    'name' => 'admin',
+                    'display_name' => 'Admin',
+                    'description' => 'Default admin role for camp assignments',
+                    'type' => 'camp_session',
+                    'is_admin' => false,
+                ]);
+            }
+        }
+        
         $defaults = [
             'position' => null,
             'notes' => null,

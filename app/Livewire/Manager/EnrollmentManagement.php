@@ -52,7 +52,15 @@ class EnrollmentManagement extends Component
         $user = auth()->user();
         
         // Get camp instances for camps assigned to the manager
-        $assignedCampIds = $user->assignedCamps()->pluck('camps.id');
+        // For system-admins, if they have camp assignments, use those; otherwise show all
+        if ($user->hasRole('system-admin')) {
+            $assignedCamps = $user->assignedCamps()->get();
+            $assignedCampIds = $assignedCamps->isNotEmpty() 
+                ? $assignedCamps->pluck('id') 
+                : \App\Models\Camp::pluck('id');
+        } else {
+            $assignedCampIds = $user->assignedCamps()->pluck('camps.id');
+        }
         
         // Get all active sessions for assigned camps
         $this->campInstances = CampInstance::whereIn('camp_id', $assignedCampIds)

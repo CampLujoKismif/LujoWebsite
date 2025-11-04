@@ -89,19 +89,17 @@ class UserManagementController extends Controller
             ]);
         }
 
-        // Custom validation for camp role assignments
+        // Custom validation for camp role assignments (role defaults to Admin if not provided)
         if (!empty($validated['camp_assignments'])) {
             foreach ($validated['camp_assignments'] as $campId) {
                 $roleId = $request->input("camp_role_{$campId}");
-                if (empty($roleId)) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        "camp_role_{$campId}" => 'A role must be selected for each camp assignment.'
-                    ]);
-                }
-                if (!Role::find($roleId)) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        "camp_role_{$campId}" => 'The selected role is invalid.'
-                    ]);
+                // If a role is provided, validate it exists
+                if (!empty($roleId)) {
+                    if (!Role::find($roleId)) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            "camp_role_{$campId}" => 'The selected role is invalid.'
+                        ]);
+                    }
                 }
             }
         }
@@ -133,16 +131,32 @@ class UserManagementController extends Controller
         // Clear existing camp assignments before assigning new ones
         $user->assignedCamps()->detach();
 
+        // Get default Admin role for camp assignments
+        $defaultRole = Role::where('type', 'camp_session')
+            ->where('name', 'admin')
+            ->first();
+        
+        if (!$defaultRole) {
+            // Create default Admin role if it doesn't exist
+            $defaultRole = Role::create([
+                'name' => 'admin',
+                'display_name' => 'Admin',
+                'description' => 'Default admin role for camp assignments',
+                'type' => 'camp_session',
+                'is_admin' => false,
+            ]);
+        }
+        
         // Assign to camps if specified
         if (!empty($validated['camp_assignments'])) {
             foreach ($validated['camp_assignments'] as $campId) {
                 $camp = Camp::find($campId);
                 $roleId = $request->input("camp_role_{$campId}");
                 
-                if ($camp && $roleId) {
+                if ($camp) {
                     $isPrimary = $request->has("primary_camp_{$campId}");
                     $user->assignedCamps()->attach($camp->id, [
-                        'role_id' => $roleId,
+                        'role_id' => !empty($roleId) ? $roleId : $defaultRole->id,
                         'is_primary' => $isPrimary,
                     ]);
                 }
@@ -196,19 +210,17 @@ class UserManagementController extends Controller
             'email_verified' => 'nullable|boolean',
         ]);
 
-        // Custom validation for camp role assignments
+        // Custom validation for camp role assignments (role defaults to Admin if not provided)
         if (!empty($validated['camp_assignments'])) {
             foreach ($validated['camp_assignments'] as $campId) {
                 $roleId = $request->input("camp_role_{$campId}");
-                if (empty($roleId)) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        "camp_role_{$campId}" => 'A role must be selected for each camp assignment.'
-                    ]);
-                }
-                if (!Role::find($roleId)) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        "camp_role_{$campId}" => 'The selected role is invalid.'
-                    ]);
+                // If a role is provided, validate it exists
+                if (!empty($roleId)) {
+                    if (!Role::find($roleId)) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            "camp_role_{$campId}" => 'The selected role is invalid.'
+                        ]);
+                    }
                 }
             }
         }
@@ -240,15 +252,31 @@ class UserManagementController extends Controller
         // Update camp assignments
         $user->assignedCamps()->detach(); // Remove all existing assignments
         
+        // Get default Admin role for camp assignments
+        $defaultRole = Role::where('type', 'camp_session')
+            ->where('name', 'admin')
+            ->first();
+        
+        if (!$defaultRole) {
+            // Create default Admin role if it doesn't exist
+            $defaultRole = Role::create([
+                'name' => 'admin',
+                'display_name' => 'Admin',
+                'description' => 'Default admin role for camp assignments',
+                'type' => 'camp_session',
+                'is_admin' => false,
+            ]);
+        }
+        
         if (!empty($validated['camp_assignments'])) {
             foreach ($validated['camp_assignments'] as $campId) {
                 $camp = Camp::find($campId);
                 $roleId = $request->input("camp_role_{$campId}");
                 
-                if ($camp && $roleId) {
+                if ($camp) {
                     $isPrimary = $request->has("primary_camp_{$campId}");
                     $user->assignedCamps()->attach($camp->id, [
-                        'role_id' => $roleId,
+                        'role_id' => !empty($roleId) ? $roleId : $defaultRole->id,
                         'is_primary' => $isPrimary,
                     ]);
                 }

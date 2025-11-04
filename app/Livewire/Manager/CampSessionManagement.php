@@ -341,8 +341,12 @@ class CampSessionManagement extends Component
     {
         $user = Auth::user();
         
+        // For system-admins, check if they have camp assignments
+        // If they do, show only their assigned camps; otherwise show all camps
         if ($user->hasRole('system-admin')) {
-            return Camp::orderBy('display_name')->get();
+            $assignedCamps = $user->assignedCamps()->orderBy('display_name')->get();
+            // If they have assignments, show only those; otherwise show all (for backward compatibility)
+            return $assignedCamps->isNotEmpty() ? $assignedCamps : Camp::orderBy('display_name')->get();
         }
         
         if ($user->hasRole('camp-manager')) {
