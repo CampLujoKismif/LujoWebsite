@@ -162,13 +162,112 @@ export default {
             // Setup callback to store editor instance
             setup: (editor) => {
                 editorInstance = editor
-                // Set initial content after editor is ready
-                if (props.modelValue) {
-                    editor.on('init', () => {
+                
+                // Fix sink element positioning when in modals
+                // This is critical for production builds where CSS may not apply correctly
+                const fixSinkElement = () => {
+                    // Find and fix the sink element
+                    const sink = document.querySelector('.tox-silver-sink')
+                    if (sink) {
+                        // Force reset width to auto and ensure proper positioning
+                        // The huge width (2830px) is a production build issue
+                        sink.style.width = 'auto'
+                        sink.style.maxWidth = '100%'
+                        sink.style.position = 'absolute'
+                        sink.style.pointerEvents = 'none'
+                        // Ensure sink doesn't block modal interactions
+                        sink.style.zIndex = '1000'
+                        sink.style.left = '0'
+                        sink.style.top = '0'
+                        sink.style.height = 'auto'
+                        sink.style.right = 'auto'
+                        sink.style.bottom = 'auto'
+                        // Remove any inline width that might be set
+                        if (sink.style.width && parseInt(sink.style.width) > 2000) {
+                            sink.style.width = 'auto'
+                        }
+                    }
+                }
+                
+                // Run fix immediately and repeatedly to catch the sink element
+                const runSinkFix = () => {
+                    fixSinkElement()
+                    // Keep checking for a short period after init
+                    let attempts = 0
+                    const maxAttempts = 20
+                    const interval = setInterval(() => {
+                        attempts++
+                        fixSinkElement()
+                        if (attempts >= maxAttempts) {
+                            clearInterval(interval)
+                        }
+                    }, 100)
+                }
+                
+                editor.on('init', () => {
+                    // Fix sink immediately after init and continue checking
+                    setTimeout(runSinkFix, 50)
+                    
+                    // Also fix on various editor events
+                    editor.on('focus', fixSinkElement)
+                    editor.on('blur', fixSinkElement)
+                    editor.on('NodeChange', fixSinkElement)
+                    
+                    // Set initial content after editor is ready
+                    if (props.modelValue) {
                         editor.setContent(props.modelValue || '')
                         htmlContent.value = props.modelValue || ''
+                    }
+                })
+                
+                // Watch for sink element creation and fix it continuously
+                let sinkObserver = null
+                const startSinkObserver = () => {
+                    if (sinkObserver) return // Already observing
+                    
+                    sinkObserver = new MutationObserver((mutations) => {
+                        // Check if sink element was added or modified
+                        let shouldFix = false
+                        mutations.forEach((mutation) => {
+                            if (mutation.type === 'childList') {
+                                mutation.addedNodes.forEach((node) => {
+                                    if (node.nodeType === 1) { // Element node
+                                        if (node.classList?.contains('tox-silver-sink') || 
+                                            node.querySelector?.('.tox-silver-sink')) {
+                                            shouldFix = true
+                                        }
+                                    }
+                                })
+                            }
+                            if (mutation.type === 'attributes' && 
+                                mutation.target.classList?.contains('tox-silver-sink')) {
+                                shouldFix = true
+                            }
+                        })
+                        if (shouldFix) {
+                            fixSinkElement()
+                        }
+                    })
+                    
+                    // Observe document body for sink element
+                    sinkObserver.observe(document.body, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ['style', 'class']
                     })
                 }
+                
+                // Start observing after a short delay
+                setTimeout(startSinkObserver, 100)
+                
+                // Cleanup observer when editor is removed
+                editor.on('remove', () => {
+                    if (sinkObserver) {
+                        sinkObserver.disconnect()
+                        sinkObserver = null
+                    }
+                })
                 
                 // Custom preview button handler
                 editor.ui.registry.addButton('custompreview', {
@@ -314,6 +413,37 @@ export default {
 .dark .tinymce-wrapper :deep(.tox-edit-area__iframe) {
     background-color: #27272a;
     color: #e4e4e7;
+}
+
+/* Fix TinyMCE sink element in modals - prevent it from covering the entire modal */
+:deep(.tox-silver-sink) {
+    position: absolute !important;
+    width: auto !important;
+    max-width: 100% !important;
+    pointer-events: none !important;
+    z-index: 1000 !important;
+    left: 0 !important;
+    top: 0 !important;
+}
+
+/* Ensure TinyMCE dropdowns and menus work properly */
+:deep(.tox-silver-sink > *) {
+    pointer-events: auto !important;
+}
+
+/* Fix TinyMCE menu positioning in modals */
+:deep(.tox-menu) {
+    z-index: 1001 !important;
+}
+
+:deep(.tox-collection) {
+    z-index: 1001 !important;
+}
+
+/* Ensure TinyMCE editor itself doesn't block interactions */
+.tinymce-wrapper :deep(.tox-tinymce) {
+    position: relative;
+    z-index: auto;
 }
 
 /* Preview Modal Styles */

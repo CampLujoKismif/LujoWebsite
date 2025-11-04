@@ -92,3 +92,30 @@ select:focus[data-flux-control] {
         background-color: rgb(241 245 249) !important; /* slate-100 */
     }
 }
+
+/* Fix TinyMCE sink element in modals - prevent it from covering the entire modal */
+/* This must be in global CSS (not scoped) to work in production builds */
+.tox-silver-sink {
+    position: absolute !important;
+    width: auto !important;
+    max-width: 100% !important;
+    pointer-events: none !important;
+    z-index: 1000 !important;
+    left: 0 !important;
+    top: 0 !important;
+    height: auto !important;
+}
+
+/* Ensure TinyMCE dropdowns and menus work properly */
+.tox-silver-sink > * {
+    pointer-events: auto !important;
+}
+
+/* Fix TinyMCE menu positioning in modals */
+.tox-menu {
+    z-index: 1001 !important;
+}
+
+.tox-collection {
+    z-index: 1001 !important;
+}
