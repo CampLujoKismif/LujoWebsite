@@ -182,6 +182,7 @@ document.addEventListener('livewire:load', function() {
 // Use MutationObserver as a fallback to catch any DOM updates
 if (typeof MutationObserver !== 'undefined') {
     let mountTimeout = null;
+    let isObserving = false; // Track if we're already observing
     
     const observer = new MutationObserver(function(mutations) {
         let shouldMount = false;
@@ -252,18 +253,60 @@ if (typeof MutationObserver !== 'undefined') {
     });
     
     // Start observing when DOM is ready
-    if (document.body) {
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    } else {
-        document.addEventListener('DOMContentLoaded', function() {
+    // Only observe if document.body exists and is a valid Node
+    function startObserving() {
+        // Don't observe if we're already observing
+        if (isObserving) {
+            return;
+        }
+        
+        // Validate that document.body is a proper Node
+        if (!document.body) {
+            return;
+        }
+        
+        // Check if it's actually a Node instance
+        if (!(document.body instanceof Node)) {
+            console.warn('document.body is not a valid Node');
+            return;
+        }
+        
+        // Check node type
+        if (document.body.nodeType !== Node.ELEMENT_NODE) {
+            console.warn('document.body is not an ELEMENT_NODE');
+            return;
+        }
+        
+        try {
             observer.observe(document.body, {
                 childList: true,
                 subtree: true
             });
+            isObserving = true;
+        } catch (e) {
+            console.warn('Failed to start MutationObserver:', e);
+        }
+    }
+    
+    // Try to start observing immediately if body is ready
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        if (document.body && document.body instanceof Node) {
+            startObserving();
+        }
+    }
+    
+    // Also set up listeners for when DOM becomes ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            startObserving();
         });
+        
+        window.addEventListener('load', function() {
+            startObserving();
+        });
+    } else {
+        // DOM is already ready, try to observe
+        startObserving();
     }
 }
 
