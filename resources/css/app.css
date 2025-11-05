@@ -110,12 +110,3 @@ select:focus[data-flux-control] {
 .tox-silver-sink > * {
     pointer-events: auto !important;
 }
-
-/* Fix TinyMCE menu positioning in modals */
-.tox-menu {
-    z-index: 1001 !important;
-}
-
-.tox-collection {
-    z-index: 1001 !important;
-}

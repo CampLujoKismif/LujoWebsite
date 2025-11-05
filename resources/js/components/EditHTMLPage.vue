@@ -141,6 +141,7 @@ export default {
             },
             // Table styles and configuration
             table_resize_bars: true,
+            table_toolbar: '', // Hide the popup table properties bar
             table_default_styles: {
                 borderCollapse: 'collapse',
                 border: '1px solid #000'
@@ -431,19 +432,17 @@ export default {
     pointer-events: auto !important;
 }
 
-/* Fix TinyMCE menu positioning in modals */
-:deep(.tox-menu) {
-    z-index: 1001 !important;
-}
-
-:deep(.tox-collection) {
-    z-index: 1001 !important;
-}
-
 /* Ensure TinyMCE editor itself doesn't block interactions */
 .tinymce-wrapper :deep(.tox-tinymce) {
     position: relative;
     z-index: auto;
+}
+
+/* Hide the popup table properties bar */
+:deep(.tox-pop__dialog),
+:deep(.tox-table-toolbar),
+:deep(.tox-table-toolbar-container) {
+    display: none !important;
 }
 
 /* Preview Modal Styles */
