@@ -36,7 +36,7 @@
     </head>
     <body class="bg-gray-50">
         <!-- Navigation -->
-        <nav class="bg-white shadow-lg fixed w-full z-50" x-data="{ mobileMenuOpen: false, sessionsDropdownOpen: false }">
+        <nav class="bg-white shadow-lg fixed top-0 w-full z-50" x-data="{ mobileMenuOpen: false, sessionsDropdownOpen: false }">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <!-- Logo -->
