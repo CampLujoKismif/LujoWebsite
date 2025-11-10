@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\FamilyContact;
 
 class Family extends Model
 {
@@ -61,6 +62,14 @@ class Family extends Model
     public function familyUsers(): HasMany
     {
         return $this->hasMany(FamilyUser::class);
+    }
+
+    /**
+     * Get the contacts associated with this family.
+     */
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(FamilyContact::class);
     }
 
     /**

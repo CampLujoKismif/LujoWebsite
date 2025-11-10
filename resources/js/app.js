@@ -41,6 +41,8 @@ import RentalCalendar from './components/RentalCalendar.vue'
 import RentalForm from './components/RentalForm.vue'
 import StripePaymentForm from './components/StripePaymentForm.vue'
 import EditHTMLPage from './components/EditHTMLPage.vue'
+import ParentOnboarding from './components/ParentOnboarding.vue'
+import CampRegistrationModal from './components/CampRegistrationModal.vue'
 
 // Create Vue app instance
 const app = createApp({})
@@ -50,6 +52,8 @@ app.component('vue-example', VueExample)
 app.component('rental-calendar', RentalCalendar)
 app.component('rental-form', RentalForm)
 app.component('stripe-payment-form', StripePaymentForm)
+app.component('parent-onboarding', ParentOnboarding)
+app.component('camp-registration-modal', CampRegistrationModal)
 
 // Make Vue available globally for Blade templates
 window.Vue = createApp
@@ -160,6 +164,10 @@ function mountVueComponents() {
                     componentToMount = VueExample;
                 } else if (componentName === 'EditHTMLPage') {
                     componentToMount = EditHTMLPage;
+                } else if (componentName === 'ParentOnboarding') {
+                    componentToMount = ParentOnboarding;
+                } else if (componentName === 'CampRegistrationModal') {
+                    componentToMount = CampRegistrationModal;
                 } else {
                     componentToMount = VueExample; // Default fallback
                 }
@@ -172,6 +180,8 @@ function mountVueComponents() {
                 elementApp.component('vue-example', VueExample);
                 elementApp.component('stripe-payment-form', StripePaymentForm);
                 elementApp.component('edit-html-page', EditHTMLPage);
+                elementApp.component('parent-onboarding', ParentOnboarding);
+                elementApp.component('camp-registration-modal', CampRegistrationModal);
                 
                 // Ensure the element is properly in the DOM
                 if (element && element.nodeType === Node.ELEMENT_NODE && document.contains(element)) {

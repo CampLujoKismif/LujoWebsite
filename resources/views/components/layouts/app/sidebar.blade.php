@@ -106,21 +106,6 @@
                         <flux:navlist.item icon="home" :href="route('dashboard.parent.index')" :current="request()->routeIs('dashboard.parent.index')" wire:navigate>
                             {{ __('Parent Dashboard') }}
                         </flux:navlist.item>
-                        <flux:navlist.item icon="user-group" :href="route('dashboard.parent.families')" :current="request()->routeIs('dashboard.parent.families')" wire:navigate>
-                            {{ __('Family Management') }}
-                        </flux:navlist.item>
-                        <flux:navlist.item icon="users" :href="route('dashboard.parent.campers')" :current="request()->routeIs('dashboard.parent.campers')" wire:navigate>
-                            {{ __('Camper Management') }}
-                        </flux:navlist.item>
-                        <flux:navlist.item icon="clipboard-document-list" :href="route('dashboard.parent.enrollments')" :current="request()->routeIs('dashboard.parent.enrollments')" wire:navigate>
-                            {{ __('Enrollments') }}
-                        </flux:navlist.item>
-                        <flux:navlist.item icon="clipboard-document" :href="route('dashboard.parent.forms')" :current="request()->routeIs('dashboard.parent.forms')" wire:navigate>
-                            {{ __('Fill Forms') }}
-                        </flux:navlist.item>
-                        <flux:navlist.item icon="heart" :href="route('dashboard.parent.medical-records')" :current="request()->routeIs('dashboard.parent.medical-records')" wire:navigate>
-                            {{ __('Medical Records') }}
-                        </flux:navlist.item>
                     </flux:navlist.group>
                 @endrole
             </flux:navlist>

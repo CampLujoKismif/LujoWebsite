@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>Camp LUJO-KISMIF - Keep It Spiritual, Make It Fun!</title>
 
         <link rel="icon" href="/favicon.ico" sizes="any">
@@ -28,6 +29,16 @@
         
         <!-- Alpine.js -->
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        
+        <!-- Stripe.js -->
+        <script src="https://js.stripe.com/v3/"></script>
+        <script>
+            @if(config('services.stripe.key'))
+                window.stripePublishableKey = '{{ config('services.stripe.key') }}';
+            @else
+                console.error('Stripe publishable key is not configured. Please set STRIPE_KEY in your .env file.');
+            @endif
+        </script>
         
         <!-- Smooth Scrolling Script -->
         <script>
@@ -686,9 +697,9 @@
                                         Learn More & Register
                                     </a>
                                 @else
-                                    <a href="{{ route('login') }}" class="inline-block bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-lg font-semibold transition duration-300 transform hover:scale-105">
+                                    <button onclick="openRegistrationModal({{ $instance->id }})" class="inline-block bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-lg font-semibold transition duration-300 transform hover:scale-105">
                                         Register Now
-                                    </a>
+                                    </button>
                                 @endif
                             </div>
                         </div>
@@ -1016,5 +1027,35 @@
                 </div>
             </div>
         </footer>
+
+        <!-- Registration Modal -->
+        <div x-data="{ showModal: false, campInstanceId: null }"
+             x-init="
+                showModal = false;
+                window.openCampRegistrationModal = function(instanceId) {
+                    campInstanceId = instanceId;
+                    showModal = true;
+                    $nextTick(() => {
+                        setTimeout(() => {
+                            if (typeof mountVueComponents === 'function') {
+                                mountVueComponents();
+                            }
+                            window.dispatchEvent(new Event('modal-rendered'));
+                        }, 100);
+                    });
+                };
+                window.closeCampRegistrationModal = function() {
+                    showModal = false;
+                    campInstanceId = null;
+                };
+             ">
+            <template x-if="showModal && campInstanceId">
+                <div x-show="showModal" 
+                     x-cloak
+                     data-vue-component="CampRegistrationModal"
+                     :data-props="JSON.stringify({ campInstanceId: campInstanceId, show: showModal })">
+                </div>
+            </template>
+        </div>
     </body>
 </html> 

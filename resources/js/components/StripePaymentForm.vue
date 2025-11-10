@@ -57,6 +57,11 @@ export default {
       required: false,
       default: null
     },
+    enrollmentIds: {
+      type: Array,
+      required: false,
+      default: null
+    },
     customerName: {
       type: String,
       required: false,
@@ -94,32 +99,84 @@ export default {
       try {
         // Initialize Stripe
         if (!window.Stripe) {
-          throw new Error('Stripe.js failed to load')
+          throw new Error('Stripe.js failed to load. Please refresh the page.')
+        }
+
+        if (!window.stripePublishableKey) {
+          console.error('Stripe publishable key not found. Check if STRIPE_KEY is set in .env file.')
+          throw new Error('Stripe publishable key is missing. Please check that STRIPE_KEY is set in your .env file and run: php artisan config:clear')
+        }
+
+        if (typeof window.stripePublishableKey !== 'string' || !window.stripePublishableKey.startsWith('pk_')) {
+          console.error('Invalid Stripe publishable key format:', window.stripePublishableKey)
+          throw new Error('Invalid Stripe publishable key format. The key should start with "pk_".')
         }
 
         this.stripe = window.Stripe(window.stripePublishableKey)
 
+        // Determine API endpoint based on whether this is for rentals or enrollments
+        const endpoint = this.enrollmentIds 
+          ? '/api/public-registration/create-payment-intent'
+          : '/api/rental/create-payment-intent'
+
+        const body = {
+          amount: this.amount,
+          customer_name: this.customerName || null,
+          customer_email: this.customerEmail || null,
+          customer_phone: this.customerPhone || null
+        }
+
+        if (this.enrollmentIds && this.enrollmentIds.length > 0) {
+          body.enrollment_ids = this.enrollmentIds
+        } else if (this.reservationId) {
+          body.reservation_id = this.reservationId
+        } else {
+          throw new Error('No enrollment IDs or reservation ID provided')
+        }
+
+        console.log('Creating payment intent with:', { 
+          endpoint, 
+          amount: body.amount, 
+          enrollment_ids: body.enrollment_ids,
+          reservation_id: body.reservation_id 
+        })
+
         // Create payment intent
-        const response = await fetch('/api/rental/create-payment-intent', {
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
           },
-          body: JSON.stringify({
-            amount: this.amount,
-            reservation_id: this.reservationId,
-            customer_name: this.customerName,
-            customer_email: this.customerEmail,
-            customer_phone: this.customerPhone
-          })
+          credentials: 'same-origin',
+          body: JSON.stringify(body)
         })
 
-        if (!response.ok) {
-          throw new Error('Failed to create payment intent')
+        let data
+        try {
+          data = await response.json()
+        } catch (e) {
+          console.error('Failed to parse response:', e)
+          throw new Error('Invalid response from server. Please try again.')
         }
 
-        const data = await response.json()
+        if (!response.ok) {
+          console.error('Payment intent creation failed:', data)
+          let errorMessage = 'Failed to create payment intent'
+          
+          if (data.errors) {
+            // Format validation errors
+            const errorMessages = Object.values(data.errors).flat()
+            errorMessage = errorMessages.join(', ') || data.message || errorMessage
+          } else if (data.message) {
+            errorMessage = data.message
+          } else if (data.error) {
+            errorMessage = typeof data.error === 'string' ? data.error : JSON.stringify(data.error)
+          }
+          
+          throw new Error(errorMessage)
+        }
         this.clientSecret = data.client_secret
         this.paymentIntentId = data.payment_intent_id
 
@@ -148,7 +205,17 @@ export default {
 
       } catch (err) {
         console.error('Error initializing Stripe:', err)
-        this.error = 'Failed to initialize payment form. Please try again.'
+        let errorMessage = 'Failed to initialize payment form. Please try again.'
+        
+        if (err.message) {
+          errorMessage = err.message
+        } else if (err.error) {
+          errorMessage = err.error
+        } else if (typeof err === 'string') {
+          errorMessage = err
+        }
+        
+        this.error = errorMessage
         this.loading = false
       }
     },

@@ -188,10 +188,10 @@
                                 @endif
                                 
                                 @if($instance->isRegistrationOpen())
-                                    <a href="{{ route('login') }}" 
+                                    <button @click="openRegistrationModal({{ $instance->id }})"
                                        class="flex-1 bg-green-100 hover:bg-green-200 text-gray-900 text-center py-2 px-4 rounded-md font-medium transition duration-300">
                                         Register Now
-                                    </a>
+                                    </button>
                                 @else
                                     <button disabled 
                                             class="flex-1 bg-gray-200 text-gray-600 text-center py-2 px-4 rounded-md font-medium cursor-not-allowed">
@@ -224,4 +224,42 @@
             </div>
         @endif
     </div>
+
+    <!-- Registration Modal -->
+    <div x-data="{ showModal: false, campInstanceId: null }"
+         x-init="
+            showModal = false;
+            window.openCampRegistrationModal = function(instanceId) {
+                campInstanceId = instanceId;
+                showModal = true;
+                $nextTick(() => {
+                    setTimeout(() => {
+                        if (typeof mountVueComponents === 'function') {
+                            mountVueComponents();
+                        }
+                        window.dispatchEvent(new Event('modal-rendered'));
+                    }, 100);
+                });
+            };
+            window.closeCampRegistrationModal = function() {
+                showModal = false;
+                campInstanceId = null;
+            };
+         ">
+        <template x-if="showModal && campInstanceId">
+            <div x-show="showModal" 
+                 x-cloak
+                 data-vue-component="CampRegistrationModal"
+                 :data-props="JSON.stringify({ campInstanceId: campInstanceId, show: showModal })">
+            </div>
+        </template>
+    </div>
 </div>
+
+<script>
+function openRegistrationModal(instanceId) {
+    if (window.openCampRegistrationModal) {
+        window.openCampRegistrationModal(instanceId);
+    }
+}
+</script>

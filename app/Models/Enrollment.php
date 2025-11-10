@@ -15,6 +15,9 @@ class Enrollment extends Model
     protected $fillable = [
         'camp_instance_id',
         'camper_id',
+        'information_snapshot_id',
+        'medical_snapshot_id',
+        'parent_signature_id',
         'status',
         'balance_cents',
         'amount_paid_cents',
@@ -55,6 +58,30 @@ class Enrollment extends Model
     public function camper(): BelongsTo
     {
         return $this->belongsTo(Camper::class);
+    }
+
+    /**
+     * Get the information snapshot associated with this enrollment.
+     */
+    public function informationSnapshot(): BelongsTo
+    {
+        return $this->belongsTo(CamperInformationSnapshot::class);
+    }
+
+    /**
+     * Get the medical snapshot associated with this enrollment.
+     */
+    public function medicalSnapshot(): BelongsTo
+    {
+        return $this->belongsTo(CamperMedicalSnapshot::class);
+    }
+
+    /**
+     * Get the parent signature associated with this enrollment.
+     */
+    public function parentSignature(): BelongsTo
+    {
+        return $this->belongsTo(ParentAgreementSignature::class);
     }
 
     /**

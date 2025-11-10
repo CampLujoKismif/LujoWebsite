@@ -32,6 +32,16 @@
         <!-- Alpine.js -->
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
         
+        <!-- Stripe.js -->
+        <script src="https://js.stripe.com/v3/"></script>
+        <script>
+            @if(config('services.stripe.key'))
+                window.stripePublishableKey = '{{ config('services.stripe.key') }}';
+            @else
+                console.error('Stripe publishable key is not configured. Please set STRIPE_KEY in your .env file.');
+            @endif
+        </script>
+        
         @stack('head')
     </head>
     <body class="bg-gray-50">

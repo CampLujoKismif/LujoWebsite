@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \App\Http\Middleware\CheckPermission::class,
             'camp.access' => \App\Http\Middleware\CheckCampAccess::class,
             'require.password.change' => \App\Http\Middleware\RequirePasswordChange::class,
+            'require.onboarding' => \App\Http\Middleware\RequireOnboarding::class,
         ]);
         
         // Exclude Stripe webhook from CSRF verification

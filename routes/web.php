@@ -36,8 +36,49 @@ Route::get('/rentals', function () {
     return view('rentals');
 })->name('rentals');
 
+// Public Registration API Routes (accessible without auth for initial steps)
+Route::prefix('api/public-registration')->name('api.public-registration.')->group(function () {
+    Route::get('/check-auth', [App\Http\Controllers\Api\PublicRegistrationController::class, 'checkAuth']);
+    Route::post('/login', [App\Http\Controllers\Api\PublicRegistrationController::class, 'login']);
+    Route::post('/register', [App\Http\Controllers\Api\PublicRegistrationController::class, 'register']);
+    Route::get('/camp-instance/{id}', [App\Http\Controllers\Api\PublicRegistrationController::class, 'getCampInstance']);
+    
+    // Routes that require authentication
+    Route::middleware('auth')->group(function () {
+        Route::get('/user-data', [App\Http\Controllers\Api\PublicRegistrationController::class, 'getUserData']);
+        Route::post('/family', [App\Http\Controllers\Api\PublicRegistrationController::class, 'updateFamily']);
+        Route::post('/camper', [App\Http\Controllers\Api\PublicRegistrationController::class, 'saveCamper']);
+        Route::delete('/camper/{id}', [App\Http\Controllers\Api\PublicRegistrationController::class, 'deleteCamper']);
+        Route::patch('/camper/{id}/restore', [App\Http\Controllers\Api\PublicRegistrationController::class, 'restoreCamper']);
+        Route::post('/enrollments', [App\Http\Controllers\Api\PublicRegistrationController::class, 'createEnrollments']);
+        Route::get('/annual-status', [App\Http\Controllers\Api\AnnualComplianceController::class, 'status']);
+        Route::post('/annual-confirmation', [App\Http\Controllers\Api\AnnualComplianceController::class, 'submit']);
+        Route::get('/forms', [App\Http\Controllers\Api\AnnualFormController::class, 'show']);
+        Route::post('/forms', [App\Http\Controllers\Api\AnnualFormController::class, 'store']);
+        Route::post('/create-payment-intent', [App\Http\Controllers\Api\PublicRegistrationController::class, 'createPaymentIntent']);
+        Route::post('/confirm-payment', [App\Http\Controllers\Api\PublicRegistrationController::class, 'confirmPayment']);
+    });
+});
+
+// Parent Onboarding (must be before dashboard routes)
+Route::middleware(['auth', 'verified', 'require.password.change'])->group(function () {
+    Route::get('/onboarding', function () {
+        return view('parent-onboarding');
+    })->name('onboarding');
+    
+    // API routes for onboarding
+    Route::prefix('api/parent-onboarding')->name('api.parent-onboarding.')->group(function () {
+        Route::get('/initial-data', [App\Http\Controllers\Api\ParentOnboardingController::class, 'getInitialData']);
+        Route::post('/family', [App\Http\Controllers\Api\ParentOnboardingController::class, 'updateFamily']);
+        Route::post('/camper', [App\Http\Controllers\Api\ParentOnboardingController::class, 'saveCamper']);
+        Route::delete('/camper/{id}', [App\Http\Controllers\Api\ParentOnboardingController::class, 'deleteCamper']);
+        Route::post('/enrollments', [App\Http\Controllers\Api\ParentOnboardingController::class, 'createEnrollments']);
+        Route::post('/complete', [App\Http\Controllers\Api\ParentOnboardingController::class, 'completeOnboarding']);
+    });
+});
+
 // Dashboard routes with role-based routing
-Route::middleware(['auth', 'verified', 'require.password.change'])->prefix('dashboard')->name('dashboard.')->group(function () {
+Route::middleware(['auth', 'verified', 'require.password.change', 'require.onboarding'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', App\Livewire\Dashboard\Index::class)->name('home');
     
     // Admin Dashboard
@@ -72,13 +113,8 @@ Route::middleware(['auth', 'verified', 'require.password.change'])->prefix('dash
     // Parent Portal
                 Route::middleware(['role:parent,system-admin'])->prefix('parent')->name('parent.')->group(function () {
                 Route::get('/', App\Livewire\ParentPortal\Dashboard::class)->name('index');
-                Route::get('/families', App\Livewire\ParentPortal\FamilyManagement::class)->name('families');
-                Route::get('/campers', App\Livewire\ParentPortal\CamperManagement::class)->name('campers');
-                Route::get('/enrollments', App\Livewire\ParentPortal\EnrollmentManagement::class)->name('enrollments');
                 Route::get('/payments', App\Livewire\ParentPortal\PaymentProcessing::class)->name('payments');
                 Route::get('/register/{campInstance}', App\Livewire\ParentPortal\CampRegistration::class)->name('register');
-                Route::get('/medical-records', App\Livewire\ParentPortal\MedicalRecords::class)->name('medical-records');
-                Route::get('/forms', App\Livewire\ParentPortal\FormFilling::class)->name('forms');
                 Route::get('/families/{family}', App\Livewire\ParentPortal\FamilyDetails::class)->name('family-details');
                 Route::get('/families/{family}/attachments', App\Livewire\ParentPortal\FamilyAttachments::class)->name('family-attachments');
                 Route::get('/families/{family}/insurance', App\Livewire\ParentPortal\FamilyInsuranceInfo::class)->name('family-insurance');

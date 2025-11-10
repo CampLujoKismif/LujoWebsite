@@ -24,6 +24,8 @@ class Camper extends Model
         'email',
         'grade',
         'school',
+        't_shirt_size',
+        'photo_path',
         'allergies',
         'medical_conditions',
         'medications',
@@ -58,6 +60,38 @@ class Camper extends Model
     public static function getBiologicalGenderValues(): array
     {
         return array_keys(self::getBiologicalGenderOptions());
+    }
+
+    /**
+     * Get the t-shirt size options.
+     */
+    public static function getTShirtSizeOptions(): array
+    {
+        return [
+            'XS' => 'XS',
+            'S' => 'S',
+            'M' => 'M',
+            'L' => 'L',
+            'XL' => 'XL',
+            'XXL' => 'XXL',
+            'Youth XS' => 'Youth XS',
+            'Youth S' => 'Youth S',
+            'Youth M' => 'Youth M',
+            'Youth L' => 'Youth L',
+            'Youth XL' => 'Youth XL',
+        ];
+    }
+
+    /**
+     * Get the photo URL.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (!$this->photo_path) {
+            return null;
+        }
+        
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->photo_path);
     }
 
     /**
@@ -98,6 +132,21 @@ class Camper extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    public function agreementSignatures(): HasMany
+    {
+        return $this->hasMany(CamperAgreementSignature::class);
+    }
+
+    public function informationSnapshots(): HasMany
+    {
+        return $this->hasMany(CamperInformationSnapshot::class);
+    }
+
+    public function medicalSnapshots(): HasMany
+    {
+        return $this->hasMany(CamperMedicalSnapshot::class);
     }
 
     /**

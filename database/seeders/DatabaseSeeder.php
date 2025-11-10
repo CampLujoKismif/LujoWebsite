@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             TestUsersSeeder::class,
             UrlForwardSeeder::class,
             RentalPricingSeeder::class,
+            AgreementSeeder::class,
         ]);
 
         // User::factory(10)->create();

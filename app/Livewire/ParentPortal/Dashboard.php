@@ -4,15 +4,52 @@ namespace App\Livewire\ParentPortal;
 
 use App\Models\CampInstance;
 use App\Models\Enrollment;
+use App\Models\Family;
+use App\Models\Camper;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 class Dashboard extends Component
 {
+    use WithFileUploads;
+
     public $stats = [];
+    
+    // Family editing
+    public $showFamilyEditModal = false;
+    public $familyName;
+    public $phone;
+    public $address;
+    public $city;
+    public $state;
+    public $zipCode;
+    public $emergencyContactName;
+    public $emergencyContactPhone;
+    public $emergencyContactRelationship;
+    
+    // Camper editing
+    public $showCamperModal = false;
+    public $editingCamperId = null;
+    public $camperFirstName;
+    public $camperLastName;
+    public $camperDateOfBirth;
+    public $camperBiologicalGender;
+    public $camperGrade;
+    public $camperTShirtSize;
+    public $camperSchool;
+    public $camperPhone;
+    public $camperEmail;
+    public $camperAllergies;
+    public $camperMedicalConditions;
+    public $camperMedications;
+    public $camperPhoto;
+    public $camperPhotoPreview;
 
     public function mount()
     {
         $this->loadStats();
+        $this->loadFamilyData();
     }
 
     public function loadStats()
@@ -36,20 +73,23 @@ class Dashboard extends Component
         $this->stats = [
             'active_campers' => $campers->count(),
             'confirmed_enrollments' => $activeEnrollments->where('status', 'confirmed')->count(),
-            'pending_forms' => $this->calculatePendingForms($activeEnrollments),
         ];
     }
 
-    private function calculatePendingForms($enrollments)
+    public function loadFamilyData()
     {
-        $pendingCount = 0;
-        foreach ($enrollments as $enrollment) {
-            // Check if forms are required but not completed
-            if (!$enrollment->forms_complete) {
-                $pendingCount++;
-            }
-        }
-        return $pendingCount;
+        $user = auth()->user();
+        $family = $user->defaultFamily();
+        
+        $this->familyName = $family->name;
+        $this->phone = $family->phone;
+        $this->address = $family->address;
+        $this->city = $family->city;
+        $this->state = $family->state;
+        $this->zipCode = $family->zip_code;
+        $this->emergencyContactName = $family->emergency_contact_name;
+        $this->emergencyContactPhone = $family->emergency_contact_phone;
+        $this->emergencyContactRelationship = $family->emergency_contact_relationship;
     }
 
     public function getRecentActivityProperty()
@@ -97,6 +137,222 @@ class Dashboard extends Component
             ->get();
 
         return $activeSessions;
+    }
+
+    public function openFamilyEditModal()
+    {
+        $this->loadFamilyData();
+        $this->showFamilyEditModal = true;
+    }
+
+    public function closeFamilyEditModal()
+    {
+        $this->showFamilyEditModal = false;
+        $this->resetValidation();
+    }
+
+    public function saveFamily()
+    {
+        $this->validate([
+            'familyName' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:255',
+            'state' => 'nullable|string|max:255',
+            'zipCode' => 'nullable|string|max:10',
+            'emergencyContactName' => 'nullable|string|max:255',
+            'emergencyContactPhone' => 'nullable|string|max:20',
+            'emergencyContactRelationship' => 'nullable|string|max:100',
+        ]);
+
+        $user = auth()->user();
+        $family = $user->defaultFamily();
+
+        $family->update([
+            'name' => $this->familyName,
+            'phone' => $this->phone,
+            'address' => $this->address,
+            'city' => $this->city,
+            'state' => $this->state,
+            'zip_code' => $this->zipCode,
+            'emergency_contact_name' => $this->emergencyContactName,
+            'emergency_contact_phone' => $this->emergencyContactPhone,
+            'emergency_contact_relationship' => $this->emergencyContactRelationship,
+        ]);
+
+        $this->closeFamilyEditModal();
+        $this->dispatch('family-updated');
+        session()->flash('message', 'Family information updated successfully.');
+    }
+
+    public function openCamperModal($camperId = null)
+    {
+        $this->editingCamperId = $camperId;
+        $this->camperPhotoPreview = null;
+        
+        if ($camperId) {
+            $user = auth()->user();
+            $family = $user->defaultFamily();
+            $camper = Camper::where('id', $camperId)
+                ->where('family_id', $family->id)
+                ->firstOrFail();
+            
+            $this->camperFirstName = $camper->first_name;
+            $this->camperLastName = $camper->last_name;
+            $this->camperDateOfBirth = $camper->date_of_birth ? $camper->date_of_birth->format('Y-m-d') : '';
+            $this->camperBiologicalGender = $camper->biological_gender;
+            $this->camperGrade = $camper->grade;
+            $this->camperTShirtSize = $camper->t_shirt_size;
+            $this->camperSchool = $camper->school;
+            $this->camperPhone = $camper->phone_number;
+            $this->camperEmail = $camper->email;
+            $this->camperAllergies = $camper->allergies;
+            $this->camperMedicalConditions = $camper->medical_conditions;
+            $this->camperMedications = $camper->medications;
+            $this->camperPhotoPreview = $camper->photo_url;
+        } else {
+            $this->resetCamperFields();
+        }
+        
+        $this->showCamperModal = true;
+    }
+
+    public function closeCamperModal()
+    {
+        $this->showCamperModal = false;
+        $this->editingCamperId = null;
+        $this->resetCamperFields();
+        $this->resetValidation();
+    }
+
+    public function resetCamperFields()
+    {
+        $this->camperFirstName = '';
+        $this->camperLastName = '';
+        $this->camperDateOfBirth = '';
+        $this->camperBiologicalGender = '';
+        $this->camperGrade = '';
+        $this->camperTShirtSize = '';
+        $this->camperSchool = '';
+        $this->camperPhone = '';
+        $this->camperEmail = '';
+        $this->camperAllergies = '';
+        $this->camperMedicalConditions = '';
+        $this->camperMedications = '';
+        $this->camperPhoto = null;
+        $this->camperPhotoPreview = null;
+    }
+
+    public function updatedCamperPhoto()
+    {
+        $this->validate([
+            'camperPhoto' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+        ]);
+        
+        if ($this->camperPhoto) {
+            $this->camperPhotoPreview = $this->camperPhoto->temporaryUrl();
+        }
+    }
+
+    public function saveCamper()
+    {
+        $this->validate([
+            'camperFirstName' => 'required|string|max:255',
+            'camperLastName' => 'required|string|max:255',
+            'camperDateOfBirth' => 'required|date|before:today',
+            'camperBiologicalGender' => 'nullable|string|in:Male,Female',
+            'camperGrade' => 'required|integer|min:1|max:12',
+            'camperTShirtSize' => 'nullable|string|max:50',
+            'camperSchool' => 'nullable|string|max:255',
+            'camperPhone' => 'nullable|string|max:20',
+            'camperEmail' => 'nullable|email|max:255',
+            'camperAllergies' => 'nullable|string',
+            'camperMedicalConditions' => 'nullable|string',
+            'camperMedications' => 'nullable|string',
+            'camperPhoto' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+        ]);
+
+        $user = auth()->user();
+        $family = $user->defaultFamily();
+
+        $data = [
+            'first_name' => $this->camperFirstName,
+            'last_name' => $this->camperLastName,
+            'date_of_birth' => $this->camperDateOfBirth,
+            'biological_gender' => $this->camperBiologicalGender,
+            'grade' => $this->camperGrade,
+            't_shirt_size' => $this->camperTShirtSize,
+            'school' => $this->camperSchool,
+            'phone_number' => $this->camperPhone,
+            'email' => $this->camperEmail,
+            'allergies' => $this->camperAllergies,
+            'medical_conditions' => $this->camperMedicalConditions,
+            'medications' => $this->camperMedications,
+        ];
+
+        // Handle photo upload
+        if ($this->camperPhoto) {
+            $photoPath = $this->camperPhoto->store('camper-photos', 'public');
+            $data['photo_path'] = $photoPath;
+        }
+
+        if ($this->editingCamperId) {
+            $camper = Camper::where('id', $this->editingCamperId)
+                ->where('family_id', $family->id)
+                ->firstOrFail();
+            
+            // Delete old photo if new one is uploaded
+            if ($this->camperPhoto && $camper->photo_path) {
+                Storage::disk('public')->delete($camper->photo_path);
+            }
+            
+            $camper->update($data);
+            $message = 'Camper updated successfully.';
+        } else {
+            $data['family_id'] = $family->id;
+            Camper::create($data);
+            $message = 'Camper added successfully.';
+        }
+
+        $this->closeCamperModal();
+        $this->loadStats();
+        session()->flash('message', $message);
+    }
+
+    public function deleteCamper($camperId)
+    {
+        $user = auth()->user();
+        $family = $user->defaultFamily();
+        
+        $camper = Camper::where('id', $camperId)
+            ->where('family_id', $family->id)
+            ->firstOrFail();
+        
+        // Delete photo if exists
+        if ($camper->photo_path) {
+            Storage::disk('public')->delete($camper->photo_path);
+        }
+        
+        $camper->delete();
+        $this->loadStats();
+        session()->flash('message', 'Camper deleted successfully.');
+    }
+
+    public function getFamiliesProperty()
+    {
+        $user = auth()->user();
+        return $user->families()->with('campers')->get();
+    }
+
+    public function getAllCampersProperty()
+    {
+        $user = auth()->user();
+        $families = $user->families()->with('campers')->get();
+        $campers = collect();
+        foreach ($families as $family) {
+            $campers = $campers->concat($family->campers);
+        }
+        return $campers;
     }
 
     public function render()

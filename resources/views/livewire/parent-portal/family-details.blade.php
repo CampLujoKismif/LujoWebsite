@@ -6,11 +6,11 @@
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $family->name }}</h1>
                 <p class="text-gray-600 dark:text-gray-400">Family Management Dashboard</p>
             </div>
-            <a href="{{ route('dashboard.parent.families') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+            <a href="{{ route('dashboard.parent.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
-                <span>Back to Families</span>
+                <span>Back to Dashboard</span>
             </a>
         </div>
 
@@ -155,9 +155,6 @@
                                                     <p class="text-sm text-gray-500 dark:text-gray-400">Age: {{ $camper->age }} | Grade: {{ $camper->grade }}</p>
                                                 </div>
                                             </div>
-                                            <a href="{{ route('dashboard.parent.campers') }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm">
-                                                View Details
-                                            </a>
                                         </div>
                                     @endforeach
                                 </div>

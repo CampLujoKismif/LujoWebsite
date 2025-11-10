@@ -29,6 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'must_change_password',
+        'onboarding_complete',
     ];
 
     /**
@@ -52,7 +53,27 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'must_change_password' => 'boolean',
+            'onboarding_complete' => 'boolean',
         ];
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($user) {
+            // Automatically create a family for the user upon creation
+            $family = Family::create([
+                'name' => $user->name . ' Family',
+                'owner_user_id' => $user->id,
+            ]);
+
+            // Associate the user with the family
+            $family->users()->attach($user->id, ['role_in_family' => 'parent']);
+        });
     }
 
     /**
@@ -94,6 +115,34 @@ class User extends Authenticatable implements MustVerifyEmail
     public function ownedFamilies(): HasMany
     {
         return $this->hasMany(Family::class, 'owner_user_id');
+    }
+
+    public function parentAgreementSignatures(): HasMany
+    {
+        return $this->hasMany(ParentAgreementSignature::class);
+    }
+
+    /**
+     * Get the user's default/primary family.
+     * This is the family owned by the user (the one created automatically).
+     * If no family exists, create one for backward compatibility.
+     */
+    public function defaultFamily()
+    {
+        $family = $this->ownedFamilies()->first();
+        
+        // If no family exists (for backward compatibility with existing users), create one
+        if (!$family) {
+            $family = Family::create([
+                'name' => $this->name . ' Family',
+                'owner_user_id' => $this->id,
+            ]);
+
+            // Associate the user with the family
+            $family->users()->attach($this->id, ['role_in_family' => 'parent']);
+        }
+        
+        return $family;
     }
 
     /**

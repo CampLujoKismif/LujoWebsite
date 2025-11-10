@@ -12,8 +12,8 @@
                         <h2 class="text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h2>
                         <p class="text-gray-600 mb-6">Your campers have been successfully registered for {{ $campInstance->camp->display_name }}.</p>
                         <div class="space-x-4">
-                            <a href="{{ route('dashboard.parent.enrollments') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                                View Enrollments
+                            <a href="{{ route('dashboard.parent.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                                Back to Dashboard
                             </a>
                             <a href="{{ route('dashboard.parent.payments') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                                 Process Payments
@@ -49,8 +49,8 @@
                             </div>
                             <h3 class="text-lg font-medium text-gray-900 mb-2">No Available Campers</h3>
                             <p class="text-gray-600 mb-4">All your campers are already registered for this camp session, or you need to add campers to your family first.</p>
-                            <a href="{{ route('dashboard.parent.campers') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                                Manage Campers
+                            <a href="{{ route('dashboard.parent.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                                Back to Dashboard
                             </a>
                         </div>
                     @else
@@ -106,7 +106,7 @@
                         @endif
 
                         <div class="flex justify-between items-center">
-                            <a href="{{ route('dashboard.parent.enrollments') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <a href="{{ route('dashboard.parent.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                                 Cancel
                             </a>
                             
