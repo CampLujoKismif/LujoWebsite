@@ -111,6 +111,16 @@
                                                     @if($instance->price)
                                                         • ${{ number_format($instance->price, 2) }}
                                                     @endif
+                                                    @if($instance->registration_open_date || $instance->registration_close_date)
+                                                        • Registration:
+                                                        @if($instance->registration_open_date && $instance->registration_close_date)
+                                                            {{ $instance->registration_open_date->format('M j, Y') }} &ndash; {{ $instance->registration_close_date->format('M j, Y') }}
+                                                        @elseif($instance->registration_open_date)
+                                                            Opens {{ $instance->registration_open_date->format('M j, Y') }}
+                                                        @else
+                                                            Closes {{ $instance->registration_close_date->format('M j, Y') }}
+                                                        @endif
+                                                    @endif
                                                 </div>
                                             </div>
                                             <div class="flex items-center gap-2">
@@ -319,6 +329,20 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
+                                    <label for="registrationOpenDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Registration Opens</label>
+                                    <input type="date" wire:model="registrationOpenDate" id="registrationOpenDate" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
+                                    @error('registrationOpenDate') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+
+                                <div>
+                                    <label for="registrationCloseDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Registration Closes</label>
+                                    <input type="date" wire:model="registrationCloseDate" id="registrationCloseDate" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
+                                    @error('registrationCloseDate') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
                                     <label for="sessionCapacity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Capacity</label>
                                     <input type="number" wire:model="sessionCapacity" id="sessionCapacity" min="1" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm" required>
                                     @error('sessionCapacity') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -414,6 +438,20 @@
                                     <label for="edit-sessionEndDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
                                     <input type="date" wire:model="sessionEndDate" id="edit-sessionEndDate" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm" required>
                                     @error('sessionEndDate') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="edit-registrationOpenDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Registration Opens</label>
+                                    <input type="date" wire:model="registrationOpenDate" id="edit-registrationOpenDate" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
+                                    @error('registrationOpenDate') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+
+                                <div>
+                                    <label for="edit-registrationCloseDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Registration Closes</label>
+                                    <input type="date" wire:model="registrationCloseDate" id="edit-registrationCloseDate" class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white sm:text-sm">
+                                    @error('registrationCloseDate') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                             </div>
 

@@ -32,6 +32,8 @@ class CampSessionManagement extends Component
     public $sessionPrice = '';
     public $sessionIsActive = true;
     public $sessionDescription = '';
+    public $registrationOpenDate = '';
+    public $registrationCloseDate = '';
 
     // Session detail form data
     public $themeDescription = '';
@@ -112,6 +114,12 @@ class CampSessionManagement extends Component
         $this->sessionPrice = $this->selectedSession->price;
         $this->sessionDescription = $this->selectedSession->description;
         $this->sessionIsActive = $this->selectedSession->is_active;
+        $this->registrationOpenDate = $this->selectedSession->registration_open_date
+            ? $this->selectedSession->registration_open_date->format('Y-m-d')
+            : '';
+        $this->registrationCloseDate = $this->selectedSession->registration_close_date
+            ? $this->selectedSession->registration_close_date->format('Y-m-d')
+            : '';
         
         // Load detail fields
         $this->themeDescription = $this->selectedSession->theme_description ?? '';
@@ -187,6 +195,8 @@ class CampSessionManagement extends Component
             'sessionCapacity' => 'required|integer|min:1',
             'sessionPrice' => 'nullable|numeric|min:0',
             'sessionDescription' => 'nullable|string',
+            'registrationOpenDate' => 'nullable|date',
+            'registrationCloseDate' => 'nullable|date|after_or_equal:registrationOpenDate',
             'themeDescription' => 'nullable|string',
             'additionalInfo' => 'nullable|string',
             'scheduleData' => 'nullable|array',
@@ -228,6 +238,8 @@ class CampSessionManagement extends Component
             'price' => $this->sessionPrice ?: null,
             'description' => $this->sessionDescription,
             'is_active' => $this->sessionIsActive,
+            'registration_open_date' => $this->registrationOpenDate ?: null,
+            'registration_close_date' => $this->registrationCloseDate ?: null,
             'theme_description' => $this->themeDescription ?: null,
             'additional_info' => $additionalInfo,
             'schedule_data' => $scheduleData,
@@ -255,6 +267,8 @@ class CampSessionManagement extends Component
         $this->sessionPrice = '';
         $this->sessionDescription = '';
         $this->sessionIsActive = true;
+        $this->registrationOpenDate = '';
+        $this->registrationCloseDate = '';
         $this->themeDescription = '';
         $this->additionalInfo = '';
         $this->scheduleData = [];
@@ -271,6 +285,8 @@ class CampSessionManagement extends Component
             'sessionCapacity' => 'required|integer|min:1',
             'sessionPrice' => 'nullable|numeric|min:0',
             'sessionDescription' => 'nullable|string',
+            'registrationOpenDate' => 'nullable|date',
+            'registrationCloseDate' => 'nullable|date|after_or_equal:registrationOpenDate',
         ]);
 
         // Check if user has access to the selected camp
@@ -288,6 +304,8 @@ class CampSessionManagement extends Component
             'price' => $this->sessionPrice ?: null,
             'description' => $this->sessionDescription,
             'is_active' => $this->sessionIsActive,
+            'registration_open_date' => $this->registrationOpenDate ?: null,
+            'registration_close_date' => $this->registrationCloseDate ?: null,
         ]);
 
         $this->showCreateModal = false;
@@ -337,6 +355,8 @@ class CampSessionManagement extends Component
         $this->sessionPrice = '';
         $this->sessionIsActive = true;
         $this->sessionDescription = '';
+        $this->registrationOpenDate = '';
+        $this->registrationCloseDate = '';
         $this->selectedSession = null;
     }
 
