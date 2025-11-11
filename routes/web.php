@@ -61,23 +61,6 @@ Route::prefix('api/public-registration')->name('api.public-registration.')->grou
     });
 });
 
-// Parent Onboarding (must be before dashboard routes)
-Route::middleware(['auth', 'verified', 'require.password.change'])->group(function () {
-    Route::get('/onboarding', function () {
-        return view('parent-onboarding');
-    })->name('onboarding');
-    
-    // API routes for onboarding
-    Route::prefix('api/parent-onboarding')->name('api.parent-onboarding.')->group(function () {
-        Route::get('/initial-data', [App\Http\Controllers\Api\ParentOnboardingController::class, 'getInitialData']);
-        Route::post('/family', [App\Http\Controllers\Api\ParentOnboardingController::class, 'updateFamily']);
-        Route::post('/camper', [App\Http\Controllers\Api\ParentOnboardingController::class, 'saveCamper']);
-        Route::delete('/camper/{id}', [App\Http\Controllers\Api\ParentOnboardingController::class, 'deleteCamper']);
-        Route::post('/enrollments', [App\Http\Controllers\Api\ParentOnboardingController::class, 'createEnrollments']);
-        Route::post('/complete', [App\Http\Controllers\Api\ParentOnboardingController::class, 'completeOnboarding']);
-    });
-});
-
 // Dashboard routes with role-based routing
 Route::middleware(['auth', 'verified', 'require.password.change', 'require.onboarding'])->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', App\Livewire\Dashboard\Index::class)->name('home');
