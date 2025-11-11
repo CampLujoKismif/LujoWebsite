@@ -72,6 +72,19 @@
                   Payment
                 </span>
               </div>
+              
+              <div class="w-6 sm:w-8 h-0.5 bg-gray-300 dark:bg-zinc-600"></div>
+              
+              <div class="flex items-center space-x-2 sm:space-x-3">
+                <div class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all duration-300"
+                     :class="currentStep >= 5 ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-gray-100 dark:bg-zinc-800 border-gray-300 dark:border-zinc-600 text-gray-500 dark:text-gray-400'">
+                  <span class="text-sm sm:text-base font-semibold">5</span>
+                </div>
+                <span class="text-sm sm:text-base font-medium transition-colors duration-300 hidden sm:inline"
+                      :class="currentStep >= 5 ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">
+                  Finished
+                </span>
+              </div>
             </div>
           </div>
 
@@ -321,29 +334,116 @@
                 </div>
               </div>
             </div>
-            </div>
-
-            <!-- Success Step -->
-            <div v-if="registrationComplete" class="transition-all duration-500 ease-in-out opacity-100 translate-x-0">
-              <div class="max-w-md mx-auto text-center py-8">
-                <div class="mb-6">
-                  <svg class="w-16 h-16 text-green-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                  </svg>
+            
+            <!-- Step 5: Finished -->
+            <div
+              v-if="registrationComplete"
+              class="transition-all duration-500 ease-in-out"
+              :class="currentStep === 5 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full absolute inset-0'"
+            >
+              <div class="max-w-3xl mx-auto py-10">
+                <div class="text-center mb-8">
+                  <div class="mb-6">
+                    <svg class="w-16 h-16 text-green-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                  <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Finished!</h3>
+                  <p class="text-gray-600 dark:text-gray-400">
+                    Your camper registration is complete. A confirmation email is on the way.
+                  </p>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Registration Complete!</h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-6">
-                  Your registration has been successfully submitted. You will receive a confirmation email shortly.
-                </p>
-                <button @click="close" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                  Close
-                </button>
+
+                <div v-if="completedRegistrationSummary" class="space-y-6">
+                  <div class="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 shadow-sm">
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Registration Details</h4>
+                    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <dt class="font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Camp</dt>
+                        <dd class="text-gray-900 dark:text-gray-200">
+                          {{ completedRegistrationSummary.campName || 'Camp Registration' }}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt class="font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Completed</dt>
+                        <dd class="text-gray-900 dark:text-gray-200">
+                          {{ formatDateTime(completedRegistrationSummary.completedAt) }}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt class="font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Payment Method</dt>
+                        <dd class="text-gray-900 dark:text-gray-200">
+                          {{ completedRegistrationSummary.paymentMethodLabel }}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt class="font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Payment Status</dt>
+                        <dd class="text-gray-900 dark:text-gray-200">
+                          {{ completedRegistrationSummary.paymentStatus }}
+                        </dd>
+                      </div>
+                      <div v-if="completedRegistrationSummary.discount">
+                        <dt class="font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Discount</dt>
+                        <dd class="text-gray-900 dark:text-gray-200">
+                          {{ completedRegistrationSummary.discount.code }} (−${{ completedRegistrationSummary.discount.amount.toFixed(2) }})
+                        </dd>
+                      </div>
+                      <div>
+                        <dt class="font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                          {{ completedRegistrationSummary.paymentMethod === 'stripe' ? 'Amount Charged' : 'Total Due' }}
+                        </dt>
+                        <dd class="text-gray-900 dark:text-gray-200">
+                          ${{ completedRegistrationSummary.totalAmount.toFixed(2) }}
+                        </dd>
+                      </div>
+                      <div
+                        v-if="completedRegistrationSummary.paymentMethod === 'cash_check'"
+                        class="sm:col-span-2 text-sm text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-md px-3 py-2"
+                      >
+                        Please bring this amount to camp check-in to complete your payment.
+                      </div>
+                    </dl>
+                  </div>
+
+                  <div class="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-indigo-50 dark:bg-indigo-900/20 shadow-sm">
+                    <h4 class="text-lg font-semibold text-indigo-900 dark:text-indigo-200 mb-4">Registered Campers</h4>
+                    <ul class="space-y-3 text-sm">
+                      <li
+                        v-for="(camper, index) in completedRegistrationSummary.campers"
+                        :key="camper.id || index"
+                        class="flex items-start justify-between"
+                      >
+                        <div>
+                          <div class="font-medium text-gray-900 dark:text-gray-100">
+                            {{ camper.name }}
+                          </div>
+                          <div class="text-gray-600 dark:text-gray-400">
+                            {{ camper.status }}
+                          </div>
+                        </div>
+                        <div
+                          v-if="camper.enrollmentId"
+                          class="text-xs text-gray-500 dark:text-gray-400"
+                        >
+                          Enrollment #{{ camper.enrollmentId }}
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="mt-10 text-center">
+                  <button @click="close" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
   <add-edit-camper-modal
     :visible="showNewCamperModal"
@@ -475,6 +575,7 @@ const createDefaultState = () => ({
   enrollmentIds: [],
   enrollmentCreated: false,
   registrationComplete: false,
+  completedRegistrationSummary: null,
   paymentMethod: 'stripe',
   discountCodeInput: '',
   discount: {
@@ -1595,6 +1696,41 @@ export default {
         })),
       }
     },
+    prepareCompletionSummary({ paymentStatus } = {}) {
+      const defaultStatus = this.paymentMethod === 'cash_check'
+        ? 'Awaiting payment at check-in'
+        : 'Paid in full'
+
+      const campers = (this.selectedCampers || []).map((camper, index) => ({
+        id: camper.id,
+        name: `${camper.first_name || ''} ${camper.last_name || ''}`.trim(),
+        status: paymentStatus || defaultStatus,
+        enrollmentId: Array.isArray(this.enrollmentIds) ? this.enrollmentIds[index] : null,
+      }))
+
+      const discountSummary = this.hasDiscount
+        ? {
+            code: this.discount.code,
+            amount: Number(this.discountAmount || 0),
+          }
+        : null
+
+      const paymentMethodLabel = this.paymentMethod === 'cash_check'
+        ? 'Cash / Check on Arrival'
+        : 'Credit/Debit Card (Stripe)'
+
+      this.completedRegistrationSummary = {
+        campName: this.campInstance?.camp_name || '',
+        totalAmount: Number(this.totalAmount || 0),
+        campers,
+        paymentMethod: this.paymentMethod,
+        paymentMethodLabel,
+        paymentStatus: paymentStatus || defaultStatus,
+        discount: discountSummary,
+        enrollmentIds: Array.isArray(this.enrollmentIds) ? [...this.enrollmentIds] : [],
+        completedAt: new Date().toISOString(),
+      }
+    },
     createBlankFormForCamper(camper) {
       return this.normalizeFormData({
         camper_id: camper?.id,
@@ -1769,7 +1905,7 @@ export default {
       this.formsSubmitted = true
       await this.loadAnnualStatus()
       this.syncCamperAgreementForms()
-      this.currentStep = 5
+      this.currentStep = 4
     },
     async submitCamperForms() {
       if (this.formsSubmitting) {
@@ -1799,7 +1935,7 @@ export default {
         this.formsSubmitted = true
         await this.loadAnnualStatus()
         this.syncCamperAgreementForms()
-        this.currentStep = 5
+        this.currentStep = 4
       } catch (err) {
         console.error('Error saving camper forms:', err)
         this.formsError = err.message || 'Failed to save camper forms. Please try again.'
@@ -1842,7 +1978,7 @@ export default {
 
         await this.loadAnnualStatus()
         this.syncCamperAgreementForms()
-        this.currentStep = 5
+        this.currentStep = 4
         this.error = null
       } catch (err) {
         console.error('Error submitting annual compliance:', err)
@@ -1981,10 +2117,6 @@ export default {
         await this.loadUserData()
         await this.loadAnnualStatus()
         this.closeNewCamperModal()
-
-        if (!isEditing && data.camper && !this.selectedCampers.find(c => c.id === data.camper.id)) {
-          this.selectedCampers.push(data.camper)
-        }
       } catch (err) {
         this.error = err.message || 'Failed to save camper. Please try again.'
       } finally {
@@ -2165,7 +2297,7 @@ export default {
 
       if (!this.annualStatusComplete) {
         this.error = 'Please complete the annual agreements before registering for a camp.'
-        this.currentStep = 5
+        this.currentStep = 4
         return
       }
 
@@ -2174,6 +2306,8 @@ export default {
         return
       }
       
+      this.registrationComplete = false
+      this.completedRegistrationSummary = null
       this.processing = true
       this.error = null
       
@@ -2240,7 +2374,9 @@ export default {
         }
 
         if (this.paymentMethod === 'cash_check') {
+          this.prepareCompletionSummary({ paymentStatus: 'Awaiting payment at check-in' })
           this.registrationComplete = true
+          this.currentStep = 5
           this.updateRegisteredStatusForCampers()
         }
 
@@ -2269,7 +2405,6 @@ export default {
           requireAuth: true,
         })
 
-        this.registrationComplete = true
         if (Array.isArray(this.campInstanceEnrollments) && this.campInstanceEnrollments.length > 0) {
           const paidSet = new Set(paidCamperIds)
           this.campInstanceEnrollments = this.campInstanceEnrollments.map(enrollment => {
@@ -2282,6 +2417,9 @@ export default {
             return enrollment
           })
         }
+        this.prepareCompletionSummary({ paymentStatus: 'Paid in full' })
+        this.registrationComplete = true
+        this.currentStep = 5
         this.updateRegisteredStatusForCampers()
       } catch (err) {
         this.error = err.message
