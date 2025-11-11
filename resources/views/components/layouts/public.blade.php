@@ -79,7 +79,7 @@
                                         @php
                                             $subtitle = $session->grade_range ?: $session->age_range;
                                         @endphp
-                                        <a href="{{ route('camp-sessions.show', $session) }}"
+                                        <a href="{{ route('camp-sessions.show', ['instance' => $session]) }}"
                                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">
                                             <span class="block">{{ $session->camp->display_name }}</span>
                                             <span class="block text-xs text-gray-500">
@@ -140,7 +140,7 @@
                                 @php
                                     $subtitle = $session->grade_range ?: $session->age_range;
                                 @endphp
-                                <a href="{{ route('camp-sessions.show', $session) }}"
+                                <a href="{{ route('camp-sessions.show', ['instance' => $session]) }}"
                                    @click="mobileMenuOpen = false; mobileSessionsOpen = false"
                                    class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">
                                     <span class="block">{{ $session->camp->display_name }}</span>
