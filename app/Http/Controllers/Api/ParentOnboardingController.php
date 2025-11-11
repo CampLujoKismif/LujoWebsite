@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Family;
 use App\Models\Camper;
+use App\Models\CamperInformationSnapshot;
+use App\Models\Family;
 use App\Models\CampInstance;
 use App\Models\Enrollment;
 use Illuminate\Http\Request;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Arr;
 
 class ParentOnboardingController extends Controller
 {
@@ -22,6 +24,12 @@ class ParentOnboardingController extends Controller
     {
         $user = Auth::user();
         $family = $user->defaultFamily();
+        $year = $this->defaultYear();
+        $family->load([
+            'campers.informationSnapshots' => function ($query) use ($year) {
+                $query->where('year', '<=', $year)->orderByDesc('year');
+            },
+        ]);
         
         return response()->json([
             'family' => [
@@ -38,14 +46,17 @@ class ParentOnboardingController extends Controller
                 'insurance_provider' => $family->insurance_provider,
                 'insurance_policy_number' => $family->insurance_policy_number,
             ],
-            'campers' => $family->campers->map(function ($camper) {
+            'campers' => $family->campers->map(function ($camper) use ($year) {
+                $grade = $camper->gradeForYear($year);
+                $tShirtSize = $camper->tShirtSizeForYear($year);
+
                 return [
                     'id' => $camper->id,
                     'first_name' => $camper->first_name,
                     'last_name' => $camper->last_name,
                     'date_of_birth' => $camper->date_of_birth ? $camper->date_of_birth->format('Y-m-d') : null,
-                    'grade' => $camper->grade,
-                    't_shirt_size' => $camper->t_shirt_size,
+                    'grade' => $grade,
+                    't_shirt_size' => $tShirtSize,
                     'photo_url' => $camper->photo_url,
                 ];
             }),
@@ -124,13 +135,14 @@ class ParentOnboardingController extends Controller
 
         $user = Auth::user();
         $family = $user->defaultFamily();
+        $year = $this->defaultYear();
 
-        $data = $request->only(['first_name', 'last_name', 'date_of_birth', 'grade', 't_shirt_size']);
+        $camperData = $request->only(['first_name', 'last_name', 'date_of_birth']);
         
         // Handle photo upload
         if ($request->hasFile('photo')) {
             $photoPath = $request->file('photo')->store('camper-photos', 'public');
-            $data['photo_path'] = $photoPath;
+            $camperData['photo_path'] = $photoPath;
         }
 
         if ($request->has('id')) {
@@ -138,11 +150,23 @@ class ParentOnboardingController extends Controller
             if ($camper->family_id !== $family->id) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
-            $camper->update($data);
+            $camper->update($camperData);
         } else {
-            $data['family_id'] = $family->id;
-            $camper = Camper::create($data);
+            $camperData['family_id'] = $family->id;
+            $camper = Camper::create($camperData);
         }
+
+        $snapshot = $this->syncCamperInformationSnapshot(
+            $camper,
+            [
+                'grade' => $request->input('grade'),
+                't_shirt_size' => $request->input('t_shirt_size'),
+            ],
+            $year
+        );
+
+        $grade = Arr::get($snapshot->data, 'camper.grade');
+        $tShirtSize = Arr::get($snapshot->data, 'camper.t_shirt_size');
 
         return response()->json([
             'message' => 'Camper saved successfully',
@@ -151,8 +175,8 @@ class ParentOnboardingController extends Controller
                 'first_name' => $camper->first_name,
                 'last_name' => $camper->last_name,
                 'date_of_birth' => $camper->date_of_birth ? $camper->date_of_birth->format('Y-m-d') : null,
-                'grade' => $camper->grade,
-                't_shirt_size' => $camper->t_shirt_size,
+                'grade' => $grade,
+                't_shirt_size' => $tShirtSize,
                 'photo_url' => $camper->photo_url,
             ]
         ]);
@@ -254,5 +278,50 @@ class ParentOnboardingController extends Controller
         $user->update(['onboarding_complete' => true]);
 
         return response()->json(['message' => 'Onboarding completed successfully']);
+    }
+
+    protected function defaultYear(): int
+    {
+        return (int) (config('annual_forms.default_year') ?? now()->year);
+    }
+
+    protected function syncCamperInformationSnapshot(Camper $camper, array $attributes, int $year): CamperInformationSnapshot
+    {
+        $snapshot = CamperInformationSnapshot::firstOrNew([
+            'camper_id' => $camper->id,
+            'year' => $year,
+        ]);
+
+        $existing = $snapshot->data ?? [];
+        $camperData = array_merge(
+            [
+                'first_name' => $camper->first_name,
+                'last_name' => $camper->last_name,
+                'date_of_birth' => optional($camper->date_of_birth)->format('Y-m-d'),
+            ],
+            Arr::get($existing, 'camper', [])
+        );
+
+        if (array_key_exists('grade', $attributes)) {
+            $camperData['grade'] = $attributes['grade'];
+        }
+
+        if (array_key_exists('t_shirt_size', $attributes)) {
+            $camperData['t_shirt_size'] = $attributes['t_shirt_size'];
+        }
+
+        Arr::set($existing, 'camper', $camperData);
+
+        $snapshot->fill([
+            'form_version' => $snapshot->form_version ?? "{$year}.1",
+            'data' => $existing,
+            'data_hash' => hash('sha256', json_encode($existing)),
+        ]);
+
+        $snapshot->captured_at = now();
+        $snapshot->captured_by_user_id = Auth::id();
+        $snapshot->save();
+
+        return $snapshot;
     }
 }

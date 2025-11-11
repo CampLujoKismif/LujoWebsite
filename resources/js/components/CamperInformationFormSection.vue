@@ -20,16 +20,28 @@
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Grade *</label>
         <select v-model="localForms.information.camper.grade" required
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                @change="notifyFieldUpdated('camper.grade')"
+                :class="[
+                  'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500',
+                  hasFieldError('camper.grade') ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500 dark:border-rose-500' : ''
+                ]">
           <option value="">Select Grade</option>
           <option value="K">Kindergarten</option>
           <option v-for="grade in 12" :key="grade" :value="grade">{{ grade }}</option>
         </select>
+        <p v-if="hasFieldError('camper.grade')"
+           class="mt-1 text-xs text-rose-600 dark:text-rose-400">
+          Camper grade is required.
+        </p>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">T-Shirt Size</label>
-        <select v-model="localForms.information.camper.t_shirt_size"
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">T-Shirt Size *</label>
+        <select v-model="localForms.information.camper.t_shirt_size" required
+                @change="notifyFieldUpdated('camper.t_shirt_size')"
+                :class="[
+                  'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500',
+                  hasFieldError('camper.t_shirt_size') ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500 dark:border-rose-500' : ''
+                ]">
           <option value="">Select Size</option>
           <optgroup label="Youth">
             <option value="YXS">Youth XS</option>
@@ -47,6 +59,10 @@
             <option value="XXL">Adult XXL</option>
           </optgroup>
         </select>
+        <p v-if="hasFieldError('camper.t_shirt_size')"
+           class="mt-1 text-xs text-rose-600 dark:text-rose-400">
+          T-Shirt size is required.
+        </p>
       </div>
     </div>
 
@@ -61,6 +77,10 @@ export default {
     localForms: {
       type: Object,
       required: true
+    },
+    validationErrors: {
+      type: Array,
+      default: () => []
     }
   },
   components: {
@@ -102,6 +122,12 @@ export default {
         XXL: 'Adult XXL'
       }
       return sizeMap[value] || value
+    },
+    hasFieldError(fieldKey) {
+      return this.validationErrors.includes(fieldKey)
+    },
+    notifyFieldUpdated(fieldKey) {
+      this.$emit('field-updated', fieldKey)
     }
   }
 }

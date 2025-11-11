@@ -50,6 +50,7 @@ Route::prefix('api/public-registration')->name('api.public-registration.')->grou
         Route::post('/camper', [App\Http\Controllers\Api\PublicRegistrationController::class, 'saveCamper']);
         Route::delete('/camper/{id}', [App\Http\Controllers\Api\PublicRegistrationController::class, 'deleteCamper']);
         Route::patch('/camper/{id}/restore', [App\Http\Controllers\Api\PublicRegistrationController::class, 'restoreCamper']);
+        Route::post('/discounts/validate', [App\Http\Controllers\Api\PublicRegistrationController::class, 'validateDiscountCode']);
         Route::post('/enrollments', [App\Http\Controllers\Api\PublicRegistrationController::class, 'createEnrollments']);
         Route::get('/annual-status', [App\Http\Controllers\Api\AnnualComplianceController::class, 'status']);
         Route::post('/annual-confirmation', [App\Http\Controllers\Api\AnnualComplianceController::class, 'submit']);

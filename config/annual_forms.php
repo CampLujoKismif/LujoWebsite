@@ -23,13 +23,7 @@ return [
         'content' => <<<MARKDOWN
 ### Parent / Guardian Agreement
 
-By completing this agreement I certify that:
-
-- I am the legal parent/guardian of the camper(s) listed on this account
-- The information provided in the registration and medical forms is accurate to the best of my knowledge
-- I authorize the release of medical treatment for my camper(s) if necessary
-- I agree to review and abide by all camp policies, expectations, and communication updates for the upcoming camp year
-- I understand that it is my responsibility to notify camp leadership of any changes to my camper's medical or personal information
+As the parent or guardian of the camper named above, I hereby provide my approval for their registration. I understand and agree that camp fees must be paid in advance and are non-refundable except in cases where a camper leaves due to sickness, in which case a refund of one-half of the unused fees may be granted. I acknowledge that the camp operates under a strict non-discrimination policy regarding service to campers based on race, color, or national origin. However, I also understand that the Camp Director reserves the right to reject applications based on the camper's past conduct or dismiss a camper for violating camp rules. While the camp takes reasonable precautions to ensure camper safety, I understand and agree that the camp assumes no responsibility for the camper’s personal property and is released from liability in connection with medical care, medical service, or exposure to any disease-causing organisms, except in cases covered by the camp’s camper insurance. In the event of an emergency, I authorize the camper named in this registration form to receive necessary medical treatment from any hospital, clinic, or healthcare provider. Furthermore, I understand that the camp may use images or recordings containing the camper in promotional materials without compensation, and I release the camp from any liability related to such use. By signing below, I confirm that I have read and understood the terms and conditions outlined herein:
 
 I acknowledge that my electronic signature carries the same legal weight as a handwritten signature.
 MARKDOWN,
@@ -41,17 +35,11 @@ MARKDOWN,
         'content' => <<<MARKDOWN
 ### Camper Code of Conduct
 
-I agree to:
-
-- Respect camp staff, volunteers, and other campers
-- Follow all instructions given for my safety and the safety of others
-- Participate fully in scheduled camp activities
-- Refrain from bringing prohibited items or engaging in prohibited behavior
-- Inform a staff member immediately if I feel unsafe or witness unsafe behavior
-
-I understand that failure to follow these expectations may result in disciplinary action or dismissal from camp.
+I agree to abide by ALL the rules of the camp as outlined in the session information page and to do my best at all times to be a
+true Lu-Jo KISMIF camper, I hereby apply to attend Camp Lu-Jo KISMIF during the camp session indicated above.
 MARKDOWN,
     ],
 ];
+
 
 

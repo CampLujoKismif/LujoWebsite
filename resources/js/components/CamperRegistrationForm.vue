@@ -2,7 +2,7 @@
   <div class="camper-registration-form">
     <!-- Forms Section -->
     <div class="mb-6">
-      <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center justify-between mb-2">
         <h6 class="text-lg font-semibold text-gray-900 dark:text-white">Information Forms</h6>
         <div class="flex items-center space-x-2">
           <span v-if="formsComplete" class="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded">
@@ -11,17 +11,21 @@
           <span v-else-if="formsOnFile" class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
             Forms on File
           </span>
-          <button v-if="formsOnFile && !editingForms"
-                  @click="editingForms = true"
-                  class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
-            Edit
-          </button>
         </div>
+      </div>
+      <div v-if="missingRequirements.length"
+           class="mb-4 text-xs text-amber-700 dark:text-amber-300 leading-snug">
+        <span class="font-medium">Required:</span>
+        {{ missingRequirements.join(', ') }}
       </div>
 
       <!-- Forms Content -->
-      <div v-if="!formsOnFile || editingForms">
-        <CamperInformationFormSection :local-forms="localForms" />
+      <div>
+        <CamperInformationFormSection
+          :local-forms="localForms"
+          :validation-errors="validationErrors"
+          @field-updated="clearFieldError"
+        />
 
         <!-- Emergency Contacts -->
         <div class="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-zinc-900">
@@ -80,19 +84,48 @@
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name *</label>
                   <input v-model="contact.name" type="text" required
-                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                         @input="handleFieldInput('emergency.name', index === 0)"
+                         :class="[
+                           'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500',
+                           index === 0 && hasFieldError('emergency.name') ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500 dark:border-rose-500' : ''
+                         ]">
+                  <p v-if="index === 0 && hasFieldError('emergency.name')"
+                     class="mt-1 text-xs text-rose-600 dark:text-rose-400">
+                    Primary emergency contact name is required.
+                  </p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Relationship *</label>
                   <input v-model="contact.relation" type="text" required
-                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                         @input="handleFieldInput('emergency.relation', index === 0)"
+                         :class="[
+                           'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500',
+                           index === 0 && hasFieldError('emergency.relation') ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500 dark:border-rose-500' : ''
+                         ]">
+                  <p v-if="index === 0 && hasFieldError('emergency.relation')"
+                     class="mt-1 text-xs text-rose-600 dark:text-rose-400">
+                    Primary emergency contact relationship is required.
+                  </p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Primary Phone *</label>
                   <input v-model="contact.home_phone" type="tel" required
-                         @input="contact.home_phone = formatPhoneInput(contact.home_phone)"
-                         @blur="contact.home_phone = formatPhone(contact.home_phone)"
-                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+                         @input="
+                           contact.home_phone = formatPhoneInput(contact.home_phone);
+                           handleFieldInput('emergency.home_phone', index === 0);
+                         "
+                         @blur="
+                           contact.home_phone = formatPhone(contact.home_phone);
+                           handleFieldInput('emergency.home_phone', index === 0);
+                         "
+                         :class="[
+                           'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500',
+                           index === 0 && hasFieldError('emergency.home_phone') ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500 dark:border-rose-500' : ''
+                         ]">
+                  <p v-if="index === 0 && hasFieldError('emergency.home_phone')"
+                     class="mt-1 text-xs text-rose-600 dark:text-rose-400">
+                    Primary emergency contact phone is required.
+                  </p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cell Phone</label>
@@ -148,7 +181,35 @@
         <div class="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-zinc-900">
           <h6 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Medical Information</h6>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Primary Insured</label>
+                <input v-model="localForms.medical.insurance.insured_name" type="text"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Group Number</label>
+                <input v-model="localForms.medical.insurance.group_number" type="text"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Policy Number</label>
+                <input v-model="localForms.medical.insurance.policy_number" type="text" required
+                       @input="handleFieldInput('insurance.policy_number')"
+                       :class="[
+                         'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500',
+                         hasFieldError('insurance.policy_number') ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500 dark:border-rose-500' : ''
+                       ]">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Insurance Company</label>
+                <input v-model="localForms.medical.insurance.company" type="text" required
+                       @input="handleFieldInput('insurance.company')"
+                       :class="[
+                         'w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500',
+                         hasFieldError('insurance.company') ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500 dark:border-rose-500' : ''
+                       ]">
+              </div>
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Life or health issues</label>
               <textarea v-model="localForms.medical.medical.life_health_issues" rows="3"
@@ -235,6 +296,10 @@
                   class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
             {{ signingCamper ? 'Signing...' : 'Sign Camper Agreement' }}
           </button>
+          <p v-if="hasFieldError('agreement.camper')"
+             class="text-sm text-rose-600 dark:text-rose-400">
+            Please have the camper sign this agreement before saving forms.
+          </p>
         </div>
 
         <div v-else class="flex items-center space-x-2 text-green-700 dark:text-green-300">
@@ -244,78 +309,62 @@
           <span>Camper agreement signed</span>
         </div>
       </div>
+        <!-- Parent Agreement -->
+        <div class="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-zinc-900">
+          <h6 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Parent / Guardian Agreement</h6>
+          <div class="mb-4 p-3 bg-gray-50 dark:bg-zinc-800 rounded text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">
+            {{ annualStatus?.parent?.agreement?.content || 'Agreement content not available.' }}
+          </div>
+          <div v-if="!parentAgreementSigned" class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type your full name *</label>
+              <input v-model="parentSignature.typed_name"
+                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <label class="flex items-start space-x-2 text-sm text-gray-700 dark:text-gray-300">
+              <input type="checkbox" v-model="parentSignature.confirmed"
+                     class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+              <span>I confirm that I have read and agree to the Parent / Guardian Agreement for {{ activeYear }}.</span>
+            </label>
+            <button @click="signParentAgreement" :disabled="signingParent || !parentSignatureReady"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
+              {{ signingParent ? 'Signing...' : 'Sign Parent Agreement' }}
+            </button>
+            <p v-if="hasFieldError('agreement.parent')"
+               class="text-sm text-rose-600 dark:text-rose-400">
+              A parent or guardian must sign this agreement before saving forms.
+            </p>
+          </div>
+          <div v-else class="space-y-3">
+            <div class="flex items-center space-x-2 text-green-700 dark:text-green-300">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              </svg>
+              <span>Parent agreement signed</span>
+            </div>
+            <p v-if="annualStatus?.parent?.typed_name" class="text-sm text-gray-600 dark:text-gray-400">
+              Signed by {{ annualStatus.parent.typed_name }}.
+            </p>
+          </div>
+        </div>
+
         <!-- Form Actions -->
-        <div class="flex justify-end space-x-3">
-          <button v-if="editingForms" @click="cancelFormEdit"
-                  class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-700">
-            Cancel
-          </button>
+        <div class="flex justify-end">
           <button @click="saveForms" :disabled="savingForms"
                   class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
             {{ savingForms ? 'Saving...' : 'Save Forms' }}
           </button>
         </div>
-      </div>
-
-      <!-- Forms Summary when not editing -->
-      <div v-else class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-        <div class="flex items-center space-x-2 mb-2">
-          <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-          </svg>
-          <span class="font-medium text-green-800 dark:text-green-200">Forms completed for {{ activeYear }}</span>
+        <div v-if="saveErrors.length"
+             class="mt-4 rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200">
+          <p class="text-sm font-medium">We still need:</p>
+          <ul class="mt-1 list-disc list-inside space-y-1 text-xs sm:text-sm">
+            <li v-for="error in saveErrors" :key="error">{{ error }}</li>
+          </ul>
         </div>
-        <p class="text-sm text-green-700 dark:text-green-300">
-          Information for {{ camper.first_name }} {{ camper.last_name }} has been saved and can be updated annually.
-        </p>
       </div>
     </div>
 
-    <!-- Agreements Section -->
-    <div class="mb-6">
-      <div class="flex items-center justify-between mb-4">
-        <h6 class="text-lg font-semibold text-gray-900 dark:text-white">Agreements</h6>
-        <span v-if="agreementsComplete" class="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded">
-          ✓ Agreements Signed
-        </span>
-      </div>
-
-      <!-- Parent Agreement -->
-      <div v-if="!parentAgreementSigned" class="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-zinc-900">
-        <h6 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Parent / Guardian Agreement</h6>
-        <div class="mb-4 p-3 bg-gray-50 dark:bg-zinc-800 rounded text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">
-          {{ annualStatus?.parent?.agreement?.content || 'Agreement content not available.' }}
-        </div>
-        <div class="space-y-3">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type your full name *</label>
-            <input v-model="parentSignature.typed_name"
-                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500">
-          </div>
-          <label class="flex items-start space-x-2 text-sm text-gray-700 dark:text-gray-300">
-            <input type="checkbox" v-model="parentSignature.confirmed"
-                   class="mt-1 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-            <span>I confirm that I have read and agree to the Parent / Guardian Agreement for {{ activeYear }}.</span>
-          </label>
-          <button @click="signParentAgreement" :disabled="signingParent || !parentSignatureReady"
-                  class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
-            {{ signingParent ? 'Signing...' : 'Sign Parent Agreement' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Parent Agreement Signed -->
-      <div v-else class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-        <div class="flex items-center space-x-2">
-          <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-          </svg>
-          <span class="font-medium text-green-800 dark:text-green-200">Parent agreement signed</span>
-        </div>
-      </div>
-
-      
-    </div>
   </div>
 </template>
 
@@ -346,13 +395,16 @@ export default {
     }
   },
   data() {
+    const initialForms = this.formsData
+      ? this.normalizeFormData(this.formsData)
+      : this.initializeFormsData()
+
     return {
-      editingForms: false,
       savingForms: false,
       signingParent: false,
       signingCamper: false,
       importingFamilyContacts: false,
-      localForms: this.initializeFormsData(),
+      localForms: initialForms,
       parentSignature: {
         typed_name: '',
         confirmed: false
@@ -360,7 +412,9 @@ export default {
       camperSignature: {
         typed_name: '',
         confirmed: false
-      }
+      },
+      saveErrors: [],
+      validationErrors: []
     }
   },
   computed: {
@@ -368,7 +422,22 @@ export default {
       return !!(this.formsData?.information && this.formsData?.medical)
     },
     formsComplete() {
-      return this.formsOnFile && !this.editingForms
+      return this.formsOnFile && this.camperAgreementSigned && this.parentAgreementSigned
+    },
+    missingRequirements() {
+      const requirements = []
+
+      if (!this.formsOnFile) {
+        requirements.push('Camper information & medical forms')
+      }
+      if (!this.camperAgreementSigned) {
+        requirements.push('Camper agreement')
+      }
+      if (!this.parentAgreementSigned) {
+        requirements.push('Parent / Guardian agreement')
+      }
+
+      return requirements
     },
     parentAgreementSigned() {
       return !!this.annualStatus?.parent?.signed
@@ -376,9 +445,6 @@ export default {
     camperAgreementSigned() {
       const camperStatus = this.annualStatus?.campers?.find(c => c.camper_id === this.camper.id)
       return !!camperStatus?.signed
-    },
-    agreementsComplete() {
-      return this.parentAgreementSigned && this.camperAgreementSigned
     },
     parentSignatureReady() {
       return this.parentSignature.typed_name?.trim().length > 0 && this.parentSignature.confirmed
@@ -392,10 +458,32 @@ export default {
       handler(newData) {
         if (newData) {
           this.localForms = this.normalizeFormData(newData)
+        } else {
+          this.localForms = this.initializeFormsData()
         }
       },
       immediate: true,
       deep: true
+    },
+    camperAgreementSigned(newVal) {
+      if (newVal) {
+        this.clearFieldError('agreement.camper')
+      }
+    },
+    camperSignatureReady(newVal) {
+      if (newVal) {
+        this.clearFieldError('agreement.camper')
+      }
+    },
+    parentAgreementSigned(newVal) {
+      if (newVal) {
+        this.clearFieldError('agreement.parent')
+      }
+    },
+    parentSignatureReady(newVal) {
+      if (newVal) {
+        this.clearFieldError('agreement.parent')
+      }
     }
   },
   methods: {
@@ -455,12 +543,7 @@ export default {
             stomach: false,
             allergies: false
           },
-          insurance: {
-            insured_name: '',
-            company: '',
-            policy_number: '',
-            phone: ''
-          }
+          insurance: this.normalizeInsuranceData()
         }
       }
     },
@@ -482,6 +565,8 @@ export default {
       }
 
       const primaryEmergencyContact = emergencyContacts[0] || this.createEmergencyContact()
+
+      const insurance = this.normalizeInsuranceData(medical?.insurance)
 
       return {
         information: {
@@ -510,9 +595,9 @@ export default {
         medical: {
           medical: {
             life_health_issues: medical?.medical?.life_health_issues || '',
-            medications_prescribed: medical?.medical?.medications_prescribed || '',
-            medications: medical?.medical?.medications || '',
-            allergies: medical?.medical?.allergies || '',
+            medications_prescribed: this.toTextareaString(medical?.medical?.medications_prescribed),
+            medications: this.toTextareaString(medical?.medical?.medications),
+            allergies: this.toTextareaString(medical?.medical?.allergies),
             physician_name: medical?.medical?.physician_name || '',
             physician_phone: physicianPhone,
             tetanus_date: medical?.medical?.tetanus_date || ''
@@ -524,20 +609,28 @@ export default {
             stomach: medical?.otc_permissions?.stomach || false,
             allergies: medical?.otc_permissions?.allergies || false
           },
-          insurance: {
-            insured_name: medical?.insurance?.insured_name || '',
-            company: medical?.insurance?.company || '',
-            policy_number: medical?.insurance?.policy_number || '',
-            phone: medical?.insurance?.phone || ''
-          }
+          insurance
         }
       }
     },
     async saveForms() {
+      if (this.savingForms) {
+        return
+      }
       this.savingForms = true
+      this.saveErrors = []
       try {
+        const { normalizedForm, errors, errorFields } = this.validateBeforeSave()
+
+        if (errors.length) {
+          this.saveErrors = errors
+          this.validationErrors = errorFields
+          return
+        }
+
         const payload = {
-          campers: [this.prepareFormForSubmit()]
+          year: this.activeYear,
+          campers: [normalizedForm]
         }
 
         const response = await fetch('/api/public-registration/forms', {
@@ -555,21 +648,66 @@ export default {
           throw new Error('Failed to save forms')
         }
 
-        this.editingForms = false
         this.$emit('forms-updated', { camperId: this.camper.id })
+        this.saveErrors = []
+        this.validationErrors = []
+        this.$emit('close')
       } catch (error) {
         console.error('Error saving forms:', error)
-        // Handle error - could emit error event
+        if (!this.saveErrors.length) {
+          this.saveErrors = ['We could not save your forms. Please try again.']
+        }
       } finally {
         this.savingForms = false
       }
     },
-    cancelFormEdit() {
-      // Reset local forms to original data
-      if (this.formsData) {
-        this.localForms = this.normalizeFormData(this.formsData)
+    validateBeforeSave() {
+      const normalizedForm = this.prepareFormForSubmit()
+      const errors = []
+      const errorFields = []
+
+      const camper = normalizedForm.information?.camper ?? {}
+      const emergency = normalizedForm.information?.emergency_contact ?? {}
+      const insurance = normalizedForm.medical?.insurance ?? {}
+
+      const requiredFields = [
+        { key: 'camper.t_shirt_size', value: camper.t_shirt_size, label: 'Camper t-shirt size' },
+        { key: 'camper.first_name', value: camper.first_name, label: 'Camper first name' },
+        { key: 'camper.last_name', value: camper.last_name, label: 'Camper last name' },
+        { key: 'camper.date_of_birth', value: camper.date_of_birth, label: 'Camper birthday' },
+        { key: 'camper.grade', value: camper.grade, label: 'Camper grade' },
+        { key: 'emergency.name', value: emergency.name, label: 'Primary emergency contact name' },
+        { key: 'emergency.relation', value: emergency.relation, label: 'Primary emergency contact relationship' },
+        { key: 'emergency.home_phone', value: emergency.home_phone, label: 'Primary emergency contact phone' },
+       // { key: 'insurance.company', value: insurance.company, label: 'Insurance company' },
+        //{ key: 'insurance.policy_number', value: insurance.policy_number, label: 'Insurance policy number' },
+      ]
+
+      requiredFields.forEach(field => {
+        if (
+          field.value === null ||
+          field.value === undefined ||
+          String(field.value).trim().length === 0
+        ) {
+          errors.push(field.label)
+          errorFields.push(field.key)
+        }
+      })
+
+      if (!this.camperAgreementSigned) {
+        errors.push('Camper agreement')
+        errorFields.push('agreement.camper')
       }
-      this.editingForms = false
+
+      if (!this.parentAgreementSigned) {
+        errors.push('Parent / Guardian agreement')
+        errorFields.push('agreement.parent')
+      }
+
+      const uniqueErrors = [...new Set(errors)]
+      const uniqueErrorFields = [...new Set(errorFields)]
+
+      return { normalizedForm, errors: uniqueErrors, errorFields: uniqueErrorFields }
     },
     prepareFormForSubmit() {
       const information = JSON.parse(JSON.stringify(this.localForms.information || {}))
@@ -599,23 +737,78 @@ export default {
       const primaryEmergencyContact = information.emergency_contacts[0] || this.createEmergencyContact()
       information.emergency_contact = { ...primaryEmergencyContact }
 
-      // Convert medications and allergies to arrays
-      if (medical?.medical?.medications) {
-        medical.medical.medications = this.stringToArray(medical.medical.medications)
-      }
-      if (medical?.medical?.allergies) {
-        medical.medical.allergies = this.stringToArray(medical.medical.allergies)
-      }
+      // Convert medical text areas to arrays for persistence
+      medical.medical.medications = this.stringToArray(medical?.medical?.medications)
+      medical.medical.allergies = this.stringToArray(medical?.medical?.allergies)
+      medical.medical.medications_prescribed = this.stringToArray(medical?.medical?.medications_prescribed)
 
       if (medical?.medical) {
         medical.medical.physician_phone = this.formatPhone(medical.medical.physician_phone)
       }
 
+      const insurance = this.normalizeInsuranceData(medical?.insurance)
+
       return {
         camper_id: this.camper.id,
         information,
-        medical
+        medical: {
+          ...medical,
+          insurance
+        }
       }
+    },
+    normalizeInsuranceData(raw = {}) {
+      const source = raw || {}
+
+      const insuredName =
+        source.insured_name ??
+        source.primary_insured ??
+        source.insuredName ??
+        ''
+
+      const company =
+        source.company ??
+        source.company_name ??
+        source.provider ??
+        source.insurance_provider ??
+        ''
+
+      const policyNumber =
+        source.policy_number ??
+        source.policy ??
+        source.policyNumber ??
+        source.insurance_policy_number ??
+        ''
+
+      const groupNumber =
+        source.group_number ??
+        source.group ??
+        source.groupNumber ??
+        source.insurance_group_number ??
+        ''
+
+      const phone =
+        source.phone ??
+        source.contact_phone ??
+        source.insurance_phone ??
+        ''
+
+      return {
+        insured_name: insuredName,
+        company,
+        policy_number: policyNumber,
+        group_number: groupNumber,
+        phone,
+      }
+    },
+    toTextareaString(value) {
+      if (Array.isArray(value)) {
+        return value.join('\n')
+      }
+      if (value === null || value === undefined) {
+        return ''
+      }
+      return String(value)
     },
     stringToArray(value) {
       if (Array.isArray(value)) {
@@ -659,6 +852,24 @@ export default {
       const prefix = digits.slice(3, 6)
       const line = digits.slice(6)
       return `(${area}) ${prefix}-${line}`
+    },
+    hasFieldError(fieldKey) {
+      if (!fieldKey) return false
+      return this.validationErrors.includes(fieldKey)
+    },
+    handleFieldInput(fieldKey, condition = true) {
+      if (!condition) {
+        return
+      }
+      this.clearFieldError(fieldKey)
+    },
+    clearFieldError(fieldKey) {
+      if (!fieldKey || !this.validationErrors.length) {
+        return
+      }
+      if (this.validationErrors.includes(fieldKey)) {
+        this.validationErrors = this.validationErrors.filter(key => key !== fieldKey)
+      }
     },
     addEmergencyContact() {
       this.localForms.information.emergency_contacts.push(this.createEmergencyContact())
@@ -773,29 +984,34 @@ export default {
     async signParentAgreement() {
       this.signingParent = true
       try {
-        const response = await fetch('/api/public-registration/annual-confirmation', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Accept': 'application/json'
-          },
-          credentials: 'same-origin',
-          body: JSON.stringify({
-            year: this.activeYear,
-            parent_signature_name: this.parentSignature.typed_name,
-            parent_signature_agreed: true,
-            campers: [] // Empty since we're only signing parent agreement
-          })
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to sign parent agreement')
+        const parentTypedName = this.getParentTypedNameForSubmission()
+        if (!parentTypedName) {
+          this.addValidationError('agreement.parent')
+          window.alert('Please enter and confirm your full name before signing the parent agreement.')
+          return
         }
 
+        const camperSignature = this.buildCurrentCamperSignatureForSubmission()
+        if (!camperSignature) {
+          this.addValidationError('agreement.camper')
+          window.alert('Please have the camper sign the agreement before the parent signs.')
+          return
+        }
+
+        await this.submitAnnualConfirmationRequest({
+          parentTypedName,
+          campers: [camperSignature],
+        })
+
+        this.clearFieldError('agreement.parent')
         this.$emit('agreements-updated', { type: 'parent' })
       } catch (error) {
         console.error('Error signing parent agreement:', error)
+        if (error?.message) {
+          window.alert(error.message)
+        } else {
+          window.alert('We could not sign the parent agreement. Please try again.')
+        }
       } finally {
         this.signingParent = false
       }
@@ -803,34 +1019,119 @@ export default {
     async signCamperAgreement() {
       this.signingCamper = true
       try {
-        const response = await fetch('/api/public-registration/annual-confirmation', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Accept': 'application/json'
-          },
-          credentials: 'same-origin',
-          body: JSON.stringify({
-            year: this.activeYear,
-            parent_signature_name: this.parentSignature.typed_name || this.annualStatus?.parent?.typed_name || '',
-            parent_signature_agreed: true,
-            campers: [{
-              camper_id: this.camper.id,
-              signature_name: this.camperSignature.typed_name
-            }]
-          })
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to sign camper agreement')
+        const parentTypedName = this.getParentTypedNameForSubmission()
+        if (!parentTypedName) {
+          this.addValidationError('agreement.parent')
+          window.alert('A parent or guardian must provide their signature before the camper agreement can be submitted.')
+          return
         }
 
+        const camperSignature = this.buildCurrentCamperSignatureForSubmission()
+        if (!camperSignature) {
+          this.addValidationError('agreement.camper')
+          window.alert('Please type the camper name and confirm the agreement before signing.')
+          return
+        }
+
+        await this.submitAnnualConfirmationRequest({
+          parentTypedName,
+          campers: [camperSignature],
+        })
+
+        this.clearFieldError('agreement.camper')
         this.$emit('agreements-updated', { type: 'camper', camperId: this.camper.id })
       } catch (error) {
         console.error('Error signing camper agreement:', error)
+        if (error?.message) {
+          window.alert(error.message)
+        } else {
+          window.alert('We could not sign the camper agreement. Please try again.')
+        }
       } finally {
         this.signingCamper = false
+      }
+    },
+    addValidationError(fieldKey) {
+      if (!fieldKey) {
+        return
+      }
+      if (!this.validationErrors.includes(fieldKey)) {
+        this.validationErrors = [...this.validationErrors, fieldKey]
+      }
+    },
+    getParentTypedNameForSubmission() {
+      if (this.annualStatus?.parent?.signed && this.annualStatus.parent.typed_name) {
+        return this.annualStatus.parent.typed_name
+      }
+      if (this.parentSignature.confirmed) {
+        return this.parentSignature.typed_name?.trim() || ''
+      }
+      return ''
+    },
+    buildCurrentCamperSignatureForSubmission() {
+      const status = this.annualStatus?.campers?.find(c => c.camper_id === this.camper.id)
+      if (status?.typed_name) {
+        return {
+          camper_id: this.camper.id,
+          typed_name: status.typed_name,
+          affirmations: Array.isArray(status?.affirmations) ? status.affirmations : [],
+        }
+      }
+
+      const typedName = this.camperSignature.confirmed ? this.camperSignature.typed_name?.trim() : ''
+      if (typedName) {
+        return {
+          camper_id: this.camper.id,
+          typed_name: typedName,
+          affirmations: [],
+        }
+      }
+
+      return null
+    },
+    async submitAnnualConfirmationRequest({ parentTypedName, campers }) {
+      if (!parentTypedName) {
+        throw new Error('Parent signature is required before submitting the annual confirmation.')
+      }
+      if (!Array.isArray(campers) || campers.length === 0) {
+        throw new Error('At least one camper signature is required before submitting the annual confirmation.')
+      }
+
+      const payload = {
+        year: this.activeYear,
+        parent: {
+          typed_name: parentTypedName,
+          affirmations: [],
+        },
+        campers: campers.map(signature => ({
+          camper_id: signature.camper_id,
+          typed_name: signature.typed_name,
+          affirmations: Array.isArray(signature?.affirmations) ? signature.affirmations : [],
+        })),
+      }
+
+      const response = await fetch('/api/public-registration/annual-confirmation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          'Accept': 'application/json',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        let message = 'Failed to submit annual confirmation.'
+        try {
+          const errorBody = await response.json()
+          if (errorBody?.message) {
+            message = errorBody.message
+          }
+        } catch (err) {
+          // ignore parse errors
+        }
+        throw new Error(message)
       }
     }
   }

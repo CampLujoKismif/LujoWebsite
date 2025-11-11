@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Arr;
 
 class Camper extends Model
 {
@@ -22,9 +23,7 @@ class Camper extends Model
         'date_of_baptism',
         'phone_number',
         'email',
-        'grade',
         'school',
-        't_shirt_size',
         'photo_path',
         'allergies',
         'medical_conditions',
@@ -41,6 +40,11 @@ class Camper extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+    ];
+
+    protected $hidden = [
+        'grade',
+        't_shirt_size',
     ];
 
     /**
@@ -198,6 +202,31 @@ class Camper extends Model
         return !empty($this->allergies) || 
                !empty($this->medical_conditions) || 
                !empty($this->medications);
+    }
+
+    public function latestInformationSnapshot(?int $year = null): ?CamperInformationSnapshot
+    {
+        $year = $year ?? now()->year;
+
+        return $this->informationSnapshots()
+            ->where('year', '<=', $year)
+            ->orderByDesc('year')
+            ->first();
+    }
+
+    public function informationData(?int $year = null): ?array
+    {
+        return $this->latestInformationSnapshot($year)?->data;
+    }
+
+    public function gradeForYear(?int $year = null)
+    {
+        return Arr::get($this->informationData($year), 'camper.grade');
+    }
+
+    public function tShirtSizeForYear(?int $year = null)
+    {
+        return Arr::get($this->informationData($year), 'camper.t_shirt_size');
     }
 
     /**

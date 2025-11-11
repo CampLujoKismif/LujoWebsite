@@ -208,14 +208,16 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
+                                @php $currentYear = config('annual_forms.default_year') ?? now()->year; @endphp
                                 <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-gray-700">
                                     @forelse($this->enrollments as $enrollment)
+                                        @php $camperGrade = $enrollment->camper->gradeForYear($currentYear); @endphp
                                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
                                                     <div>
                                                         <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $enrollment->camper->full_name }}</div>
-                                                        <div class="text-sm text-gray-500 dark:text-gray-400">Grade {{ $enrollment->camper->grade }}</div>
+                                                        <div class="text-sm text-gray-500 dark:text-gray-400">Grade {{ $camperGrade ?? '—' }}</div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -286,7 +288,11 @@
                             <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
                                 <div class="space-y-2">
                                     <div><span class="font-medium text-gray-900 dark:text-white">Name:</span> {{ $selectedEnrollment->camper->full_name }}</div>
-                                    <div><span class="font-medium text-gray-900 dark:text-white">Grade:</span> {{ $selectedEnrollment->camper->grade }}</div>
+                                    @php
+                                        $detailsYear = $currentYear ?? (config('annual_forms.default_year') ?? now()->year);
+                                        $selectedCamperGrade = $selectedEnrollment->camper->gradeForYear($detailsYear);
+                                    @endphp
+                                    <div><span class="font-medium text-gray-900 dark:text-white">Grade:</span> {{ $selectedCamperGrade ?? '—' }}</div>
                                     <div><span class="font-medium text-gray-900 dark:text-white">School:</span> {{ $selectedEnrollment->camper->school }}</div>
                                     <div><span class="font-medium text-gray-900 dark:text-white">Family:</span> {{ $selectedEnrollment->camper->family->name }}</div>
                                 </div>

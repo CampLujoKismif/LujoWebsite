@@ -81,277 +81,38 @@
             <div class="transition-all duration-500 ease-in-out"
                  :class="currentStep === 1 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full absolute inset-0'">
               <div class="max-w-md mx-auto">
-                <div v-if="isAuthenticated" class="space-y-6">
-                  <h3 class="text-xl font-bold text-gray-900 dark:text-white">Welcome back, {{ userName }}</h3>
-                  <p class="text-gray-600 dark:text-gray-400">
-                    You are currently signed in as <span class="font-semibold">{{ userEmail }}</span>.
-                  </p>
-                  <div class="space-y-3">
-                    <button @click="goToStep(2)"
-                            class="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                      Continue to Family Information
-                    </button>
-                    <button @click="handleLogout"
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-700">
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-
-                <template v-else>
-                  <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Sign In or Create Account</h3>
-                  <p class="text-gray-600 dark:text-gray-400 mb-6">Please sign in to continue, or create a new account if you don't have one.</p>
-                  
-                  <div v-if="error" class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                    <p class="text-red-800 dark:text-red-200 text-sm">{{ error }}</p>
-                  </div>
-
-                  <!-- Login Form -->
-                  <div v-if="!showRegisterForm" class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                    <input v-model="loginForm.email" type="email" required
-                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                  </div>
-                  
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
-                    <input v-model="loginForm.password" type="password" required
-                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                  </div>
-                  
-                  <div class="flex items-center">
-                    <input v-model="loginForm.remember" type="checkbox" id="remember"
-                           class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                    <label for="remember" class="ml-2 text-sm text-gray-700 dark:text-gray-300">Keep me signed in</label>
-                  </div>
-                  
-                  <button @click="handleLogin" :disabled="processing"
-                          class="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
-                    {{ processing ? 'Signing in...' : 'Sign In' }}
-                  </button>
-                  
-                  <p class="text-center text-sm text-gray-600 dark:text-gray-400">
-                    Don't have an account?
-                    <button @click="showRegisterForm = true" class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                      Sign up
-                    </button>
-                  </p>
-                </div>
-
-                  <!-- Register Form -->
-                  <div v-else class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
-                    <input v-model="registerForm.name" type="text" required
-                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                  </div>
-                  
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                    <input v-model="registerForm.email" type="email" required
-                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                  </div>
-                  
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
-                    <input v-model="registerForm.password" type="password" required minlength="8"
-                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                  </div>
-                  
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
-                    <input v-model="registerForm.password_confirmation" type="password" required minlength="8"
-                           class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                  </div>
-                  
-                  <button @click="handleRegister" :disabled="processing"
-                          class="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
-                    {{ processing ? 'Creating account...' : 'Create Account' }}
-                  </button>
-                  
-                  <p class="text-center text-sm text-gray-600 dark:text-gray-400">
-                    Already have an account?
-                    <button @click="showRegisterForm = false" class="text-indigo-600 dark:text-indigo-400 hover:underline">
-                      Sign in
-                    </button>
-                  </p>
-                </div>
-                </template>
+                <login-controller
+                  :is-authenticated="isAuthenticated"
+                  :user-name="userName"
+                  :user-email="userEmail"
+                  :error="error"
+                  :processing="processing"
+                  v-model:show-register-form="showRegisterForm"
+                  v-model:login-form="loginForm"
+                  v-model:register-form="registerForm"
+                  @continue="goToStep(2)"
+                  @logout="handleLogout"
+                  @login="handleLogin"
+                  @register="handleRegister"
+                />
               </div>
             </div>
 
             <!-- Step 2: Family Information -->
-            <div class="transition-all duration-500 ease-in-out"
-                 :class="currentStep === 2 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full absolute inset-0'">
-              <div class="max-w-2xl mx-auto">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Family Information</h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-6">Please provide or confirm your family's contact and emergency information.</p>
-                
-                <form @submit.prevent="saveFamilyInfo" class="space-y-6">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Family Name *</label>
-                      <input v-model="familyForm.name" required
-                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                    </div>
-                    
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone</label>
-                      <input v-model="familyForm.phone" type="tel"
-                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                    </div>
-                    
-                    <div class="md:col-span-2">
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Address</label>
-                      <input v-model="familyForm.address"
-                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                    </div>
-                    
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">City</label>
-                      <input v-model="familyForm.city"
-                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                    </div>
-                    
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">State</label>
-                      <input v-model="familyForm.state"
-                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                    </div>
-                    
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ZIP Code</label>
-                      <input v-model="familyForm.zip_code"
-                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                    </div>
-                  </div>
-                  
-                  <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
-                    <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                      <div>
-                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Emergency Contacts</h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          Provide one or more trusted adults we can reach in an emergency.
-                        </p>
-                      </div>
-                      <button type="button"
-                              @click="addFamilyContact"
-                              class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
-                        + Add Contact
-                      </button>
-                    </div>
-
-                    <div v-if="familyForm.emergency_contacts.length" class="mt-6 space-y-4">
-                      <div v-for="(contact, index) in familyForm.emergency_contacts"
-                           :key="`family-contact-${index}-${contact.id || 'new'}`"
-                           class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-zinc-900/50">
-                        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
-                          <div>
-                            <div class="text-sm font-semibold text-gray-900 dark:text-white">
-                              Emergency Contact {{ index + 1 }}
-                            </div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">
-                              Mark one contact as primary for quick reference.
-                            </div>
-                          </div>
-                          <div class="flex flex-wrap items-center gap-3">
-                            <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                              <input type="radio"
-                                     :name="`family-primary-contact`"
-                                     :checked="contact.is_primary"
-                                     @change="setFamilyPrimaryContact(index)"
-                                     class="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-                              Primary contact
-                            </label>
-                            <label class="inline-flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                              <input type="checkbox"
-                                     v-model="contact.authorized_pickup"
-                                     class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                              Authorized for pickup
-                            </label>
-                            <button type="button"
-                                    @click="removeFamilyContact(index)"
-                                    :disabled="familyForm.emergency_contacts.length === 1"
-                                    class="text-sm text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 disabled:opacity-40 disabled:cursor-not-allowed">
-                              Remove
-                            </button>
-                          </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
-                            <input v-model="contact.name"
-                                   @input="contact.is_primary && syncFamilyLegacyContactFields()"
-                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                          </div>
-                          <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Relationship</label>
-                            <input v-model="contact.relation"
-                                   @input="contact.is_primary && syncFamilyLegacyContactFields()"
-                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                          </div>
-                          <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Primary Phone</label>
-                            <input v-model="contact.home_phone" type="tel"
-                                   @input="contact.is_primary && syncFamilyLegacyContactFields()"
-                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                          </div>
-                          <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cell Phone</label>
-                            <input v-model="contact.cell_phone" type="tel"
-                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                          </div>
-                          <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Work Phone</label>
-                            <input v-model="contact.work_phone" type="tel"
-                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                          </div>
-                          <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                            <input v-model="contact.email" type="email"
-                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                          </div>
-                          <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
-                            <input v-model="contact.address"
-                                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                          </div>
-                          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:col-span-2">
-                            <div>
-                              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
-                              <input v-model="contact.city"
-                                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                            </div>
-                            <div>
-                              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State</label>
-                              <input v-model="contact.state"
-                                     class="w-full px-4 py-2 border border-gray-300 dark-border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                            </div>
-                            <div>
-                              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ZIP</label>
-                              <input v-model="contact.zip"
-                                     class="w-full px-4 py-2 border border-gray-300 dark-border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="flex justify-end space-x-3 pt-6">
-                    <button type="button" @click="goToStep(1)"
-                            class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hoverbg-zinc-700">
-                      ← Back
-                    </button>
-                    <button type="submit" :disabled="processing"
-                            class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
-                      {{ processing ? 'Saving...' : 'Continue' }}
-                    </button>
-                  </div>
-                </form>
-              </div>
+            <div
+              class="transition-all duration-500 ease-in-out"
+              :class="currentStep === 2 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full absolute inset-0'"
+            >
+              <family-information-form
+                :family-form="familyForm"
+                :processing="processing"
+                @submit="saveFamilyInfo"
+                @add-contact="addFamilyContact"
+                @remove-contact="removeFamilyContact"
+                @set-primary-contact="setFamilyPrimaryContact"
+                @sync-legacy="syncFamilyLegacyContactFields()"
+                @go-back="goToStep(1)"
+              />
             </div>
 
             <!-- Step 3: Camper Selection & Forms -->
@@ -435,13 +196,62 @@
                         ${{ campInstance?.price ? parseFloat(campInstance.price).toFixed(2) : '0.00' }}
                       </span>
                     </div>
-                    <div class="border-t border-indigo-200 dark:border-indigo-800 pt-2 flex justify-between">
-                      <span class="font-semibold text-gray-900 dark:text-white">Total:</span>
-                      <span class="font-bold text-lg text-indigo-600 dark:text-indigo-400">
-                        ${{ totalAmount.toFixed(2) }}
-                      </span>
+                    <div class="border-t border-indigo-200 dark:border-indigo-800 pt-2 space-y-2">
+                      <div v-if="hasDiscount" class="flex justify-between text-sm text-gray-700 dark:text-gray-300">
+                        <span>Subtotal</span>
+                        <span>${{ subtotalAmount.toFixed(2) }}</span>
+                      </div>
+                      <div v-if="hasDiscount" class="flex justify-between text-sm text-emerald-600 dark:text-emerald-400">
+                        <span>Discount ({{ discount.code }})</span>
+                        <span>- ${{ discountAmountDisplay }}</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="font-semibold text-gray-900 dark:text-white">Total Due:</span>
+                        <span class="font-bold text-lg text-indigo-600 dark:text-indigo-400">
+                          ${{ totalAmount.toFixed(2) }}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                </div>
+
+                <!-- Discount Code Entry -->
+                <div class="mb-6">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Discount Code</label>
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <input
+                      v-model.trim="discountCodeInput"
+                      type="text"
+                      placeholder="Enter discount code"
+                      class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      :disabled="discount.validating"
+                    >
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        @click="applyDiscountCode"
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        :disabled="!discountCodeInput || discount.validating"
+                      >
+                        {{ discount.validating ? 'Applying...' : hasDiscount ? 'Reapply' : 'Apply' }}
+                      </button>
+                      <button
+                        v-if="hasDiscount"
+                        type="button"
+                        @click="removeDiscount"
+                        class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-800"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                  <p
+                    v-if="discount.message"
+                    class="mt-2 text-sm"
+                    :class="discount.valid ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'"
+                  >
+                    {{ discount.message }}
+                  </p>
                 </div>
 
                 <!-- Payment Method Selection -->
@@ -534,225 +344,45 @@
       </div>
     </div>
 
-  <!-- Add Camper Modal -->
-  <div
-    v-if="showNewCamperModal"
-    class="fixed inset-0 z-50 flex items-center justify-center px-4 py-8 bg-black/60 backdrop-blur-sm"
-    @click.self="closeNewCamperModal"
-  >
-    <div class="w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-full">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-          {{ editingCamper ? 'Edit Camper' : 'Add Camper' }}
-        </h3>
-        <button
-          type="button"
-          class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          @click="closeNewCamperModal"
-        >
-          <span class="sr-only">Close</span>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-      <div v-if="archivedCampers.length && !editingCamper" class="px-5 pt-4 pb-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
-        <h4 class="text-sm font-semibold text-amber-800 dark:text-amber-200">
-          Previously Removed Campers
-        </h4>
-        <p class="mt-1 text-xs text-amber-700 dark:text-amber-300">
-          Restore a camper to reuse their information instead of creating a new record.
-        </p>
-        <ul class="mt-3 space-y-2">
-          <li
-            v-for="archived in archivedCampers"
-            :key="archived.id"
-            class="flex items-start justify-between rounded-lg bg-white/70 dark:bg-zinc-800/60 px-3 py-2 shadow-sm"
-          >
-            <div class="text-sm">
-              <p class="font-medium text-gray-900 dark:text-white">
-                {{ archived.first_name }} {{ archived.last_name }}
-              </p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">
-                <span v-if="archived.date_of_birth">DOB: {{ formatDate(archived.date_of_birth) }}</span>
-                <span v-if="archived.has_upcoming_enrollment" class="ml-2 text-amber-700 dark:text-amber-300">
-                  Upcoming registration
-                </span>
-              </p>
-            </div>
-            <button
-              type="button"
-              class="ml-3 inline-flex items-center rounded-md border border-indigo-200 dark:border-indigo-500 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
-              :disabled="restoringCamperId === archived.id"
-              @click="restoreArchivedCamper(archived.id)"
-            >
-              {{ restoringCamperId === archived.id ? 'Restoring…' : 'Restore' }}
-            </button>
-          </li>
-        </ul>
-      </div>
-      <form @submit.prevent="saveCamper" class="flex-1 overflow-y-auto px-5 py-4 space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Camper Photo</label>
-          <div class="flex flex-col sm:flex-row sm:items-center sm:gap-4 gap-3">
-            <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-200 dark:bg-zinc-800 flex items-center justify-center">
-              <template v-if="camperPhotoPreview">
-                <img
-                  :src="camperPhotoPreview"
-                  alt="Camper photo preview"
-                  class="w-full h-full object-contain"
-                >
-              </template>
-              <template v-else-if="editingCamper?.photo_url">
-                <img
-                  :src="editingCamper.photo_url"
-                  alt="Existing camper photo"
-                  class="w-full h-full object-contain"
-                >
-              </template>
-              <span v-else class="text-lg font-semibold text-gray-500 dark:text-gray-400">
-                {{ (camperForm.first_name?.[0] || '') + (camperForm.last_name?.[0] || '') || 'C' }}
-              </span>
-            </div>
-            <div class="flex-1 space-y-2">
-              <input
-                ref="camperPhotoInput"
-                type="file"
-                accept="image/*"
-                @change="handleCamperPhotoChange"
-                class="block w-full text-sm text-gray-600 dark:text-gray-300
-                       file:mr-4 file:py-2 file:px-4
-                       file:rounded-md file:border-0
-                       file:text-sm file:font-medium
-                       file:bg-indigo-50 file:text-indigo-700
-                       hover:file:bg-indigo-100"
-              >
-              <div class="flex items-center gap-2" v-if="camperPhotoFileName">
-                <span class="text-xs text-gray-600 dark:text-gray-300">Selected: {{ camperPhotoFileName }}</span>
-                <button
-                  type="button"
-                  class="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  @click="clearCamperPhoto"
-                >
-                  Remove
-                </button>
-              </div>
-              <p v-if="camperPhotoError" class="text-xs text-red-600 dark:text-red-400">{{ camperPhotoError }}</p>
-              <p v-else class="text-xs text-gray-500 dark:text-gray-400">Optional. JPG, PNG, GIF, or WebP (max 5 MB).</p>
-            </div>
-          </div>
-        </div>
+  <add-edit-camper-modal
+    :visible="showNewCamperModal"
+    :editing-camper="editingCamper"
+    :archived-campers="archivedCampers"
+    :restoring-camper-id="restoringCamperId"
+    :processing="processing"
+    :deleting-camper="deletingCamper"
+    :camper-photo-preview="camperPhotoPreview"
+    :camper-photo-file-name="camperPhotoFileName"
+    :camper-photo-error="camperPhotoError"
+    :camper-has-upcoming-enrollment="camperHasUpcomingEnrollment"
+    v-model:camper-form="camperForm"
+    @close="closeNewCamperModal"
+    @submit="saveCamper"
+    @restore-archived="restoreArchivedCamper"
+    @photo-change="handleCamperPhotoChange"
+    @clear-photo="clearCamperPhoto"
+    @delete-editing="deleteEditingCamper"
+  />
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name *</label>
-            <input v-model="camperForm.first_name" required
-                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name *</label>
-            <input v-model="camperForm.last_name" required
-                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth *</label>
-            <input v-model="camperForm.date_of_birth" type="date" required
-                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gender</label>
-            <select v-model="camperForm.gender"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white">
-              <option value="">Select</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
-          <div v-if="editingCamper" class="space-y-2">
-            <button
-              type="button"
-              class="inline-flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-300 rounded-md border border-red-200 dark:border-red-900/40 hover:bg-red-100 dark:hover:bg-red-900/40 disabled:opacity-60 disabled:cursor-not-allowed"
-              :disabled="deletingCamper || camperHasUpcomingEnrollment || processing"
-              @click="deleteEditingCamper"
-            >
-              {{ deletingCamper ? 'Removing…' : 'Remove Camper' }}
-            </button>
-            <p
-              v-if="camperHasUpcomingEnrollment"
-              class="text-xs font-medium text-amber-700 dark:text-amber-300"
-            >
-              This camper is registered for an upcoming camp and cannot be removed.
-            </p>
-          </div>
-          <div class="flex justify-end space-x-3">
-            <button type="button"
-                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-zinc-700"
-                    :disabled="processing || deletingCamper"
-                    @click="closeNewCamperModal">
-              Cancel
-            </button>
-            <button type="submit" :disabled="processing || deletingCamper"
-                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50">
-              {{ processing ? 'Saving...' : editingCamper ? 'Save Changes' : 'Add Camper' }}
-            </button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Camper Forms Modal -->
-  <div
-    v-if="showCamperFormsModal"
-    class="fixed inset-0 z-50 flex items-center justify-center px-4 py-8 bg-black/60 backdrop-blur-sm"
-    @click.self="closeCamperFormsModal"
-  >
-    <div class="w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-full">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            Complete Camper Forms
-          </h3>
-          <p v-if="activeCamperForForms" class="text-sm text-gray-500 dark:text-gray-400">
-            {{ activeCamperForForms.first_name }} {{ activeCamperForForms.last_name }}
-          </p>
-        </div>
-        <button
-          type="button"
-          class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          @click="closeCamperFormsModal"
-        >
-          <span class="sr-only">Close</span>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-      <div class="flex-1 overflow-y-auto px-5 py-4">
-        <camper-registration-form
-          v-if="activeCamperForForms && camperFormsModalData"
-          :camper="activeCamperForForms"
-          :active-year="activeComplianceYear"
-          :forms-data="camperFormsModalData"
-          :annual-status="annualStatus"
-          @forms-updated="onCamperFormsUpdated"
-          @agreements-updated="onCamperAgreementsUpdated"
-        />
-      </div>
-    </div>
-  </div>
+  <camper-forms-modal
+    :visible="showCamperFormsModal"
+    :camper="activeCamperForForms"
+    :forms-data="camperFormsModalData"
+    :annual-status="annualStatus"
+    :active-year="activeComplianceYear"
+    @close="closeCamperFormsModal"
+    @forms-updated="onCamperFormsUpdated"
+    @agreements-updated="onCamperAgreementsUpdated"
+  />
 </template>
 
 <script>
 import StripePaymentForm from './StripePaymentForm.vue'
-import CamperRegistrationForm from './CamperRegistrationForm.vue'
+import CamperFormsModal from './CamperFormsModal.vue'
 import CamperCard from './CamperCard.vue'
+import FamilyInformationForm from './FamilyInformationForm.vue'
+import AddEditCamperModal from './AddEditCamperModal.vue'
+import LoginController from './LoginController.vue'
 
 const getCsrfToken = () => {
   const meta = document.querySelector('meta[name="csrf-token"]')
@@ -843,6 +473,16 @@ const createDefaultState = () => ({
   enrollmentCreated: false,
   registrationComplete: false,
   paymentMethod: 'stripe',
+  discountCodeInput: '',
+  discount: {
+    validating: false,
+    valid: false,
+    code: '',
+    codeId: null,
+    amount: 0,
+    finalAmount: null,
+    message: '',
+  },
   sanctumAvailable: true,
   loginForm: createLoginForm(),
   registerForm: createRegisterForm(),
@@ -868,8 +508,11 @@ export default {
   name: 'CampRegistrationModal',
   components: {
     StripePaymentForm,
-    CamperRegistrationForm,
-    CamperCard
+    CamperFormsModal,
+    CamperCard,
+    FamilyInformationForm,
+    AddEditCamperModal,
+    LoginController
   },
   props: {
     campInstanceId: {
@@ -885,9 +528,32 @@ export default {
     return createDefaultState()
   },
   computed: {
+    subtotalAmount() {
+      if (!this.campInstance || !this.campInstance.price) {
+        return 0
+      }
+      const price = parseFloat(this.campInstance.price)
+      if (Number.isNaN(price)) {
+        return 0
+      }
+      return this.selectedCampers.length * price
+    },
+    discountAmount() {
+      if (!this.discount.valid) {
+        return 0
+      }
+      const amount = Number(this.discount.amount || 0)
+      return Math.min(amount, this.subtotalAmount)
+    },
+    hasDiscount() {
+      return this.discount.valid && this.discountAmount > 0
+    },
+    discountAmountDisplay() {
+      return this.discountAmount.toFixed(2)
+    },
     totalAmount() {
-      if (!this.campInstance || !this.campInstance.price) return 0
-      return this.selectedCampers.length * parseFloat(this.campInstance.price)
+      const total = this.subtotalAmount - this.discountAmount
+      return total > 0 ? total : 0
     },
     currentCalendarYear() {
       return new Date().getFullYear()
@@ -908,12 +574,14 @@ export default {
     },
     formsAlreadyOnFile() {
       if (!this.annualStatus) return false
+      const parentSigned = !!this.annualStatus.parent?.signed
+      if (!parentSigned) return false
       const statusMap = new Map(
         (this.annualStatus.campers || []).map(status => [status.camper_id, status])
       )
       return this.selectedCamperIds.length > 0 && this.selectedCamperIds.every(id => {
         const status = statusMap.get(id)
-        return status?.information_snapshot_id && status?.medical_snapshot_id
+        return status?.information_snapshot_id && status?.medical_snapshot_id && status?.signed
       })
     },
     currentCamperHasForms() {
@@ -1118,6 +786,103 @@ export default {
 
       throw new Error('Request failed after multiple attempts. Please try again.')
     },
+    resetDiscountState({ message = '' } = {}) {
+      this.discount.validating = false
+      this.discount.valid = false
+      this.discount.code = ''
+      this.discount.codeId = null
+      this.discount.amount = 0
+      this.discount.finalAmount = null
+      this.discount.message = message
+      if (!message) {
+        this.discount.message = ''
+      }
+    },
+    handleDiscountContextChange({ soft = false } = {}) {
+      if (this.hasDiscount || (!soft && this.discount.message)) {
+        this.resetDiscountState()
+      }
+    },
+    async applyDiscountCode() {
+      if (!this.discountCodeInput) {
+        return
+      }
+
+      if (!this.campInstanceId || this.selectedCampers.length === 0) {
+        this.discount.valid = false
+        this.discount.amount = 0
+        this.discount.code = ''
+        this.discount.codeId = null
+        this.discount.finalAmount = null
+        this.discount.message = 'Select at least one camper before applying a discount code.'
+        return
+      }
+
+      this.discount.validating = true
+      try {
+        const response = await fetch('/api/public-registration/discounts/validate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            Accept: 'application/json',
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify({
+            code: this.discountCodeInput,
+            camp_instance_id: this.campInstanceId,
+            camper_ids: this.selectedCamperIds,
+          }),
+        })
+
+        let data
+        try {
+          data = await response.json()
+        } catch (parseError) {
+          console.error('Failed to parse discount validation response:', parseError)
+          data = null
+        }
+
+        if (!response.ok) {
+          const message = data?.message || 'Failed to validate discount code. Please try again.'
+          throw new Error(message)
+        }
+
+        if (data?.valid) {
+          this.discount.valid = true
+          this.discount.code = data?.discount_code?.code || this.discountCodeInput.trim().toUpperCase()
+          this.discount.codeId = data?.discount_code_id || null
+          this.discount.amount = Number(data?.discount_amount || 0)
+          this.discount.finalAmount = data?.final_amount !== undefined ? Number(data.final_amount) : null
+          this.discount.message = data?.message || 'Discount applied successfully.'
+          this.discountCodeInput = ''
+        } else {
+          this.discount.valid = false
+          this.discount.code = ''
+          this.discount.codeId = null
+          this.discount.amount = 0
+          this.discount.finalAmount = null
+          this.discount.message = data?.message || 'Invalid discount code.'
+        }
+      } catch (error) {
+        console.error('Error validating discount code:', error)
+        this.discount.valid = false
+        this.discount.code = ''
+        this.discount.codeId = null
+        this.discount.amount = 0
+        this.discount.finalAmount = null
+        this.discount.message = error?.message || 'Unable to validate discount code. Please try again.'
+      } finally {
+        this.discount.validating = false
+      }
+    },
+    removeDiscount() {
+      if (!this.hasDiscount && !this.discount.message) {
+        return
+      }
+      this.resetDiscountState()
+      this.discountCodeInput = ''
+    },
     async initialize() {
       this.reset()
       await this.checkAuth({ autoAdvance: true })
@@ -1170,6 +935,7 @@ export default {
     },
     async loadCampInstance() {
       try {
+        this.resetDiscountState()
         this.campInstance = await this.callApi(`/api/public-registration/camp-instance/${this.campInstanceId}`, {
           retries: 1,
         })
@@ -1605,15 +1371,32 @@ export default {
           all_hours_phone: medical?.emergency_contact?.all_hours_phone ?? '',
         },
         insurance: {
-          insured_name: medical?.insurance?.insured_name ?? '',
-          company: medical?.insurance?.company ?? '',
+          insured_name: medical?.insurance?.insured_name
+            ?? medical?.insurance?.primary_insured
+            ?? medical?.insurance?.insuredName
+            ?? '',
+          company: medical?.insurance?.company
+            ?? medical?.insurance?.company_name
+            ?? medical?.insurance?.provider
+            ?? medical?.insurance?.insurance_provider
+            ?? '',
           address: medical?.insurance?.address ?? '',
           city: medical?.insurance?.city ?? '',
           state: medical?.insurance?.state ?? '',
           zip: medical?.insurance?.zip ?? '',
-          phone: medical?.insurance?.phone ?? '',
-          policy_number: medical?.insurance?.policy_number ?? '',
-          group_number: medical?.insurance?.group_number ?? '',
+          phone: medical?.insurance?.phone
+            ?? medical?.insurance?.contact_phone
+            ?? '',
+          policy_number: medical?.insurance?.policy_number
+            ?? medical?.insurance?.policy
+            ?? medical?.insurance?.policyNumber
+            ?? medical?.insurance?.insurance_policy_number
+            ?? '',
+          group_number: medical?.insurance?.group_number
+            ?? medical?.insurance?.group
+            ?? medical?.insurance?.groupNumber
+            ?? medical?.insurance?.insurance_group_number
+            ?? '',
         },
       }
 
@@ -2076,6 +1859,7 @@ export default {
     },
     async selectCamper(camper) {
       if (!this.selectedCampers.find(c => c.id === camper.id)) {
+        this.handleDiscountContextChange()
         this.selectedCampers.push(camper)
         // Load forms data for the newly selected camper
         await this.fetchCamperForms(this.selectedCamperIds, { updateState: true })
@@ -2085,6 +1869,7 @@ export default {
     deselectCamper(camper) {
       const index = this.selectedCampers.findIndex(c => c.id === camper.id)
       if (index > -1) {
+        this.handleDiscountContextChange()
         this.selectedCampers.splice(index, 1)
         this.fetchCamperForms(this.selectedCamperIds, { updateState: true })
         this.updateFormsSubmittedFlag()
@@ -2143,9 +1928,6 @@ export default {
       this.camperPhotoError = ''
       this.camperHasUpcomingEnrollment = false
       this.deletingCamper = false
-      if (this.$refs.camperPhotoInput) {
-        this.$refs.camperPhotoInput.value = ''
-      }
     },
     async saveCamper() {
       this.processing = true
@@ -2386,9 +2168,21 @@ export default {
           camp_instance_id: this.campInstanceId
         }))
 
+        const payload = {
+          enrollments,
+          payment_method: this.paymentMethod,
+        }
+
+        if (this.hasDiscount && this.discount.codeId) {
+          payload.discount = {
+            code: this.discount.code,
+            discount_code_id: this.discount.codeId,
+          }
+        }
+
         const data = await this.callApi('/api/public-registration/enrollments', {
           method: 'POST',
-          body: { enrollments, payment_method: this.paymentMethod },
+          body: payload,
           requireAuth: true,
         })
 
@@ -2398,6 +2192,19 @@ export default {
 
         this.enrollmentIds = data.enrollment_ids
         this.enrollmentCreated = true
+        if (typeof data?.discount_cents === 'number') {
+          const discountDollars = data.discount_cents / 100
+          if (discountDollars > 0) {
+            this.discount.valid = true
+            this.discount.amount = discountDollars
+            this.discount.finalAmount = data?.total_amount_cents
+              ? data.total_amount_cents / 100
+              : this.totalAmount
+            if (typeof data?.discount_message === 'string' && data.discount_message.length > 0) {
+              this.discount.message = data.discount_message
+            }
+          }
+        }
 
         if (this.paymentMethod === 'cash_check') {
           this.registrationComplete = true
@@ -2463,6 +2270,8 @@ export default {
     },
     camperHasCompleteForms(camperId) {
       if (!this.annualStatus) return false
+      const parentSigned = !!this.annualStatus.parent?.signed
+      if (!parentSigned) return false
 
       const status = this.annualStatus.campers?.find(c => c.camper_id === camperId)
       return !!(status?.information_snapshot_id && status?.medical_snapshot_id && status?.signed)
@@ -2497,9 +2306,6 @@ export default {
       this.camperPhotoError = ''
       this.camperHasUpcomingEnrollment = !!camper.has_upcoming_enrollment
       this.deletingCamper = false
-      if (this.$refs.camperPhotoInput) {
-        this.$refs.camperPhotoInput.value = ''
-      }
       this.showNewCamperModal = true
     },
     handleCamperPhotoChange(event) {
@@ -2544,9 +2350,6 @@ export default {
         URL.revokeObjectURL(this.camperPhotoPreview)
       }
       this.camperPhotoPreview = null
-      if (this.$refs.camperPhotoInput) {
-        this.$refs.camperPhotoInput.value = ''
-      }
     },
     deleteEditingCamper() {
       this.deletingCamper = true

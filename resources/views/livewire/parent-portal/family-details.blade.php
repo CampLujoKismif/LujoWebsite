@@ -141,8 +141,10 @@
                         </div>
                         <div class="px-6 py-4">
                             @if($family->campers->count() > 0)
+                                @php $currentYear = config('annual_forms.default_year') ?? now()->year; @endphp
                                 <div class="space-y-3">
                                     @foreach($family->campers as $camper)
+                                        @php $camperGrade = $camper->gradeForYear($currentYear); @endphp
                                         <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                             <div class="flex items-center space-x-3">
                                                 <div class="flex-shrink-0">
@@ -152,7 +154,7 @@
                                                 </div>
                                                 <div>
                                                     <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $camper->first_name }} {{ $camper->last_name }}</p>
-                                                    <p class="text-sm text-gray-500 dark:text-gray-400">Age: {{ $camper->age }} | Grade: {{ $camper->grade }}</p>
+                                                    <p class="text-sm text-gray-500 dark:text-gray-400">Age: {{ $camper->age }} | Grade: {{ $camperGrade ?? '—' }}</p>
                                                 </div>
                                             </div>
                                         </div>

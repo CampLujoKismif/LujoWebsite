@@ -253,7 +253,7 @@ class AnnualComplianceService
         ]);
 
         if (!$snapshot->exists || empty($snapshot->data)) {
-            $infoData = $this->defaultInformationFormData($camper);
+            $infoData = $this->defaultInformationFormData($camper, $year);
             $snapshot->fill([
                 'form_version' => $version,
                 'data' => $infoData,
@@ -322,7 +322,7 @@ class AnnualComplianceService
                 }
 
                 $informationData = $this->resolveSnapshotData($camper->informationSnapshots, $year, $previousYear)
-                    ?? $this->defaultInformationFormData($camper);
+                    ?? $this->defaultInformationFormData($camper, $year);
 
                 $medicalData = $this->resolveSnapshotData($camper->medicalSnapshots, $year, $previousYear)
                     ?? $this->defaultMedicalFormData($camper);
@@ -376,14 +376,12 @@ class AnnualComplianceService
                 $informationSnapshot = null;
                 $medicalSnapshot = null;
 
-                $informationInput = $this->normalizeInformationInput($camper, Arr::get($form, 'information', []));
+                $informationInput = $this->normalizeInformationInput($camper, Arr::get($form, 'information', []), $year);
                 $medicalInput = $this->normalizeMedicalInput($camper, Arr::get($form, 'medical', []));
 
                 // Update camper core fields
                 $camper->fill(array_filter([
                     'date_of_birth' => Arr::get($informationInput, 'camper.date_of_birth'),
-                    'grade' => Arr::get($informationInput, 'camper.grade'),
-                    't_shirt_size' => Arr::get($informationInput, 'camper.t_shirt_size'),
                     'phone_number' => Arr::get($informationInput, 'camper.home_phone'),
                     'email' => Arr::get($informationInput, 'camper.email'),
                 ], fn ($value) => !is_null($value)));
@@ -395,9 +393,7 @@ class AnnualComplianceService
                     'physician_name' => Arr::get($medicalInput, 'medical.physician_name'),
                     'physician_phone' => Arr::get($medicalInput, 'medical.physician_phone'),
                     'insurance_provider' => Arr::get($medicalInput, 'insurance.company'),
-                    'insurance_policy_number' => Arr::get($medicalInput, 'insurance.policy_number'),
-                    'insurance_group_number' => Arr::get($medicalInput, 'insurance.group_number'),
-                    'insurance_phone' => Arr::get($medicalInput, 'insurance.phone'),
+                    'policy_number' => Arr::get($medicalInput, 'insurance.policy_number'),
                     'emergency_contact_name' => Arr::get($medicalInput, 'emergency_contact.name'),
                     'emergency_contact_phone' => Arr::get($medicalInput, 'emergency_contact.phone'),
                     'emergency_contact_relationship' => Arr::get($medicalInput, 'emergency_contact.relationship'),
@@ -468,7 +464,7 @@ class AnnualComplianceService
 
     protected function buildInformationSnapshotData(Camper $camper, User $user): array
     {
-        $data = $this->defaultInformationFormData($camper);
+        $data = $this->defaultInformationFormData($camper, $this->currentYear());
         $data['snapshot_version'] = $this->config['information_form_version'] ?? "{$this->currentYear()}.1";
         $data['captured_by'] = [
             'user_id' => $user->id,
@@ -517,13 +513,25 @@ class AnnualComplianceService
         ]);
     }
 
-    protected function defaultInformationFormData(Camper $camper): array
+    protected function defaultInformationFormData(Camper $camper, ?int $year = null): array
     {
+        $year = $this->resolveYear($year);
         $family = $camper->family;
         $medical = $camper->medicalRecord;
+        $informationData = $camper->informationData($year) ?? $camper->informationData();
 
         $dateOfBirth = $camper->date_of_birth ? $camper->date_of_birth->toDateString() : null;
         $age = $camper->date_of_birth ? $camper->date_of_birth->age : null;
+        $grade = Arr::get($informationData, 'camper.grade');
+        $tShirtSize = Arr::get($informationData, 'camper.t_shirt_size');
+
+        if (is_null($grade)) {
+            $grade = $camper->getAttribute('grade');
+        }
+
+        if (is_null($tShirtSize)) {
+            $tShirtSize = $camper->getAttribute('t_shirt_size');
+        }
 
         return [
             'camper' => [
@@ -531,7 +539,7 @@ class AnnualComplianceService
                 'last_name' => $camper->last_name ?? '',
                 'date_of_birth' => $dateOfBirth,
                 'age' => $age,
-                'grade' => $camper->grade,
+                'grade' => $grade ?? '',
                 'sex' => $camper->biological_gender ?? '',
                 'address' => $family?->address ?? '',
                 'city' => $family?->city ?? '',
@@ -544,7 +552,7 @@ class AnnualComplianceService
                 'home_church' => $family?->home_church ?? '',
                 'parent_marital_status' => '',
                 'lives_with' => '',
-                't_shirt_size' => $camper->t_shirt_size ?? '',
+                't_shirt_size' => $tShirtSize ?? '',
             ],
             'emergency_contact' => [
                 'name' => $family?->emergency_contact_name ?? $medical?->emergency_contact_name ?? '',
@@ -611,16 +619,21 @@ class AnnualComplianceService
         ];
     }
 
-    protected function normalizeInformationInput(Camper $camper, array $input): array
+    protected function normalizeInformationInput(Camper $camper, array $input, ?int $year = null): array
     {
-        $defaults = $this->defaultInformationFormData($camper);
+        $year = $this->resolveYear($year);
+        $defaults = $this->defaultInformationFormData($camper, $year);
         $camperInput = array_merge($defaults['camper'], Arr::get($input, 'camper', []));
         $emergencyInput = array_merge($defaults['emergency_contact'], Arr::get($input, 'emergency_contact', []));
 
         $camperInput['date_of_birth'] = $camperInput['date_of_birth'] ?: ($camper->date_of_birth ? $camper->date_of_birth->toDateString() : null);
         $camperInput['age'] = $camperInput['age'] ?: ($camper->date_of_birth ? $camper->date_of_birth->age : null);
-        $camperInput['grade'] = $camperInput['grade'] ?? $camper->grade;
-        $camperInput['t_shirt_size'] = $camperInput['t_shirt_size'] ?? $camper->t_shirt_size;
+        if ($camperInput['grade'] === null || $camperInput['grade'] === '') {
+            $camperInput['grade'] = $camper->gradeForYear($year) ?? $camper->getAttribute('grade');
+        }
+        if ($camperInput['t_shirt_size'] === null || $camperInput['t_shirt_size'] === '') {
+            $camperInput['t_shirt_size'] = $camper->tShirtSizeForYear($year) ?? $camper->getAttribute('t_shirt_size');
+        }
 
         return [
             'camper' => $camperInput,

@@ -72,13 +72,15 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-gray-700">
+                            @php $currentYear = config('annual_forms.default_year') ?? now()->year; @endphp
                             @forelse($this->enrollments as $enrollment)
+                                @php $camperGrade = $enrollment->camper->gradeForYear($currentYear); @endphp
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div>
                                                 <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $enrollment->camper->full_name }}</div>
-                                                <div class="text-sm text-gray-500 dark:text-gray-400">Grade {{ $enrollment->camper->grade }}</div>
+                                                <div class="text-sm text-gray-500 dark:text-gray-400">Grade {{ $camperGrade ?? '—' }}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -151,7 +153,11 @@
                             <div class="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4">
                                 <div class="space-y-2 text-gray-700 dark:text-gray-300">
                                     <div><span class="font-medium">Name:</span> {{ $selectedEnrollment->camper->full_name }}</div>
-                                    <div><span class="font-medium">Grade:</span> {{ $selectedEnrollment->camper->grade }}</div>
+                                    @php
+                                        $detailsYear = $currentYear ?? (config('annual_forms.default_year') ?? now()->year);
+                                        $selectedCamperGrade = $selectedEnrollment->camper->gradeForYear($detailsYear);
+                                    @endphp
+                                    <div><span class="font-medium">Grade:</span> {{ $selectedCamperGrade ?? '—' }}</div>
                                     <div><span class="font-medium">School:</span> {{ $selectedEnrollment->camper->school }}</div>
                                     <div><span class="font-medium">Family:</span> {{ $selectedEnrollment->camper->family->name }}</div>
                                 </div>

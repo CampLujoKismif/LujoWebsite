@@ -6,9 +6,11 @@ use App\Models\CampInstance;
 use App\Models\Enrollment;
 use App\Models\Family;
 use App\Models\Camper;
+use App\Models\CamperInformationSnapshot;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Arr;
 
 class Dashboard extends Component
 {
@@ -197,12 +199,13 @@ class Dashboard extends Component
                 ->where('family_id', $family->id)
                 ->firstOrFail();
             
+            $year = $this->defaultYear();
             $this->camperFirstName = $camper->first_name;
             $this->camperLastName = $camper->last_name;
             $this->camperDateOfBirth = $camper->date_of_birth ? $camper->date_of_birth->format('Y-m-d') : '';
             $this->camperBiologicalGender = $camper->biological_gender;
-            $this->camperGrade = $camper->grade;
-            $this->camperTShirtSize = $camper->t_shirt_size;
+            $this->camperGrade = $camper->gradeForYear($year) ?? '';
+            $this->camperTShirtSize = $camper->tShirtSizeForYear($year) ?? '';
             $this->camperSchool = $camper->school;
             $this->camperPhone = $camper->phone_number;
             $this->camperEmail = $camper->email;
@@ -275,13 +278,11 @@ class Dashboard extends Component
         $user = auth()->user();
         $family = $user->defaultFamily();
 
-        $data = [
+        $camperAttributes = [
             'first_name' => $this->camperFirstName,
             'last_name' => $this->camperLastName,
             'date_of_birth' => $this->camperDateOfBirth,
             'biological_gender' => $this->camperBiologicalGender,
-            'grade' => $this->camperGrade,
-            't_shirt_size' => $this->camperTShirtSize,
             'school' => $this->camperSchool,
             'phone_number' => $this->camperPhone,
             'email' => $this->camperEmail,
@@ -293,7 +294,7 @@ class Dashboard extends Component
         // Handle photo upload
         if ($this->camperPhoto) {
             $photoPath = $this->camperPhoto->store('camper-photos', 'public');
-            $data['photo_path'] = $photoPath;
+            $camperAttributes['photo_path'] = $photoPath;
         }
 
         if ($this->editingCamperId) {
@@ -306,17 +307,69 @@ class Dashboard extends Component
                 Storage::disk('public')->delete($camper->photo_path);
             }
             
-            $camper->update($data);
+            $camper->update($camperAttributes);
             $message = 'Camper updated successfully.';
         } else {
-            $data['family_id'] = $family->id;
-            Camper::create($data);
+            $camperAttributes['family_id'] = $family->id;
+            $camper = Camper::create($camperAttributes);
             $message = 'Camper added successfully.';
         }
+
+        $this->syncCamperInformationSnapshot(
+            $camper,
+            [
+                'grade' => $this->camperGrade,
+                't_shirt_size' => $this->camperTShirtSize,
+            ],
+            $this->defaultYear()
+        );
 
         $this->closeCamperModal();
         $this->loadStats();
         session()->flash('message', $message);
+    }
+
+    protected function defaultYear(): int
+    {
+        return (int) (config('annual_forms.default_year') ?? now()->year);
+    }
+
+    protected function syncCamperInformationSnapshot(Camper $camper, array $attributes, int $year): void
+    {
+        $snapshot = CamperInformationSnapshot::firstOrNew([
+            'camper_id' => $camper->id,
+            'year' => $year,
+        ]);
+
+        $existing = $snapshot->data ?? [];
+        $camperData = array_merge(
+            [
+                'first_name' => $camper->first_name,
+                'last_name' => $camper->last_name,
+                'date_of_birth' => optional($camper->date_of_birth)->format('Y-m-d'),
+            ],
+            Arr::get($existing, 'camper', [])
+        );
+
+        if (array_key_exists('grade', $attributes)) {
+            $camperData['grade'] = $attributes['grade'];
+        }
+
+        if (array_key_exists('t_shirt_size', $attributes)) {
+            $camperData['t_shirt_size'] = $attributes['t_shirt_size'];
+        }
+
+        Arr::set($existing, 'camper', $camperData);
+
+        $snapshot->fill([
+            'form_version' => $snapshot->form_version ?? "{$year}.1",
+            'data' => $existing,
+            'data_hash' => hash('sha256', json_encode($existing)),
+        ]);
+
+        $snapshot->captured_at = now();
+        $snapshot->captured_by_user_id = auth()->id();
+        $snapshot->save();
     }
 
     public function deleteCamper($camperId)

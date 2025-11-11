@@ -10,6 +10,7 @@ use App\Models\Camper;
 use App\Models\CampInstance;
 use App\Models\Enrollment;
 use App\Models\ParentAgreementSignature;
+use App\Models\DiscountCode;
 use App\Models\CamperInformationSnapshot;
 use App\Models\CamperMedicalSnapshot;
 use Illuminate\Http\Request;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Arr;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
 use Stripe\Customer;
@@ -144,6 +146,107 @@ class PublicRegistrationController extends Controller
             'price' => $instance->price ? (float) $instance->price : null,
             'max_capacity' => $instance->max_capacity,
             'available_spots' => $instance->available_spots,
+        ]);
+    }
+
+    /**
+     * Validate a discount code for camper registration.
+     */
+    public function validateDiscountCode(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'code' => 'required|string|max:50',
+            'camp_instance_id' => 'required|exists:camp_instances,id',
+            'camper_ids' => 'required|array|min:1',
+            'camper_ids.*' => 'integer|exists:campers,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Invalid discount request.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = Auth::user();
+        $family = $user->defaultFamily();
+
+        $campInstance = CampInstance::findOrFail($request->input('camp_instance_id'));
+
+        $camperIds = collect($request->input('camper_ids', []))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $campers = Camper::whereIn('id', $camperIds)
+            ->where('family_id', $family->id)
+            ->get();
+
+        if ($campers->count() !== $camperIds->count()) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'One or more campers are not available for this registration.',
+            ], 403);
+        }
+
+        if (!$campInstance->price || (float) $campInstance->price <= 0) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'This camp session does not have pricing configured yet.',
+            ]);
+        }
+
+        $code = strtoupper(trim($request->input('code')));
+
+        $discountCode = DiscountCode::where('code', $code)
+            ->where('type', 'camper')
+            ->first();
+
+        if (!$discountCode) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'Invalid discount code.',
+            ]);
+        }
+
+        if (!$discountCode->isValid()) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'This discount code is no longer active.',
+            ]);
+        }
+
+        $subtotal = $campers->count() * (float) $campInstance->price;
+        $discountAmount = round($discountCode->calculateDiscount($subtotal), 2);
+
+        if ($discountAmount <= 0) {
+            return response()->json([
+                'valid' => false,
+                'message' => 'This discount code does not apply to the selected registration.',
+            ]);
+        }
+
+        $discountAmount = min($discountAmount, $subtotal);
+        $finalAmount = max(0, $subtotal - $discountAmount);
+
+        return response()->json([
+            'valid' => true,
+            'discount_code_id' => $discountCode->id,
+            'discount_amount' => round($discountAmount, 2),
+            'final_amount' => round($finalAmount, 2),
+            'discount_type' => $discountCode->discount_type,
+            'discount_value' => (float) $discountCode->discount_value,
+            'message' => 'Discount applied successfully.',
+            'discount_code' => [
+                'id' => $discountCode->id,
+                'code' => $discountCode->code,
+                'type' => $discountCode->type,
+                'discount_type' => $discountCode->discount_type,
+                'discount_value' => (float) $discountCode->discount_value,
+                'description' => $discountCode->description,
+            ],
+            'subtotal' => round($subtotal, 2),
         ]);
     }
 
@@ -332,12 +435,13 @@ class PublicRegistrationController extends Controller
         $user = Auth::user();
         $family = $user->defaultFamily();
 
-        $data = $request->only(['first_name', 'last_name', 'date_of_birth', 'grade', 't_shirt_size', 'biological_gender']);
+        $year = $this->defaultYear();
+        $camperData = $request->only(['first_name', 'last_name', 'date_of_birth', 'biological_gender']);
 
         // Handle photo upload
         if ($request->hasFile('photo')) {
             $photoPath = $request->file('photo')->store('camper-photos', 'public');
-            $data['photo_path'] = $photoPath;
+            $camperData['photo_path'] = $photoPath;
         }
 
         if ($request->has('id')) {
@@ -345,15 +449,30 @@ class PublicRegistrationController extends Controller
             if ($camper->family_id !== $family->id) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
-            $camper->update($data);
+            $camper->update($camperData);
         } else {
-            $data['family_id'] = $family->id;
-            $camper = Camper::create($data);
+            $camperData['family_id'] = $family->id;
+            $camper = Camper::create($camperData);
         }
+
+        $snapshot = $this->syncCamperInformationSnapshot(
+            $camper,
+            [
+                'grade' => $request->input('grade'),
+                't_shirt_size' => $request->input('t_shirt_size'),
+            ],
+            $year
+        );
 
         return response()->json([
             'message' => 'Camper saved successfully',
-            'camper' => $this->formatCamper($camper),
+            'camper' => array_merge(
+                $this->formatCamper($camper),
+                [
+                    'grade' => Arr::get($snapshot->data, 'camper.grade'),
+                    't_shirt_size' => Arr::get($snapshot->data, 'camper.t_shirt_size'),
+                ]
+            ),
         ]);
     }
 
@@ -422,6 +541,9 @@ class PublicRegistrationController extends Controller
             'enrollments.*.camper_id' => 'required|exists:campers,id',
             'enrollments.*.camp_instance_id' => 'required|exists:camp_instances,id',
             'payment_method' => 'required|in:stripe,cash_check',
+            'discount' => 'nullable|array',
+            'discount.code' => 'required_with:discount|string|max:50',
+            'discount.discount_code_id' => 'required_with:discount|integer|exists:discount_codes,id',
         ]);
 
         if ($validator->fails()) {
@@ -430,6 +552,7 @@ class PublicRegistrationController extends Controller
 
         $user = Auth::user();
         $family = $user->defaultFamily();
+        $discountInput = $request->input('discount');
 
         DB::beginTransaction();
         try {
@@ -520,12 +643,70 @@ class PublicRegistrationController extends Controller
                 throw new \Exception('No enrollments were created. Please check that campers are selected and the camp instance is valid.');
             }
 
+            $discountCents = 0;
+
+            if (!empty($discountInput)) {
+                $discountCode = DiscountCode::where('id', $discountInput['discount_code_id'] ?? null)
+                    ->where('code', strtoupper(trim($discountInput['code'] ?? '')))
+                    ->where('type', 'camper')
+                    ->first();
+
+                if (!$discountCode) {
+                    throw new \Exception('Invalid discount code provided.');
+                }
+
+                if (!$discountCode->isValid()) {
+                    throw new \Exception('The discount code is no longer active.');
+                }
+
+                $subtotalCents = collect($enrollments)->sum('balance_cents');
+
+                if ($subtotalCents <= 0) {
+                    throw new \Exception('Unable to apply discount to zero-total registration.');
+                }
+
+                $calculatedDiscount = $discountCode->calculateDiscount($subtotalCents / 100);
+                $discountCents = (int) round($calculatedDiscount * 100);
+
+                if ($discountCents <= 0) {
+                    throw new \Exception('Discount amount is zero for this registration.');
+                }
+
+                if ($discountCents > $subtotalCents) {
+                    $discountCents = $subtotalCents;
+                }
+
+                $perEnrollmentDiscount = intdiv($discountCents, count($enrollments));
+                $remainder = $discountCents % count($enrollments);
+
+                foreach ($enrollments as $index => $enrollment) {
+                    $deduction = $perEnrollmentDiscount + ($index < $remainder ? 1 : 0);
+                    $newBalance = max(0, $enrollment->balance_cents - $deduction);
+
+                    $enrollment->update([
+                        'balance_cents' => $newBalance,
+                        'discount_code_id' => $discountCode->id,
+                        'discount_cents' => $deduction,
+                    ]);
+
+                    $enrollment->balance_cents = $newBalance;
+                    $enrollment->discount_code_id = $discountCode->id;
+                    $enrollment->discount_cents = $deduction;
+                }
+
+                $discountCode->incrementUsage();
+            }
+
+            $totalAmount = collect($enrollments)->sum('balance_cents');
+
             DB::commit();
 
             return response()->json([
                 'message' => 'Enrollments created successfully',
                 'enrollment_ids' => array_map(fn($e) => $e->id, $enrollments),
                 'total_amount_cents' => $totalAmount,
+                'discount_cents' => $discountCents,
+                'discount_message' => $discountCents > 0 ? 'Discount applied successfully.' : null,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -572,10 +753,36 @@ class PublicRegistrationController extends Controller
             $amount = $request->input('amount');
             $amountCents = (int) ($amount * 100);
 
+            $user = Auth::user();
+            $family = $user->defaultFamily();
+
             // Get enrollment details to extract camp session information
             $enrollments = Enrollment::whereIn('id', $request->enrollment_ids)
+                ->whereHas('camper', function ($query) use ($family) {
+                    $query->where('family_id', $family->id);
+                })
                 ->with(['campInstance.camp', 'camper'])
                 ->get();
+
+            if ($enrollments->count() !== count($request->enrollment_ids)) {
+                return response()->json([
+                    'error' => 'Invalid enrollment selection.',
+                ], 403);
+            }
+
+            $expectedAmountCents = (int) $enrollments->sum('balance_cents');
+
+            if ($expectedAmountCents <= 0) {
+                return response()->json([
+                    'error' => 'There is no payment due for the selected enrollments.',
+                ], 422);
+            }
+
+            if ($amountCents !== $expectedAmountCents) {
+                return response()->json([
+                    'error' => 'Payment amount mismatch. Please refresh and try again.',
+                ], 422);
+            }
 
             // Get camp instance info from first enrollment (assuming all enrollments are for same camp)
             $campInstance = $enrollments->first()?->campInstance;
@@ -861,18 +1068,65 @@ class PublicRegistrationController extends Controller
             })
             ->exists();
 
+        $year = $this->defaultYear();
+
         return [
             'id' => $camper->id,
             'first_name' => $camper->first_name,
             'last_name' => $camper->last_name,
             'date_of_birth' => $camper->date_of_birth ? $camper->date_of_birth->format('Y-m-d') : null,
-            'grade' => $camper->grade,
-            't_shirt_size' => $camper->t_shirt_size,
+            'grade' => $camper->gradeForYear($year),
+            't_shirt_size' => $camper->tShirtSizeForYear($year),
             'photo_url' => $camper->photo_url,
             'has_upcoming_enrollment' => $hasUpcomingEnrollment,
             'deleted_at' => optional($camper->deleted_at)?->toDateTimeString(),
             'biological_gender' => $camper->biological_gender,
         ];
+    }
+
+    protected function defaultYear(): int
+    {
+        return (int) (config('annual_forms.default_year') ?? now()->year);
+    }
+
+    protected function syncCamperInformationSnapshot(Camper $camper, array $attributes, int $year): CamperInformationSnapshot
+    {
+        $snapshot = CamperInformationSnapshot::firstOrNew([
+            'camper_id' => $camper->id,
+            'year' => $year,
+        ]);
+
+        $existing = $snapshot->data ?? [];
+        $camperData = array_merge(
+            [
+                'first_name' => $camper->first_name,
+                'last_name' => $camper->last_name,
+                'date_of_birth' => optional($camper->date_of_birth)->format('Y-m-d'),
+            ],
+            Arr::get($existing, 'camper', [])
+        );
+
+        if (array_key_exists('grade', $attributes)) {
+            $camperData['grade'] = $attributes['grade'];
+        }
+
+        if (array_key_exists('t_shirt_size', $attributes)) {
+            $camperData['t_shirt_size'] = $attributes['t_shirt_size'];
+        }
+
+        Arr::set($existing, 'camper', $camperData);
+
+        $snapshot->fill([
+            'form_version' => $snapshot->form_version ?? "{$year}.1",
+            'data' => $existing,
+            'data_hash' => hash('sha256', json_encode($existing)),
+        ]);
+
+        $snapshot->captured_at = now();
+        $snapshot->captured_by_user_id = Auth::id();
+        $snapshot->save();
+
+        return $snapshot;
     }
 }
 

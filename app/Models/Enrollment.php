@@ -24,6 +24,8 @@ class Enrollment extends Model
         'forms_complete',
         'enrolled_at',
         'notes',
+        'discount_code_id',
+        'discount_cents',
     ];
 
     protected $casts = [
@@ -34,6 +36,7 @@ class Enrollment extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'discount_cents' => 'integer',
     ];
 
     /**
@@ -58,6 +61,14 @@ class Enrollment extends Model
     public function camper(): BelongsTo
     {
         return $this->belongsTo(Camper::class);
+    }
+
+    /**
+     * Get the discount code applied to this enrollment.
+     */
+    public function discountCode(): BelongsTo
+    {
+        return $this->belongsTo(DiscountCode::class);
     }
 
     /**
@@ -147,6 +158,14 @@ class Enrollment extends Model
     public function getBalanceAttribute(): float
     {
         return $this->balance_cents / 100;
+    }
+
+    /**
+     * Get the discount amount in dollars.
+     */
+    public function getDiscountAmountAttribute(): float
+    {
+        return ($this->discount_cents ?? 0) / 100;
     }
 
     /**

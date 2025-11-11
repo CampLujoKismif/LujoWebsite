@@ -127,8 +127,13 @@
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by adding your first camper.</p>
                 </div>
             @else
+                @php $currentYear = config('annual_forms.default_year') ?? now()->year; @endphp
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     @foreach($this->allCampers as $camper)
+                        @php
+                            $camperGrade = $camper->gradeForYear($currentYear);
+                            $camperTShirtSize = $camper->tShirtSizeForYear($currentYear);
+                        @endphp
                         <div class="bg-white dark:bg-zinc-900 shadow rounded-lg overflow-hidden">
                             <div class="p-6">
                                 <div class="flex items-center justify-between mb-4">
@@ -142,7 +147,9 @@
                                         @endif
                                         <div>
                                             <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ $camper->full_name }}</h3>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400">Age: {{ $camper->age }} | Grade: {{ $camper->grade }}</p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                                Age: {{ $camper->age }} | Grade: {{ $camperGrade ?? '—' }}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -150,8 +157,8 @@
                                     @if($camper->school)
                                         <p class="text-gray-600 dark:text-gray-400"><span class="font-medium">School:</span> {{ $camper->school }}</p>
                                     @endif
-                                    @if($camper->t_shirt_size)
-                                        <p class="text-gray-600 dark:text-gray-400"><span class="font-medium">T-Shirt Size:</span> {{ $camper->t_shirt_size }}</p>
+                                    @if($camperTShirtSize)
+                                        <p class="text-gray-600 dark:text-gray-400"><span class="font-medium">T-Shirt Size:</span> {{ $camperTShirtSize }}</p>
                                     @endif
                                     @if($camper->allergies || $camper->medical_conditions || $camper->medications)
                                         <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
