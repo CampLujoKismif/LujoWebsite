@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
+use App\Http\Controllers\Manager\SessionReportPreviewController;
 
 Route::get('/', function () {
     try {
@@ -94,6 +95,7 @@ Route::middleware(['auth', 'verified', 'require.password.change', 'require.onboa
         Route::get('/', App\Livewire\Manager\Dashboard::class)->name('index');
         Route::get('/enrollments', App\Livewire\Manager\EnrollmentManagement::class)->name('enrollments');
         Route::get('/sessions', App\Livewire\Manager\CampSessionManagement::class)->name('sessions');
+        Route::get('/reports/sessions/{campInstance}/preview', SessionReportPreviewController::class)->name('reports.sessions.preview');
     });
     
     // Parent Portal

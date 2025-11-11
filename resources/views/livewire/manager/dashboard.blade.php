@@ -219,19 +219,51 @@
                             </div>
                         </a>
 
-                        <a href="#" class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                    </svg>
+                        <div @class([
+                                'bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-colors',
+                                'hover:bg-gray-50 dark:hover:bg-gray-800' => $selectedSession,
+                                'opacity-60' => !$selectedSession,
+                            ])>
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-gray-900 dark:text-white">Generate Reports</h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                                            {{ $selectedSession ? 'Download camper summary' : 'Select a session to enable' }}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div class="ml-3">
-                                    <h3 class="text-sm font-medium text-gray-900 dark:text-white">Generate Reports</h3>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">Create session reports</p>
-                                </div>
+                                <span class="ml-3 text-xs font-medium text-purple-600 dark:text-purple-300"
+                                    wire:loading
+                                    wire:target="downloadSessionReport">
+                                    Preparing…
+                                </span>
                             </div>
-                        </a>
+                            <div class="mt-3 flex flex-wrap items-center gap-3">
+                                <button type="button"
+                                    wire:click="downloadSessionReport"
+                                    wire:target="downloadSessionReport"
+                                    wire:loading.attr="disabled"
+                                    @disabled(!$selectedSession)
+                                    class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-purple-600 text-white hover:bg-purple-700 disabled:bg-purple-400 disabled:cursor-not-allowed">
+                                    Download PDF
+                                </button>
+                                @if($selectedSession)
+                                    <a href="{{ route('dashboard.manager.reports.sessions.preview', ['campInstance' => $selectedSession->id]) }}"
+                                        target="_blank"
+                                        class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium border border-purple-200 text-purple-600 hover:border-purple-400 hover:text-purple-700 dark:border-purple-400/40 dark:text-purple-200 dark:hover:border-purple-300 dark:hover:text-purple-100">
+                                        Open HTML Preview
+                                    </a>
+                                @else
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Select a session to preview</span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
 

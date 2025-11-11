@@ -5,7 +5,10 @@ namespace App\Livewire\Manager;
 use App\Models\Camp;
 use App\Models\CampInstance;
 use App\Models\Enrollment;
+use App\Services\SessionReportBuilder;
 use Livewire\Component;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class Dashboard extends Component
 {
@@ -90,6 +93,39 @@ class Dashboard extends Component
             'waitlisted' => $enrollments->where('status', 'waitlisted')->count(),
             'cancelled' => $enrollments->where('status', 'cancelled')->count(),
         ];
+    }
+
+    public function downloadSessionReport()
+    {
+        if (!$this->selectedSession) {
+            return;
+        }
+
+        $campInstance = CampInstance::with('camp')->find($this->selectedSession->id);
+
+        if (!$campInstance) {
+            return;
+        }
+
+        $reportData = SessionReportBuilder::build($campInstance);
+
+        if (!$reportData) {
+            return;
+        }
+
+        $pdf = Pdf::loadView('pdf.manager.session-report', $reportData)
+            ->setPaper('letter', 'portrait');
+
+        $fileName = Str::of($campInstance->full_display_name ?? $campInstance->display_name ?? 'camp-session')
+            ->slug()
+            ->append('-registrations-')
+            ->append(now()->format('Ymd-His'))
+            ->append('.pdf')
+            ->toString();
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, $fileName);
     }
 
     public function getAssignedCampsProperty()

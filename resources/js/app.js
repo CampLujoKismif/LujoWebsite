@@ -44,6 +44,7 @@ import EditHTMLPage from './components/EditHTMLPage.vue'
 import ParentOnboarding from './components/ParentOnboarding.vue'
 import CampRegistrationModal from './components/CampRegistrationModal.vue'
 import CampSessionCard from './components/CampSessionCard.vue'
+import ParentPortalCamperCard from './components/ParentPortalCamperCard.vue'
 
 // Create Vue app instance
 const app = createApp({})
@@ -56,6 +57,7 @@ app.component('stripe-payment-form', StripePaymentForm)
 app.component('parent-onboarding', ParentOnboarding)
 app.component('camp-registration-modal', CampRegistrationModal)
 app.component('camp-session-card', CampSessionCard)
+app.component('parent-portal-camper-card', ParentPortalCamperCard)
 
 // Make Vue available globally for Blade templates
 window.Vue = createApp
@@ -172,6 +174,8 @@ function mountVueComponents() {
                     componentToMount = CampRegistrationModal;
                 } else if (componentName === 'CampSessionCard') {
                     componentToMount = CampSessionCard;
+                } else if (componentName === 'ParentPortalCamperCard') {
+                    componentToMount = ParentPortalCamperCard;
                 } else {
                     componentToMount = VueExample; // Default fallback
                 }
@@ -187,6 +191,7 @@ function mountVueComponents() {
                 elementApp.component('parent-onboarding', ParentOnboarding);
                 elementApp.component('camp-registration-modal', CampRegistrationModal);
                 elementApp.component('camp-session-card', CampSessionCard);
+                elementApp.component('parent-portal-camper-card', ParentPortalCamperCard);
                 
                 // Ensure the element is properly in the DOM
                 if (element && element.nodeType === Node.ELEMENT_NODE && document.contains(element)) {

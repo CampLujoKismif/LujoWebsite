@@ -48,6 +48,148 @@ class Camper extends Model
     ];
 
     /**
+     * Normalize list-style health attributes before persisting.
+     */
+    protected function normalizeHealthListInput(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            $value = trim($value);
+
+            if ($value === '') {
+                return null;
+            }
+
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $value = $decoded;
+            } else {
+                $value = preg_split('/[\r\n,;]+/', $value);
+            }
+        } elseif ($value instanceof \Illuminate\Support\Collection) {
+            $value = $value->all();
+        }
+
+        if (!is_array($value)) {
+            $value = [$value];
+        }
+
+        $normalized = array_values(array_filter(array_map(static function ($item) {
+            if (is_string($item)) {
+                $item = trim($item);
+            }
+
+            return ($item === null || $item === '') ? null : $item;
+        }, $value), static fn ($item) => $item !== null));
+
+        if (empty($normalized)) {
+            return null;
+        }
+
+        return json_encode($normalized, JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * Convert stored JSON back into a human-readable string.
+     */
+    protected function formatHealthListOutput(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $decoded = json_decode($value, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            if (!is_array($decoded)) {
+                $decoded = [$decoded];
+            }
+
+            $decoded = array_values(array_filter(array_map(static function ($item) {
+                return is_string($item) ? trim($item) : $item;
+            }, $decoded), static fn ($item) => $item !== null && $item !== ''));
+
+            if (empty($decoded)) {
+                return null;
+            }
+
+            return implode(', ', array_map(static function ($item) {
+                return is_scalar($item) ? (string) $item : json_encode($item);
+            }, $decoded));
+        }
+
+        return trim($value);
+    }
+
+    /**
+     * Convert stored JSON into an array.
+     */
+    protected function healthListToArray(?string $value): array
+    {
+        if ($value === null || $value === '') {
+            return [];
+        }
+
+        $decoded = json_decode($value, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $decoded = is_array($decoded) ? $decoded : [$decoded];
+
+            return array_values(array_filter(array_map(static function ($item) {
+                return is_string($item) ? trim($item) : $item;
+            }, $decoded), static fn ($item) => $item !== null && $item !== ''));
+        }
+
+        return array_values(array_filter(array_map(static fn ($item) => trim($item), preg_split('/[\r\n,;]+/', $value) ?: []), static fn ($item) => $item !== ''));
+    }
+
+    public function setAllergiesAttribute(mixed $value): void
+    {
+        $this->attributes['allergies'] = $this->normalizeHealthListInput($value);
+    }
+
+    public function getAllergiesAttribute(?string $value): ?string
+    {
+        return $this->formatHealthListOutput($value);
+    }
+
+    public function getAllergiesListAttribute(): array
+    {
+        return $this->healthListToArray($this->attributes['allergies'] ?? null);
+    }
+
+    public function setMedicalConditionsAttribute(mixed $value): void
+    {
+        $this->attributes['medical_conditions'] = $this->normalizeHealthListInput($value);
+    }
+
+    public function getMedicalConditionsAttribute(?string $value): ?string
+    {
+        return $this->formatHealthListOutput($value);
+    }
+
+    public function getMedicalConditionsListAttribute(): array
+    {
+        return $this->healthListToArray($this->attributes['medical_conditions'] ?? null);
+    }
+
+    public function setMedicationsAttribute(mixed $value): void
+    {
+        $this->attributes['medications'] = $this->normalizeHealthListInput($value);
+    }
+
+    public function getMedicationsAttribute(?string $value): ?string
+    {
+        return $this->formatHealthListOutput($value);
+    }
+
+    public function getMedicationsListAttribute(): array
+    {
+        return $this->healthListToArray($this->attributes['medications'] ?? null);
+    }
+
+    /**
      * Get the biological gender options.
      */
     public static function getBiologicalGenderOptions(): array

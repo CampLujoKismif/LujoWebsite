@@ -7,6 +7,7 @@ use App\Models\Enrollment;
 use App\Models\Family;
 use App\Models\Camper;
 use App\Models\CamperInformationSnapshot;
+use App\Models\CamperMedicalSnapshot;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
@@ -286,9 +287,9 @@ class Dashboard extends Component
             'school' => $this->camperSchool,
             'phone_number' => $this->camperPhone,
             'email' => $this->camperEmail,
-            'allergies' => $this->camperAllergies,
-            'medical_conditions' => $this->camperMedicalConditions,
-            'medications' => $this->camperMedications,
+            'allergies' => $this->normalizeHealthField($this->camperAllergies),
+            'medical_conditions' => $this->normalizeHealthField($this->camperMedicalConditions),
+            'medications' => $this->normalizeHealthField($this->camperMedications),
         ];
 
         // Handle photo upload
@@ -405,11 +406,71 @@ class Dashboard extends Component
         foreach ($families as $family) {
             $campers = $campers->concat($family->campers);
         }
-        return $campers;
+
+        if ($campers->isEmpty()) {
+            return $campers;
+        }
+
+        $camperIds = $campers->pluck('id');
+        $year = $this->defaultYear();
+
+        $informationSnapshotIds = CamperInformationSnapshot::query()
+            ->whereIn('camper_id', $camperIds)
+            ->where('year', $year)
+            ->pluck('camper_id')
+            ->unique();
+
+        $medicalSnapshotIds = CamperMedicalSnapshot::query()
+            ->whereIn('camper_id', $camperIds)
+            ->where('year', $year)
+            ->pluck('camper_id')
+            ->unique();
+
+        $formsCompleteIds = $informationSnapshotIds->intersect($medicalSnapshotIds)->unique();
+
+        $activeEnrollmentIds = Enrollment::query()
+            ->whereIn('camper_id', $camperIds)
+            ->whereIn('status', ['pending', 'confirmed', 'waitlisted'])
+            ->pluck('camper_id')
+            ->unique();
+
+        return $campers->map(function (Camper $camper) use ($formsCompleteIds, $activeEnrollmentIds) {
+            $camper->setAttribute('forms_complete_flag', $formsCompleteIds->contains($camper->id));
+            $camper->setAttribute('has_active_enrollment_flag', $activeEnrollmentIds->contains($camper->id));
+
+            return $camper;
+        });
     }
 
     public function render()
     {
         return view('livewire.parent-portal.dashboard')->layout('components.layouts.app');
+    }
+
+    protected function normalizeHealthField($value): ?array
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_array($value)) {
+            $items = $value;
+        } else {
+            $items = preg_split('/[\r\n,;]+/', (string) $value);
+        }
+
+        if (!is_array($items)) {
+            return null;
+        }
+
+        $normalized = array_values(array_filter(array_map(static function ($item) {
+            if (is_string($item)) {
+                $item = trim($item);
+            }
+
+            return ($item === null || $item === '') ? null : $item;
+        }, $items), static fn ($item) => $item !== null));
+
+        return empty($normalized) ? null : $normalized;
     }
 }

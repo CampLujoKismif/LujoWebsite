@@ -133,57 +133,70 @@
                         @php
                             $camperGrade = $camper->gradeForYear($currentYear);
                             $camperTShirtSize = $camper->tShirtSizeForYear($currentYear);
+                            $camperProps = [
+                                'camper' => [
+                                    'id' => $camper->id,
+                                    'first_name' => $camper->first_name,
+                                    'last_name' => $camper->last_name,
+                                    'date_of_birth' => optional($camper->date_of_birth)->format('Y-m-d'),
+                                    'grade' => $camperGrade,
+                                    't_shirt_size' => $camperTShirtSize,
+                                    'photo_url' => $camper->photo_url,
+                                    'school' => $camper->school,
+                                    'biological_gender' => $camper->biological_gender,
+                                ],
+                                'formsComplete' => (bool) $camper->getAttribute('forms_complete_flag'),
+                                'alreadyRegistered' => (bool) $camper->getAttribute('has_active_enrollment_flag'),
+                                'allowFormsAccess' => false,
+                            ];
                         @endphp
-                        <div class="bg-white dark:bg-zinc-900 shadow rounded-lg overflow-hidden">
-                            <div class="p-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center space-x-3">
-                                        @if($camper->photo_url)
-                                            <img src="{{ $camper->photo_url }}" alt="{{ $camper->full_name }}" class="h-12 w-12 rounded-full object-cover">
-                                        @else
-                                            <div class="h-12 w-12 rounded-full bg-blue-500 flex items-center justify-center">
-                                                <span class="text-white font-medium">{{ substr($camper->first_name, 0, 1) }}</span>
-                                            </div>
-                                        @endif
-                                        <div>
-                                            <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ $camper->full_name }}</h3>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400">
-                                                Age: {{ $camper->age }} | Grade: {{ $camperGrade ?? '—' }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="space-y-2 text-sm">
-                                    @if($camper->school)
-                                        <p class="text-gray-600 dark:text-gray-400"><span class="font-medium">School:</span> {{ $camper->school }}</p>
+                        <div class="flex flex-col space-y-3" wire:key="camper-card-{{ $camper->id }}">
+                            <div
+                                class="flex justify-center"
+                                data-vue-component="ParentPortalCamperCard"
+                                data-props='@json($camperProps)'
+                            ></div>
+
+                            @if($camper->allergies || $camper->medical_conditions || $camper->medications)
+                                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 text-sm space-y-2">
+                                    @if($camper->allergies)
+                                        <p class="text-red-600 dark:text-red-400"><span class="font-medium">Allergies:</span> {{ $camper->allergies }}</p>
                                     @endif
-                                    @if($camperTShirtSize)
-                                        <p class="text-gray-600 dark:text-gray-400"><span class="font-medium">T-Shirt Size:</span> {{ $camperTShirtSize }}</p>
+                                    @if($camper->medical_conditions)
+                                        <p class="text-red-600 dark:text-red-400"><span class="font-medium">Medical:</span> {{ $camper->medical_conditions }}</p>
                                     @endif
-                                    @if($camper->allergies || $camper->medical_conditions || $camper->medications)
-                                        <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
-                                            @if($camper->allergies)
-                                                <p class="text-xs text-red-600 dark:text-red-400"><span class="font-medium">Allergies:</span> {{ $camper->allergies }}</p>
-                                            @endif
-                                            @if($camper->medical_conditions)
-                                                <p class="text-xs text-red-600 dark:text-red-400"><span class="font-medium">Medical:</span> {{ $camper->medical_conditions }}</p>
-                                            @endif
-                                        </div>
+                                    @if($camper->medications)
+                                        <p class="text-red-600 dark:text-red-400"><span class="font-medium">Medications:</span> {{ $camper->medications }}</p>
                                     @endif
                                 </div>
-                                <div class="mt-4 flex space-x-2">
-                                    <button wire:click="openCamperModal({{ $camper->id }})" class="flex-1 inline-flex justify-center items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700">
-                                        Edit
-                                    </button>
-                                    <button wire:click="deleteCamper({{ $camper->id }})" wire:confirm="Are you sure you want to delete this camper?" class="inline-flex items-center px-3 py-2 border border-red-300 dark:border-red-600 text-sm font-medium rounded-md text-red-700 dark:text-red-400 bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-900">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                </div>
+                            @endif
+
+                            <div class="flex justify-end">
+                                <button
+                                    wire:click="deleteCamper({{ $camper->id }})"
+                                    wire:confirm="Are you sure you want to delete this camper?"
+                                    class="inline-flex items-center px-3 py-2 border border-red-300 dark:border-red-600 text-sm font-medium rounded-md text-red-700 dark:text-red-400 bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-red-900 transition-colors"
+                                >
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    Delete
+                                </button>
                             </div>
                         </div>
                     @endforeach
+
+                    <button
+                        type="button"
+                        wire:click="openCamperModal"
+                        class="flex flex-col items-center justify-center min-h-[320px] bg-white dark:bg-zinc-900 border-2 border-dashed border-indigo-300 dark:border-indigo-600 rounded-xl transition-colors hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-6 py-8 text-center text-indigo-600 dark:text-indigo-300"
+                    >
+                        <svg class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span class="text-lg font-semibold">Add Camper</span>
+                        <span class="text-sm text-indigo-500/80 dark:text-indigo-300/80 mt-1">Create a new camper profile</span>
+                    </button>
                 </div>
             @endif
         </div>
