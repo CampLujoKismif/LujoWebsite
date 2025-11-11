@@ -66,7 +66,11 @@
             </div>
             <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
                 @if($instance->isRegistrationOpen())
-                    <a href="#" class="inline-block rounded-full bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow hover:bg-blue-700 transition">Register Now</a>
+                    <a
+                        href="#"
+                        onclick="event.preventDefault(); if (window.openCampRegistrationModal) { window.openCampRegistrationModal({{ $instance->id }}); }"
+                        class="inline-block rounded-full bg-blue-600 px-8 py-3 text-base font-semibold text-white shadow hover:bg-blue-700 transition"
+                    >Register Now</a>
                 @endif
                 <a href="{{ route('home') }}#faq" class="inline-block rounded-full border border-blue-600 px-8 py-3 text-base font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">Learn More</a>
             </div>
@@ -113,9 +117,43 @@
             <div class="mt-16 bg-gradient-to-r from-blue-600 to-blue-400 rounded-2xl shadow-lg p-10 text-center">
                 <h2 class="text-2xl font-extrabold text-white mb-2">Ready to Join?</h2>
                 <p class="text-lg text-blue-100 mb-6">Don't miss out on this amazing opportunity for spiritual growth, fun activities, and lifelong friendships.</p>
-                <a href="#" class="inline-block rounded-full bg-white px-8 py-3 text-base font-semibold text-blue-700 shadow hover:bg-blue-50 transition">Register Now</a>
+                <a
+                    href="#"
+                    onclick="event.preventDefault(); if (window.openCampRegistrationModal) { window.openCampRegistrationModal({{ $instance->id }}); }"
+                    class="inline-block rounded-full bg-white px-8 py-3 text-base font-semibold text-blue-700 shadow hover:bg-blue-50 transition"
+                >Register Now</a>
             </div>
         @endif
+    </div>
+
+    <!-- Registration Modal Mount Point -->
+    <div x-data="{ showModal: false, campInstanceId: null }"
+         x-init="
+            showModal = false;
+            window.openCampRegistrationModal = function(instanceId) {
+                campInstanceId = instanceId;
+                showModal = true;
+                $nextTick(() => {
+                    setTimeout(() => {
+                        if (typeof mountVueComponents === 'function') {
+                            mountVueComponents();
+                        }
+                        window.dispatchEvent(new Event('modal-rendered'));
+                    }, 100);
+                });
+            };
+            window.closeCampRegistrationModal = function() {
+                showModal = false;
+                campInstanceId = null;
+            };
+         ">
+        <template x-if="showModal && campInstanceId">
+            <div x-show="showModal"
+                 x-cloak
+                 data-vue-component="CampRegistrationModal"
+                 :data-props="JSON.stringify({ campInstanceId: campInstanceId, show: showModal })">
+            </div>
+        </template>
     </div>
 
     @push('head')

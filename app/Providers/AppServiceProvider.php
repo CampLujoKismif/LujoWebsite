@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use App\Models\CampInstance;
 use Illuminate\Support\Facades\Blade;
 
 class AppServiceProvider extends ServiceProvider
@@ -78,6 +80,16 @@ class AppServiceProvider extends ServiceProvider
 
         Blade::directive('endcampPermission', function () {
             return "<?php endif; ?>";
+        });
+
+        // Share active camp sessions with the public layout
+        View::composer('components.layouts.public', function ($view) {
+            $activeCampSessions = CampInstance::with('camp')
+                ->where('is_active', true)
+                ->orderBy('start_date')
+                ->get();
+
+            $view->with('activeCampSessions', $activeCampSessions);
         });
     }
 }

@@ -57,6 +57,9 @@
                     </div>
                     
                     <!-- Desktop Navigation -->
+                    @php
+                        $activeCampSessions = $activeCampSessions ?? collect();
+                    @endphp
                     <div class="hidden lg:flex items-center space-x-4">
                         <a href="{{ route('home') }}#about" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">About</a>
                         
@@ -72,15 +75,23 @@
                                 <div class="py-2">
                                     <a href="{{ route('camp-sessions.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">All Sessions</a>
                                     <div class="border-t border-gray-100 my-1"></div>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Spark Week (1st-4th Grade)</a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Jump Week (9th Grade & Up)</a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Reunion Week (4th-12th Grade)</a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Day Camp (1st-4th Grade)</a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Super Week (4th-6th Grade)</a>
-                                    <a href="{{ route('strive-week') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Strive Week (5th Grade & Up)</a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Connect Week (6th Grade & Up)</a>
-                                    <a href="{{ route('elevate-week') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Elevate Week (7th-10th Girls)</a>
-                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">Fall Focus (5th-12th Grade)</a>
+                                    @forelse($activeCampSessions as $session)
+                                        @php
+                                            $subtitle = $session->grade_range ?: $session->age_range;
+                                        @endphp
+                                        <a href="{{ route('camp-sessions.show', $session) }}"
+                                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 whitespace-nowrap">
+                                            <span class="block">{{ $session->camp->display_name }}</span>
+                                            <span class="block text-xs text-gray-500">
+                                                {{ $session->year }}
+                                                @if($subtitle)
+                                                    · {{ $subtitle }}
+                                                @endif
+                                            </span>
+                                        </a>
+                                    @empty
+                                        <span class="block px-4 py-2 text-sm text-gray-500 whitespace-nowrap">No active sessions available yet.</span>
+                                    @endforelse
                                 </div>
                             </div>
                         </div>
@@ -125,15 +136,24 @@
                         </button>
                         <div x-show="mobileSessionsOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform -translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 transform translate-y-0" x-transition:leave-end="opacity-0 transform -translate-y-2" class="pl-4 space-y-1">
                             <a href="{{ route('camp-sessions.index') }}" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">All Sessions</a>
-                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Spark Week (1st-4th Grade)</a>
-                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Jump Week (9th Grade & Up)</a>
-                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Reunion Week (4th-12th Grade)</a>
-                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Day Camp (1st-4th Grade)</a>
-                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Super Week (4th-6th Grade)</a>
-                            <a href="{{ route('strive-week') }}" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Strive Week (5th Grade & Up)</a>
-                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Connect Week (6th Grade & Up)</a>
-                            <a href="{{ route('elevate-week') }}" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Elevate Week (7th-10th Girls)</a>
-                            <a href="#" @click="mobileMenuOpen = false; mobileSessionsOpen = false" class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">Fall Focus (5th-12th Grade)</a>
+                            @forelse($activeCampSessions as $session)
+                                @php
+                                    $subtitle = $session->grade_range ?: $session->age_range;
+                                @endphp
+                                <a href="{{ route('camp-sessions.show', $session) }}"
+                                   @click="mobileMenuOpen = false; mobileSessionsOpen = false"
+                                   class="block px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md">
+                                    <span class="block">{{ $session->camp->display_name }}</span>
+                                    <span class="block text-xs text-gray-500">
+                                        {{ $session->year }}
+                                        @if($subtitle)
+                                            · {{ $subtitle }}
+                                        @endif
+                                    </span>
+                                </a>
+                            @empty
+                                <span class="block px-3 py-2 text-sm text-gray-500 rounded-md">No active sessions available yet.</span>
+                            @endforelse
                         </div>
                     </div>
                     
