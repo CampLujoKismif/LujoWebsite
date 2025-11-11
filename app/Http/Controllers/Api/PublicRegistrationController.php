@@ -3,27 +3,32 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Family;
-use App\Models\FamilyContact;
+use App\Mail\CampRegistrationConfirmation;
+use App\Mail\CampRegistrationManagerNotification;
 use App\Models\Camper;
-use App\Models\CampInstance;
-use App\Models\Enrollment;
-use App\Models\ParentAgreementSignature;
-use App\Models\DiscountCode;
 use App\Models\CamperInformationSnapshot;
 use App\Models\CamperMedicalSnapshot;
+use App\Models\CampInstance;
+use App\Models\DiscountCode;
+use App\Models\Enrollment;
+use App\Models\Family;
+use App\Models\FamilyContact;
+use App\Models\ParentAgreementSignature;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Arr;
-use Stripe\Stripe;
-use Stripe\PaymentIntent;
 use Stripe\Customer;
+use Stripe\PaymentIntent;
+use Stripe\Stripe;
 
 class PublicRegistrationController extends Controller
 {
@@ -135,6 +140,33 @@ class PublicRegistrationController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
+        $existingEnrollments = collect();
+
+        if (Auth::check()) {
+            $user = Auth::user();
+            $family = $user->defaultFamily();
+
+            if ($family) {
+                $existingEnrollments = Enrollment::query()
+                    ->where('camp_instance_id', $instance->id)
+                    ->whereNull('deleted_at')
+                    ->whereNotIn('status', ['cancelled'])
+                    ->whereHas('camper', function ($query) use ($family) {
+                        $query->where('family_id', $family->id);
+                    })
+                    ->get(['id', 'camper_id', 'status', 'balance_cents', 'amount_paid_cents'])
+                    ->map(function (Enrollment $enrollment) {
+                        return [
+                            'id' => $enrollment->id,
+                            'camper_id' => $enrollment->camper_id,
+                            'status' => $enrollment->status,
+                            'balance_cents' => $enrollment->balance_cents,
+                            'amount_paid_cents' => $enrollment->amount_paid_cents,
+                        ];
+                    });
+            }
+        }
+
         return response()->json([
             'id' => $instance->id,
             'name' => $instance->name,
@@ -146,6 +178,7 @@ class PublicRegistrationController extends Controller
             'price' => $instance->price ? (float) $instance->price : null,
             'max_capacity' => $instance->max_capacity,
             'available_spots' => $instance->available_spots,
+            'existing_enrollments' => $existingEnrollments,
         ]);
     }
 
@@ -701,9 +734,20 @@ class PublicRegistrationController extends Controller
 
             DB::commit();
 
+            $enrollmentIds = array_map(fn ($e) => $e->id, $enrollments);
+
+            if ($request->payment_method === 'cash_check') {
+                $this->sendCampRegistrationEmails(
+                    $enrollmentIds,
+                    $user,
+                    'cash_check',
+                    awaitingPayment: true
+                );
+            }
+
             return response()->json([
                 'message' => 'Enrollments created successfully',
-                'enrollment_ids' => array_map(fn($e) => $e->id, $enrollments),
+                'enrollment_ids' => $enrollmentIds,
                 'total_amount_cents' => $totalAmount,
                 'discount_cents' => $discountCents,
                 'discount_message' => $discountCents > 0 ? 'Discount applied successfully.' : null,
@@ -935,6 +979,15 @@ class PublicRegistrationController extends Controller
 
             DB::commit();
 
+            $enrollmentIds = $enrollments->pluck('id')->all();
+
+            $this->sendCampRegistrationEmails(
+                $enrollmentIds,
+                $user,
+                'stripe',
+                awaitingPayment: false
+            );
+
             return response()->json([
                 'message' => 'Payment confirmed and enrollments updated',
                 'enrollments' => $enrollments->map(function ($e) {
@@ -956,6 +1009,171 @@ class PublicRegistrationController extends Controller
                 'error' => 'Failed to confirm payment'
             ], 500);
         }
+    }
+
+    /**
+     * Send registration confirmation emails to the registrant and session managers.
+     */
+    protected function sendCampRegistrationEmails(array $enrollmentIds, User $user, string $paymentMethod, bool $awaitingPayment): void
+    {
+        if (empty($enrollmentIds) || !$user?->email) {
+            return;
+        }
+
+        $enrollments = Enrollment::with(['camper', 'campInstance.camp'])
+            ->whereIn('id', $enrollmentIds)
+            ->get();
+
+        if ($enrollments->isEmpty()) {
+            return;
+        }
+
+        $campInstance = $enrollments->first()->campInstance;
+        if (!$campInstance) {
+            return;
+        }
+
+        $registration = $this->buildCampRegistrationPayload(
+            $enrollments,
+            $user,
+            $paymentMethod,
+            $awaitingPayment
+        );
+
+        try {
+            Mail::to($user->email)->sendNow(new CampRegistrationConfirmation($registration));
+
+            Log::info('Camp registration confirmation email sent', [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'camp_instance_id' => $campInstance->id,
+                'enrollment_ids' => $enrollmentIds,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send camp registration confirmation email', [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'camp_instance_id' => $campInstance->id,
+                'enrollment_ids' => $enrollmentIds,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        $managerEmails = $this->getSessionManagerEmails($campInstance);
+
+        foreach ($managerEmails as $email) {
+            if ($email === $user->email) {
+                continue;
+            }
+
+            try {
+                Mail::to($email)->sendNow(new CampRegistrationManagerNotification($registration));
+
+                Log::info('Camp registration manager notification sent', [
+                    'manager_email' => $email,
+                    'camp_instance_id' => $campInstance->id,
+                    'enrollment_ids' => $enrollmentIds,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to send camp registration manager notification', [
+                    'manager_email' => $email,
+                    'camp_instance_id' => $campInstance->id,
+                    'enrollment_ids' => $enrollmentIds,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Build the registration payload shared with email templates.
+     */
+    protected function buildCampRegistrationPayload(Collection $enrollments, User $user, string $paymentMethod, bool $awaitingPayment): array
+    {
+        $campInstance = $enrollments->first()->campInstance;
+        $camp = $campInstance?->camp;
+
+        $startDate = optional($campInstance?->start_date)->format('F j, Y');
+        $endDate = optional($campInstance?->end_date)->format('F j, Y');
+        $sessionDates = $startDate && $endDate
+            ? "{$startDate} - {$endDate}"
+            : ($startDate ?? ($endDate ?? 'TBA'));
+
+        $discountCents = (int) $enrollments->sum(function (Enrollment $enrollment) {
+            return (int) ($enrollment->discount_cents ?? 0);
+        });
+
+        $balanceCents = (int) $enrollments->sum(function (Enrollment $enrollment) {
+            return (int) ($enrollment->balance_cents ?? 0);
+        });
+
+        $paidCents = (int) $enrollments->sum(function (Enrollment $enrollment) {
+            return (int) ($enrollment->amount_paid_cents ?? 0);
+        });
+
+        $subtotalCents = max(0, $balanceCents + $discountCents);
+        $outstandingCents = max(0, $balanceCents - $paidCents);
+
+        $campers = $enrollments->map(function (Enrollment $enrollment) {
+            $first = $enrollment->camper?->first_name ?? '';
+            $last = $enrollment->camper?->last_name ?? '';
+
+            return [
+                'id' => $enrollment->camper?->id,
+                'name' => trim("{$first} {$last}") ?: 'Camper',
+                'status' => $enrollment->status ?? 'registered',
+            ];
+        })->values()->all();
+
+        return [
+            'camp_id' => $campInstance?->camp_id,
+            'camp_instance_id' => $campInstance?->id,
+            'camp_name' => $camp?->display_name ?? $camp?->name ?? 'Camp LUJO',
+            'session_name' => $campInstance?->display_name ?? $campInstance?->name ?? 'Camp Session',
+            'session_dates' => $sessionDates,
+            'payment_method' => $paymentMethod,
+            'awaiting_payment' => $awaitingPayment,
+            'registrant' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+            'campers' => $campers,
+            'financials' => [
+                'subtotal_cents' => $subtotalCents,
+                'discount_cents' => $discountCents,
+                'balance_cents' => $balanceCents,
+                'paid_cents' => $paidCents,
+                'outstanding_cents' => $outstandingCents,
+            ],
+            'registration_timestamp' => now()->toIso8601String(),
+        ];
+    }
+
+    /**
+     * Determine the email recipients for session manager notifications.
+     */
+    protected function getSessionManagerEmails(CampInstance $campInstance): array
+    {
+        $managerUsers = User::role('camp-manager')
+            ->where(function ($query) use ($campInstance) {
+                $query->whereHas('campAssignments', function ($assignmentQuery) use ($campInstance) {
+                    $assignmentQuery->where('camp_id', $campInstance->camp_id);
+                })->orWhereHas('campInstanceAssignments', function ($assignmentQuery) use ($campInstance) {
+                    $assignmentQuery->where('camp_instance_id', $campInstance->id);
+                });
+            })
+            ->get();
+
+        if ($managerUsers->isEmpty()) {
+            $managerUsers = $campInstance->assignedUsers()
+                ->whereHas('roles', function ($roleQuery) {
+                    $roleQuery->where('name', 'camp-manager');
+                })
+                ->get();
+        }
+
+        return $managerUsers->pluck('email')->filter()->unique()->values()->all();
     }
 
     /**

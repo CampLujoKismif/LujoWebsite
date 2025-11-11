@@ -600,14 +600,6 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     @forelse($campInstances as $instance)
                         @php
-                            $gradeSuffix = function($num) {
-                                if($num == 1) return 'st';
-                                if($num == 2) return 'nd';
-                                if($num == 3) return 'rd';
-                                return 'th';
-                            };
-                            
-                            // Generate a random gradient class
                             $gradientClasses = [
                                 'from-blue-500 to-blue-600',
                                 'from-green-500 to-green-600',
@@ -620,89 +612,33 @@
                                 'from-orange-500 to-orange-600'
                             ];
                             $gradientClass = $gradientClasses[$loop->index % count($gradientClasses)];
+
+                            $sessionData = [
+                                'id' => $instance->id,
+                                'campName' => $instance->camp->display_name,
+                                'gradeFrom' => $instance->grade_from,
+                                'gradeTo' => $instance->grade_to,
+                                'ageFrom' => $instance->age_from,
+                                'ageTo' => $instance->age_to,
+                                'startDate' => optional($instance->start_date)->toIso8601String(),
+                                'endDate' => optional($instance->end_date)->toIso8601String(),
+                                'price' => $instance->price,
+                                'description' => $instance->description,
+                                'isRegistrationOpen' => $instance->isRegistrationOpen(),
+                                'maxCapacity' => $instance->max_capacity,
+                                'availableSpots' => $instance->available_spots,
+                                'themeDescription' => $instance->theme_description,
+                                'detailsUrl' => $instance->theme_description ? route('camp-sessions.show', $instance) : null,
+                            ];
                         @endphp
-                        
-                        <div class="card-hover bg-gradient-to-br {{ $gradientClass }} text-white p-6 rounded-lg relative overflow-hidden">
-                            <!-- Camp Name - Large and Prominent -->
-                            <h3 class="text-2xl font-bold mb-3">{{ $instance->camp->display_name }}</h3>
-                            
-                            <!-- Grade/Age Range -->
-                            <div class="mb-4">
-                                @if($instance->grade_from && $instance->grade_to)
-                                    <span class="inline-block bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-900">
-                                        {{ $instance->grade_from }}{{ $gradeSuffix($instance->grade_from) }} Grade
-                                        @if($instance->grade_from != $instance->grade_to)
-                                            - {{ $instance->grade_to }}{{ $gradeSuffix($instance->grade_to) }} Grade
-                                        @endif
-                                    </span>
-                                @elseif($instance->age_from && $instance->age_to)
-                                    <span class="inline-block bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-900">
-                                        Ages {{ $instance->age_from }} - {{ $instance->age_to }}
-                                    </span>
-                                @endif
-                            </div>
-                            
-                            <!-- Dates - More Prominent -->
-                            <div class="mb-4">
-                                <div class="text-lg font-semibold">
-                                    @if($instance->start_date && $instance->end_date)
-                                        {{ $instance->start_date->format('M j') }} - {{ $instance->end_date->format('M j, Y') }}
-                                    @elseif($instance->start_date)
-                                        {{ $instance->start_date->format('M j, Y') }}
-                                    @endif
-                                </div>
-                            </div>
-                            
-                            <!-- Price - Large and Prominent -->
-                            @if($instance->price)
-                                <div class="mb-4">
-                                    <div class="text-3xl font-bold text-white">
-                                        ${{ number_format($instance->price, 0) }}
-                                    </div>
-                                    <div class="text-sm opacity-90">per camper</div>
-                                </div>
-                            @endif
-                            
-                            <!-- Description -->
-                            @if($instance->description)
-                                <p class="mb-4 text-sm opacity-90">{{ Str::limit($instance->description, 120) }}</p>
-                            @endif
-                            
-                            <!-- Registration Status -->
-                            @if($instance->isRegistrationOpen())
-                                <div class="mb-4">
-                                    <span class="inline-block bg-green-500 bg-opacity-90 px-4 py-2 rounded-full text-sm font-bold text-white">
-                                        ✓ Registration Open
-                                    </span>
-                                </div>
-                            @else
-                                <div class="mb-4">
-                                    <span class="inline-block bg-red-500 bg-opacity-90 px-4 py-2 rounded-full text-sm font-bold text-white">
-                                        Registration Closed
-                                    </span>
-                                </div>
-                            @endif
-                            
-                            <!-- Capacity Info -->
-                            @if($instance->max_capacity)
-                                <div class="mb-4 text-sm opacity-90">
-                                    <span class="font-medium">{{ $instance->available_spots }}</span> spots available
-                                </div>
-                            @endif
-                            
-                            <!-- Action Button -->
-                            <div class="mt-4">
-                                @if($instance->theme_description)
-                                    <a href="{{ route('camp-sessions.show', $instance) }}" class="inline-block bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-lg font-semibold transition duration-300 transform hover:scale-105">
-                                        Learn More & Register
-                                    </a>
-                                @else
-                                    <button onclick="openRegistrationModal({{ $instance->id }})" class="inline-block bg-white hover:bg-gray-100 text-gray-900 px-6 py-3 rounded-lg font-semibold transition duration-300 transform hover:scale-105">
-                                        Register Now
-                                    </button>
-                                @endif
-                            </div>
-                        </div>
+
+                        <div
+                            data-vue-component="CampSessionCard"
+                            data-props='@json([
+                                "session" => $sessionData,
+                                "gradientClass" => $gradientClass,
+                            ])'
+                        ></div>
                     @empty
                         <div class="col-span-full text-center py-8">
                             <p class="text-gray-600">No camp sessions are currently scheduled. Please check back later!</p>

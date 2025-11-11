@@ -45,10 +45,6 @@
                       class="text-sm px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800">
                 Clear All Contacts
               </button>
-              <button type="button" @click="copyEmergencyToAll"
-                      class="text-sm px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800">
-                Copy Primary to All Campers
-              </button>
             </div>
           </div>
 

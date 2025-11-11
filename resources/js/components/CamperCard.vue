@@ -2,7 +2,11 @@
   <div
     :class="[
       'camper-card flex flex-col bg-white dark:bg-zinc-900 rounded-xl border transition-all duration-200 shadow-sm hover:shadow-md w-full max-w-[400px] h-[405px] overflow-hidden',
-      selected ? 'border-indigo-500 ring-2 ring-indigo-400' : 'border-gray-200 dark:border-gray-700',
+      selected
+        ? 'border-indigo-500 ring-2 ring-indigo-400'
+        : alreadyRegistered
+          ? 'border-emerald-500 ring-2 ring-emerald-400'
+          : 'border-gray-200 dark:border-gray-700',
       disabled ? 'opacity-60 pointer-events-none' : '',
     ]"
   >
@@ -31,6 +35,12 @@
           class="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-indigo-600 rounded-full shadow-sm"
         >
           Selected
+        </span>
+        <span
+          v-else-if="alreadyRegistered"
+          class="inline-flex items-center px-2 py-1 text-xs font-medium text-emerald-800 bg-emerald-100 rounded-full shadow-sm dark:bg-emerald-900/40 dark:text-emerald-200"
+        >
+          Registered
         </span>
         <span
           v-if="formsComplete"
@@ -86,7 +96,7 @@
       <!-- Actions -->
       <div class="pt-4 mt-auto">
         <div class="flex flex-wrap items-center gap-2">
-          <template v-if="showSelectionActions">
+          <template v-if="showSelectionActions && !alreadyRegistered">
             <button
               v-if="selected"
               type="button"
@@ -104,6 +114,12 @@
               Select Camper
             </button>
           </template>
+          <div
+            v-else-if="alreadyRegistered"
+            class="w-full text-sm font-medium text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-200 px-4 py-2 rounded-md text-center"
+          >
+            Already registered for this session
+          </div>
           <button
             v-if="allowFormsAccess"
             type="button"
@@ -152,6 +168,10 @@ export default {
       default: true,
     },
     allowFormsAccess: {
+      type: Boolean,
+      default: false,
+    },
+    alreadyRegistered: {
       type: Boolean,
       default: false,
     },
@@ -213,6 +233,9 @@ export default {
       return age
     },
     handleSelect() {
+      if (this.alreadyRegistered) {
+        return
+      }
       if (this.selected) {
         this.$emit('deselect', this.camper)
         return

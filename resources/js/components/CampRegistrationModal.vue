@@ -133,6 +133,7 @@
                       :selected="isCamperSelected(camper.id)"
                       :forms-complete="camperHasCompleteForms(camper.id)"
                       :allow-forms-access="true"
+                      :already-registered="isCamperRegistered(camper.id)"
                       @select="handleCamperCardSelect"
                       @deselect="handleCamperCardDeselect"
                       @edit-camper="handleCamperEditFromCard"
@@ -452,6 +453,8 @@ const createDefaultState = () => ({
   userName: '',
   userEmail: '',
   campInstance: null,
+  campInstanceEnrollments: [],
+  registeredCamperIds: [],
   family: null,
   campers: [],
   selectedCampers: [],
@@ -563,6 +566,9 @@ export default {
         return Number(this.campInstance.year)
       }
       return this.currentCalendarYear
+    },
+    registeredCamperIdSet() {
+      return new Set(this.registeredCamperIds)
     },
     selectedCamperIds() {
       return this.selectedCampers.map(camper => camper.id)
@@ -936,9 +942,11 @@ export default {
     async loadCampInstance() {
       try {
         this.resetDiscountState()
-        this.campInstance = await this.callApi(`/api/public-registration/camp-instance/${this.campInstanceId}`, {
+        const data = await this.callApi(`/api/public-registration/camp-instance/${this.campInstanceId}`, {
           retries: 1,
         })
+        this.campInstance = data
+        this.setCampInstanceEnrollments(data?.existing_enrollments || [])
       } catch (err) {
         console.error('Error loading camp instance:', err)
         this.error = 'Failed to load camp information'
@@ -1091,6 +1099,7 @@ export default {
         
         if (data.campers) {
           this.campers = data.campers
+          this.updateRegisteredStatusForCampers({ preserveSelection: true })
           this.syncSelectedCampers()
         }
 
@@ -1858,6 +1867,9 @@ export default {
         : false
     },
     async selectCamper(camper) {
+      if (this.isCamperRegistered(camper.id)) {
+        return
+      }
       if (!this.selectedCampers.find(c => c.id === camper.id)) {
         this.handleDiscountContextChange()
         this.selectedCampers.push(camper)
@@ -2028,6 +2040,9 @@ export default {
       }
     },
     async handleCamperCardSelect(camper) {
+      if (this.isCamperRegistered(camper.id)) {
+        return
+      }
       if (this.camperHasCompleteForms(camper.id)) {
         await this.selectCamper(camper)
         return
@@ -2192,6 +2207,24 @@ export default {
 
         this.enrollmentIds = data.enrollment_ids
         this.enrollmentCreated = true
+        const newRegisteredIds = this.selectedCamperIds
+        if (newRegisteredIds.length > 0) {
+          const status = this.paymentMethod === 'cash_check'
+            ? 'registered_awaiting_payment'
+            : 'pending'
+          const combinedEnrollments = Array.isArray(this.campInstanceEnrollments)
+            ? [...this.campInstanceEnrollments]
+            : []
+          newRegisteredIds.forEach(camperId => {
+            if (!combinedEnrollments.some(entry => entry.camper_id === camperId)) {
+              combinedEnrollments.push({
+                camper_id: camperId,
+                status,
+              })
+            }
+          })
+          this.setCampInstanceEnrollments(combinedEnrollments, { preserveSelection: true })
+        }
         if (typeof data?.discount_cents === 'number') {
           const discountDollars = data.discount_cents / 100
           if (discountDollars > 0) {
@@ -2208,6 +2241,7 @@ export default {
 
         if (this.paymentMethod === 'cash_check') {
           this.registrationComplete = true
+          this.updateRegisteredStatusForCampers()
         }
 
         // Force Vue to re-render the StripePaymentForm component when using Stripe
@@ -2225,6 +2259,7 @@ export default {
       this.processing = true
       
       try {
+        const paidCamperIds = this.selectedCamperIds
         await this.callApi('/api/public-registration/confirm-payment', {
           method: 'POST',
           body: {
@@ -2235,6 +2270,19 @@ export default {
         })
 
         this.registrationComplete = true
+        if (Array.isArray(this.campInstanceEnrollments) && this.campInstanceEnrollments.length > 0) {
+          const paidSet = new Set(paidCamperIds)
+          this.campInstanceEnrollments = this.campInstanceEnrollments.map(enrollment => {
+            if (paidSet.has(enrollment.camper_id)) {
+              return {
+                ...enrollment,
+                status: 'confirmed',
+              }
+            }
+            return enrollment
+          })
+        }
+        this.updateRegisteredStatusForCampers()
       } catch (err) {
         this.error = err.message
       } finally {
@@ -2280,6 +2328,29 @@ export default {
       if (!this.camperForms.length) return null
 
       return this.camperForms.find(form => form.camper_id === camperId) || null
+    },
+    setCampInstanceEnrollments(enrollments, { preserveSelection = false } = {}) {
+      const normalized = Array.isArray(enrollments)
+        ? enrollments.filter(entry => entry && typeof entry.camper_id === 'number')
+        : []
+      this.campInstanceEnrollments = normalized
+      this.registeredCamperIds = normalized.map(entry => entry.camper_id)
+      this.updateRegisteredStatusForCampers({ preserveSelection })
+    },
+    updateRegisteredStatusForCampers({ preserveSelection = false } = {}) {
+      const registeredSet = new Set(this.registeredCamperIds)
+      if (Array.isArray(this.campers) && this.campers.length > 0) {
+        this.campers = this.campers.map(camper => ({
+          ...camper,
+          already_registered_for_instance: registeredSet.has(camper.id),
+        }))
+      }
+      if (!preserveSelection && Array.isArray(this.selectedCampers) && this.selectedCampers.length > 0) {
+        this.selectedCampers = this.selectedCampers.filter(camper => !registeredSet.has(camper.id))
+      }
+    },
+    isCamperRegistered(camperId) {
+      return this.registeredCamperIdSet.has(camperId)
     },
     async onCamperFormsUpdated() {
       await this.loadAnnualStatus()
