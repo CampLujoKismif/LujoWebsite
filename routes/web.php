@@ -6,15 +6,17 @@ use Livewire\Volt\Volt;
 Route::get('/', function () {
     try {
         $campInstances = \App\Models\CampInstance::with('camp')
-            ->where('is_active', true)
             ->orderBy('start_date')
             ->get();
-        
-        return view('home', compact('campInstances'));
+
+        $activeCampSessions = $campInstances->where('is_active', true);
+
+        return view('home', compact('campInstances', 'activeCampSessions'));
     } catch (\Exception $e) {
         // If there's an error, pass an empty collection
         $campInstances = collect();
-        return view('home', compact('campInstances'));
+        $activeCampSessions = collect();
+        return view('home', compact('campInstances', 'activeCampSessions'));
     }
 })->name('home');
 
