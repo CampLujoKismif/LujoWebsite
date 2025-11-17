@@ -214,7 +214,7 @@
                 </div>
                 <div class="border-t border-gray-800 mt-8 pt-8 text-center">
                     <p class="text-gray-300">
-                        © 2024 Camp LUJO-KISMIF. All rights reserved.
+                        © {{ date('Y') }} Camp LUJO-KISMIF. All rights reserved.
                     </p>
                 </div>
             </div>
