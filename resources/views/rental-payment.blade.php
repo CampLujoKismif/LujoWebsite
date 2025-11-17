@@ -95,12 +95,14 @@
                             
                             <x-vue-component 
                                 component="RentalPaymentPage" 
-                                :amount="$reservation->remaining_balance"
-                                :reservation-id="$reservation->id"
-                                :customer-name="$reservation->contact_name"
-                                :customer-email="$reservation->contact_email"
-                                :customer-phone="$reservation->contact_phone"
-                                rentals-url="{{ route('rentals') }}"
+                                :props="[
+                                    'amount' => $reservation->remaining_balance,
+                                    'reservationId' => $reservation->id,
+                                    'customerName' => $reservation->contact_name,
+                                    'customerEmail' => $reservation->contact_email,
+                                    'customerPhone' => $reservation->contact_phone,
+                                    'rentalsUrl' => route('rentals')
+                                ]"
                             />
                         </div>
                     @endif

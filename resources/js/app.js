@@ -40,6 +40,7 @@ import VueExample from './components/VueExample.vue'
 import RentalCalendar from './components/RentalCalendar.vue'
 import RentalForm from './components/RentalForm.vue'
 import StripePaymentForm from './components/StripePaymentForm.vue'
+import RentalPaymentPage from './components/RentalPaymentPage.vue'
 import EditHTMLPage from './components/EditHTMLPage.vue'
 import ParentOnboarding from './components/ParentOnboarding.vue'
 import CampRegistrationModal from './components/CampRegistrationModal.vue'
@@ -54,6 +55,7 @@ app.component('vue-example', VueExample)
 app.component('rental-calendar', RentalCalendar)
 app.component('rental-form', RentalForm)
 app.component('stripe-payment-form', StripePaymentForm)
+app.component('rental-payment-page', RentalPaymentPage)
 app.component('parent-onboarding', ParentOnboarding)
 app.component('camp-registration-modal', CampRegistrationModal)
 app.component('camp-session-card', CampSessionCard)
@@ -164,6 +166,8 @@ function mountVueComponents() {
                     componentToMount = RentalCalendar;
                 } else if (componentName === 'RentalForm') {
                     componentToMount = RentalForm;
+                } else if (componentName === 'RentalPaymentPage') {
+                    componentToMount = RentalPaymentPage;
                 } else if (componentName === 'VueExample') {
                     componentToMount = VueExample;
                 } else if (componentName === 'EditHTMLPage') {
@@ -185,6 +189,7 @@ function mountVueComponents() {
                 // Register all components for this app instance
                 elementApp.component('rental-calendar', RentalCalendar);
                 elementApp.component('rental-form', RentalForm);
+                elementApp.component('rental-payment-page', RentalPaymentPage);
                 elementApp.component('vue-example', VueExample);
                 elementApp.component('stripe-payment-form', StripePaymentForm);
                 elementApp.component('edit-html-page', EditHTMLPage);
