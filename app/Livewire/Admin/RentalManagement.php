@@ -671,9 +671,8 @@ class RentalManagement extends Component
      */
     public function sendPaymentRequest($reservationId)
     {
-        $this->authorize('update', RentalReservation::class);
-        
         $reservation = RentalReservation::findOrFail($reservationId);
+        $this->authorize('update', $reservation);
         
         if (!$reservation->contact_email) {
             session()->flash('error', 'No email address found for this reservation.');
