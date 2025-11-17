@@ -69,6 +69,13 @@ class EmailTemplateManagement extends Component
                 'type' => 'customer',
             ],
             [
+                'path' => 'emails/rentals/request-payment.blade.php',
+                'name' => 'Rental Payment Request (Customer)',
+                'description' => 'Sent to customers to request payment for their rental reservation',
+                'category' => 'rental',
+                'type' => 'customer',
+            ],
+            [
                 'path' => 'emails/verify-email.blade.php',
                 'name' => 'Email Verification',
                 'description' => 'Sent for email address verification',

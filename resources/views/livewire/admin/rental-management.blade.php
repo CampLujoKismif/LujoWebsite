@@ -378,6 +378,11 @@
                                                     <button wire:click="openPaymentModal({{ $reservation->id }})" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">
                                                         Payment
                                                     </button>
+                                                    @if($reservation->contact_email)
+                                                        <button wire:click="sendPaymentRequest({{ $reservation->id }})" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300" onclick="return confirm('Send payment request email to {{ $reservation->contact_email }}?')">
+                                                            Request Payment
+                                                        </button>
+                                                    @endif
                                                 @endif
                                                 @if($reservation->canBeCancelled())
                                                     <button wire:click="openCancelModal({{ $reservation->id }})" class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300">

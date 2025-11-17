@@ -18,6 +18,7 @@ use Stripe\Stripe;
 use Stripe\Refund;
 use App\Mail\RentalRefunded;
 use App\Mail\RentalRefundAdminNotification;
+use App\Mail\RentalRequestPayment;
 
 class RentalManagement extends Component
 {
@@ -663,6 +664,42 @@ class RentalManagement extends Component
 
         $this->useCustomPricing = false;
         $this->calculatedTotal = 0;
+    }
+
+    /**
+     * Send payment request email to customer.
+     */
+    public function sendPaymentRequest($reservationId)
+    {
+        $this->authorize('update', RentalReservation::class);
+        
+        $reservation = RentalReservation::findOrFail($reservationId);
+        
+        if (!$reservation->contact_email) {
+            session()->flash('error', 'No email address found for this reservation.');
+            return;
+        }
+
+        try {
+            Mail::to($reservation->contact_email)
+                ->send(new RentalRequestPayment($reservation));
+            
+            Log::info('Payment request email sent', [
+                'reservation_id' => $reservation->id,
+                'email' => $reservation->contact_email,
+                'sent_by' => Auth::user()->name,
+            ]);
+            
+            session()->flash('message', 'Payment request email sent successfully to ' . $reservation->contact_email . '.');
+        } catch (\Exception $e) {
+            Log::error('Failed to send payment request email', [
+                'reservation_id' => $reservation->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            session()->flash('error', 'Failed to send payment request email: ' . $e->getMessage());
+        }
     }
 
     /**
