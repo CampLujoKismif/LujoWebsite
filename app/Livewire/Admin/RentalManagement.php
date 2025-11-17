@@ -681,7 +681,7 @@ class RentalManagement extends Component
 
         try {
             Mail::to($reservation->contact_email)
-                ->send(new RentalRequestPayment($reservation));
+                ->sendNow(new RentalRequestPayment($reservation));
             
             Log::info('Payment request email sent', [
                 'reservation_id' => $reservation->id,

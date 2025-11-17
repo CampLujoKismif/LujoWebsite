@@ -39,6 +39,10 @@ Route::get('/rentals', function () {
     return view('rentals');
 })->name('rentals');
 
+Route::get('/rentals/pay/{reservation}', function (\App\Models\RentalReservation $reservation) {
+    return view('rental-payment', ['reservation' => $reservation]);
+})->name('rentals.pay');
+
 // Public Registration API Routes (accessible without auth for initial steps)
 Route::prefix('api/public-registration')->name('api.public-registration.')->group(function () {
     Route::get('/check-auth', [App\Http\Controllers\Api\PublicRegistrationController::class, 'checkAuth']);

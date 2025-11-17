@@ -111,11 +111,23 @@
                   <td style="padding:16px 18px;">
                     <div style="font-weight:700; font-size:16px; margin-bottom:8px;">Payment Instructions</div>
                     <p style="margin:8px 0; font-size:14px; line-height:1.6; color:#374151;">
-                      Please send your payment via check or contact us to arrange an alternative payment method. Make checks payable to <strong>Camp LUJO-KISMIF</strong>.
+                      You can pay online securely using a credit card by clicking the button below, or send your payment via check. Make checks payable to <strong>Camp LUJO-KISMIF</strong>.
                     </p>
                     <p style="margin:8px 0; font-size:14px; line-height:1.6; color:#374151;">
                       If you have any questions about your reservation or payment, please don't hesitate to contact us.
                     </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Payment Button -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 20px auto 4px auto;">
+                <tr>
+                  <td align="center" bgcolor="#10b981" style="border-radius:8px;">
+                    <a href="{{ route('rentals.pay', $reservation->id) }}" target="_blank"
+                       style="display:inline-block; padding:14px 28px; font-size:16px; font-weight:700; color:#ffffff; text-decoration:none; border-radius:8px;">
+                      Pay Online with Credit Card
+                    </a>
                   </td>
                 </tr>
               </table>
